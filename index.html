@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ikxari — Beyond Ordinary</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2310B981'/%3E%3Ctext x='50%25' y='51%25' font-family='Arial' font-size='55' font-weight='bold' fill='%230F172A' text-anchor='middle' dy='.3em'%3EIX%3C/text%3E%3C/svg%3E">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #020617;
+            --bg-mid: #0B1228;
+            --bg-soft: #0F172A;
+
+            --aurora-green: #10B981;
+            --aurora-emerald: #34D399;
+            --aurora-violet: #A78BFA;
+            --aurora-purple: #8B5CF6;
+            --aurora-teal: #2DD4BF;
+            --aurora-pink: #F472B6;
+            --aurora-blue: #60A5FA;
+            --aurora-amber: #FBBF24;
+
+            --glass-bg: rgba(15, 23, 42, 0.45);
+            --glass-bg-strong: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(167, 139, 250, 0.12);
+            --glass-border-hover: rgba(167, 139, 250, 0.28);
+            --glass-highlight: rgba(255, 255, 255, 0.06);
+
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8;
+            --text-highlight: #E2E8F0;
+            --text-soft: #CBD5E1;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Jost', sans-serif; 
+            background: var(--bg-base); 
+            color: var(--text-main); 
+            overflow-x: hidden; 
+            margin: 0; padding: 0; min-height: 100vh; position: relative;
+        }
+
+        body::before, body::after {
+            content: ''; position: fixed; border-radius: 50%; filter: blur(120px);
+            opacity: 0.32; z-index: 0; pointer-events: none; will-change: transform;
+        }
+        body::before {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, var(--aurora-green) 0%, transparent 70%);
+            top: -180px; left: -120px; animation: floatA 22s ease-in-out infinite;
+        }
+        body::after {
+            width: 720px; height: 720px;
+            background: radial-gradient(circle, var(--aurora-violet) 0%, transparent 70%);
+            bottom: -240px; right: -180px; animation: floatB 28s ease-in-out infinite;
+        }
+
+        .aurora-orb-3 {
+            position: fixed; width: 480px; height: 480px; border-radius: 50%;
+            background: radial-gradient(circle, var(--aurora-teal) 0%, transparent 70%);
+            filter: blur(120px); opacity: 0.22; top: 40%; left: 45%; z-index: 0;
+            pointer-events: none; animation: floatC 32s ease-in-out infinite;
+        }
+
+        @keyframes floatA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(80px, 60px) scale(1.1); } }
+        @keyframes floatB { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-100px, -80px) scale(1.15); } }
+        @keyframes floatC { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-60px, 80px) scale(0.9); } 66% { transform: translate(70px, -50px) scale(1.1); } }
+
+        h1, h2, h3, h4, h5, h6, th, td, button, input, label, span, p, a, div { font-family: 'Jost', sans-serif !important; }
+
+        .maintenance-banner {
+            display: none; width: 100%; background: linear-gradient(90deg, #EF4444, #F59E0B);
+            color: #fff; text-align: center; padding: 10px 20px; font-size: 14px; font-weight: 700;
+            letter-spacing: 0.5px; position: sticky; top: 0; z-index: 9999;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .admin-modal-overlay {
+            position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(10px);
+            z-index: 100000; display: none; justify-content: center; align-items: center; opacity: 0; transition: 0.3s;
+        }
+        .admin-modal-overlay.show { display: flex; opacity: 1; }
+
+        .admin-modal {
+            background: var(--bg-soft); border: 1px solid var(--aurora-violet); border-radius: 18px;
+            padding: 32px; width: 420px; box-shadow: 0 0 60px rgba(167, 139, 250, 0.25); text-align: center;
+        }
+        
+        .admin-input {
+            width: 100%; background: rgba(2,6,23,0.5); border: 1px solid var(--glass-border); color: #fff;
+            padding: 11px 16px; border-radius: 10px; margin-bottom: 14px; outline: none; transition: 0.3s;
+            font-size: 14px; font-weight: 500;
+        }
+        .admin-input:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        
+        .admin-btn {
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-emerald));
+            color: var(--bg-base); border: none; padding: 12px 20px; border-radius: 10px;
+            font-weight: 800; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s;
+            font-size: 14px; letter-spacing: 0.3px;
+        }
+        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); }
+
+        .form-check-label { color: #fff; font-weight: 500; font-size: 14px; }
+        .form-check-input:checked { background-color: var(--aurora-green); border-color: var(--aurora-green); }
+
+        .mobile-blocker { display: none; }
+
+        @media (max-width: 991px) {
+            .app-container { display: none !important; }
+            .mobile-blocker {
+                display: flex; position: fixed; inset: 0; 
+                background: radial-gradient(ellipse at top left, rgba(16,185,129,0.15), transparent 60%),
+                            radial-gradient(ellipse at bottom right, rgba(167,139,250,0.15), transparent 60%),
+                            var(--bg-base);
+                z-index: 999999; flex-direction: column; justify-content: center; align-items: center;
+                text-align: center; padding: 30px; color: #fff;
+            }
+            .mobile-blocker i { font-size: 80px; color: var(--aurora-green); margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.5)); }
+            .mobile-blocker h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; letter-spacing: 0.5px; background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+            .mobile-blocker p { font-size: 16px; color: #94A3B8; line-height: 1.5; max-width: 350px; }
+        }
+
+        .view-section { display: none !important; }
+        .view-section.active { display: block !important; animation: cinematicFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes cinematicFadeIn { from { opacity: 0; transform: translateY(20px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        #loader { 
+            position: fixed; inset: 0; background: var(--bg-base); z-index: 9999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            transition: opacity 0.5s ease, visibility 0.5s; overflow: hidden;
+        }
+        #loader::before {
+            content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%;
+            background: radial-gradient(circle, var(--aurora-green) 0%, transparent 70%);
+            filter: blur(100px); opacity: 0.25; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            animation: pulseLoader 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulseLoader {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.25; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.4; }
+        }
+        
+        .loader-line-container {
+            width: 280px; height: 4px; background: rgba(255,255,255,0.04);
+            border-radius: 4px; overflow: hidden; position: relative;
+            margin-top: 22px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); z-index: 2;
+        }
+
+        .loader-line {
+            position: absolute; left: -50%; height: 100%; width: 50%;
+            background: linear-gradient(90deg, transparent, var(--aurora-green), var(--aurora-violet), transparent);
+            animation: lineLoading 1.6s infinite ease-in-out; box-shadow: 0 0 20px var(--aurora-green);
+        }
+        
+        @keyframes lineLoading { 0% { left: -50%; } 100% { left: 100%; } }
+
+        .config-error {
+            position: fixed; inset: 0; z-index: 100001; background: var(--bg-base);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 30px; text-align: center; color: #fff;
+        }
+        .config-error.show { display: flex; }
+        .config-error i { font-size: 70px; color: #EF4444; margin-bottom: 20px; }
+        .config-error h2 { font-size: 26px; font-weight: 800; margin-bottom: 14px; color: var(--aurora-pink); }
+        .config-error p { color: var(--text-muted); max-width: 560px; line-height: 1.6; font-size: 14px; }
+
+        .app-container { display: flex; width: 100%; min-height: 100vh; position: relative; z-index: 1; }
+        
+        .sidebar { 
+            width: 270px; background: var(--glass-bg); 
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
+            position: fixed; top: 0; left: 0; height: 100vh; z-index: 1050; transition: transform 0.3s ease; 
+        }
+        
+        .main-wrapper { flex-grow: 1; margin-left: 270px; display: flex; flex-direction: column; width: calc(100% - 270px); }
+
+        .sidebar-brand { padding: 26px 20px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; text-transform: uppercase; }
+        .sidebar-brand i { 
+            font-size: 26px; margin-right: 12px; 
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5)); 
+        }
+        .ikxari-text { 
+            font-size: 28px; font-weight: 900; letter-spacing: 2px; 
+            background: linear-gradient(135deg, #ffffff 0%, #CBD5E1 100%); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+
+        .nav-menu { list-style: none; padding: 16px 12px; margin: 0; flex-grow: 1; overflow-y: auto; }
+        .nav-item { margin-bottom: 4px; }
+        .nav-link { 
+            display: flex; align-items: center; padding: 12px 16px; border-radius: 10px;
+            color: var(--text-muted); font-size: 14.5px; font-weight: 600; text-decoration: none; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; position: relative;
+        }
+        .nav-link i { width: 22px; font-size: 15px; margin-right: 12px; transition: 0.3s; }
+        .nav-link:hover { color: #fff; background: var(--glass-highlight); transform: translateX(4px); }
+        .nav-link.active { 
+            color: #fff; 
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(167, 139, 250, 0.08) 50%, transparent 100%); 
+            border-left: 3px solid var(--aurora-green); 
+            box-shadow: inset 0 0 25px rgba(16, 185, 129, 0.05); 
+        }
+        .nav-link.active i { color: var(--aurora-green); filter: drop-shadow(0 0 6px var(--aurora-green)); }
+
+        .sidebar-footer { padding: 22px; border-top: 1px solid var(--glass-border); text-align: center; font-size: 13px; font-weight: 500; color: var(--text-muted); }
+        .sidebar-footer a { color: var(--aurora-green); text-decoration: none; font-weight: 800; letter-spacing: 0.5px; transition: 0.3s; }
+        .sidebar-footer a:hover { color: var(--aurora-violet); text-shadow: 0 0 12px rgba(167, 139, 250, 0.6); }
+        
+        .secret-trigger { cursor: pointer; display: inline-block; transition: 0.2s; user-select: none; }
+        .secret-trigger:hover { transform: scale(1.25); }
+
+        .top-navbar {
+            height: 70px; background: var(--glass-bg); 
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border); padding: 0 32px;
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 999;
+        }
+
+        .navbar-left { display: flex; align-items: center; }
+
+        .navbar-search { 
+            display: flex; align-items: center; background: rgba(2,6,23,0.45); 
+            border: 1px solid var(--glass-border); border-radius: 10px; 
+            padding: 9px 16px; width: 320px; transition: 0.3s;
+        }
+        .navbar-search:focus-within { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12); }
+        .navbar-search i { color: var(--text-muted); font-size: 14px; }
+        .navbar-search input { background: transparent; border: none; color: #fff; padding-left: 12px; font-size: 14px; font-weight: 500; outline: none; width: 100%; }
+        .navbar-search input::placeholder { color: #64748b; }
+
+        .navbar-actions { display: flex; align-items: center; gap: 18px; }
+        
+        .action-icon { position: relative; cursor: pointer; color: var(--text-muted); font-size: 18px; transition: 0.2s; }
+        .action-icon:hover { color: #fff; }
+        .action-icon .badge-dot { 
+            position: absolute; top: -2px; right: -2px; width: 9px; height: 9px; 
+            background: var(--aurora-green); border-radius: 50%; box-shadow: 0 0 10px var(--aurora-green); 
+            animation: pulseDot 1.8s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { box-shadow: 0 0 10px var(--aurora-green); }
+            50% { box-shadow: 0 0 18px var(--aurora-green); }
+        }
+
+        .notif-dropdown {
+            position: absolute; top: 42px; right: -10px; width: 340px;
+            background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border); border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(16,185,129,0.08); 
+            display: none; flex-direction: column; z-index: 1000; cursor: default;
+        }
+        .notif-dropdown.show { display: flex; animation: fadeUp 0.3s ease forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .notif-header { padding: 16px; font-size: 13px; font-weight: 800; color: #fff; border-bottom: 1px solid var(--glass-border); text-transform: uppercase; letter-spacing: 0.6px; }
+        .notif-list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; }
+        .notif-list li { padding: 14px 16px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: flex-start; gap: 12px; transition: 0.2s; }
+        .notif-list li:hover { background: rgba(255,255,255,0.02); }
+        .notif-list li:last-child { border-bottom: none; }
+        .notif-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 14px; background: rgba(255,255,255,0.04); flex-shrink: 0; }
+        .notif-text-container { flex: 1; }
+        .notif-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.3;}
+        .notif-time { font-size: 11px; color: var(--text-muted); font-weight: 500;}
+
+        .notif-list::-webkit-scrollbar { width: 4px; }
+        .notif-list::-webkit-scrollbar-track { background: transparent; }
+        .notif-list::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.2); border-radius: 10px; }
+
+        /* ===== AUTO-REFRESH SYNC INDICATOR ===== */
+        .sync-indicator {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px; border-radius: 100px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px;
+            color: var(--aurora-emerald); cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .sync-indicator:hover {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            transform: translateY(-1px);
+        }
+        .sync-indicator .sync-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--aurora-emerald);
+            box-shadow: 0 0 8px var(--aurora-emerald);
+            animation: syncPulse 2s infinite;
+        }
+        .sync-indicator.syncing .sync-dot {
+            background: var(--aurora-amber);
+            box-shadow: 0 0 8px var(--aurora-amber);
+            animation: syncSpin 0.8s linear infinite;
+        }
+        .sync-indicator.syncing {
+            background: rgba(251, 191, 36, 0.08);
+            border-color: rgba(251, 191, 36, 0.25);
+            color: var(--aurora-amber);
+        }
+        .sync-indicator.error {
+            background: rgba(244, 114, 182, 0.08);
+            border-color: rgba(244, 114, 182, 0.25);
+            color: var(--aurora-pink);
+        }
+        .sync-indicator.error .sync-dot {
+            background: var(--aurora-pink);
+            box-shadow: 0 0 8px var(--aurora-pink);
+            animation: none;
+        }
+        @keyframes syncPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+        @keyframes syncSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(0.7); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .content-area { padding: 32px; position: relative; z-index: 1; }
+
+        .filter-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+        .page-title { 
+            font-size: 28px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--text-soft) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .page-subtitle { font-size: 14px; color: var(--text-muted); font-weight: 500; margin-top: 6px; }
+
+        .date-picker-group { 
+            display: flex; align-items: center; gap: 12px; background: var(--glass-bg); 
+            padding: 8px 14px; border-radius: 12px; border: 1px solid var(--glass-border); 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        }
+        .date-input { 
+            background: rgba(2,6,23,0.45); border: 1px solid rgba(255,255,255,0.08); color: #fff; 
+            padding: 9px 14px; border-radius: 8px; font-weight: 600; font-size: 13.5px; outline: none; transition: 0.3s; 
+        }
+        .date-input:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; cursor: pointer; }
+        .btn-apply { 
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-emerald)); 
+            color: var(--bg-base); border: none; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; 
+            transition: 0.3s ease; box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3); letter-spacing: 0.3px;
+        }
+        .btn-apply:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45); }
+
+        .glass-card { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border); border-radius: 18px; padding: 24px; 
+            height: 100%; display: flex; flex-direction: column; 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25); position: relative; overflow: hidden;
+        }
+        .glass-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 18px; padding: 1px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.18), transparent 50%, rgba(16, 185, 129, 0.12));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            pointer-events: none; opacity: 0.8;
+        }
+        .glass-card:hover { 
+            border-color: var(--glass-border-hover); transform: translateY(-4px); 
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 30px rgba(16, 185, 129, 0.08); 
+        }
+        
+        .kpi-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+        .kpi-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .kpi-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 17px; }
+        
+        .kpi-value { font-size: 32px; font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -1px; margin-bottom: 8px; transition: opacity 0.4s ease; }
+        .kpi-value.aurora-gradient {
+            background: linear-gradient(135deg, var(--aurora-emerald), var(--aurora-violet));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .kpi-value.value-flash {
+            animation: valueFlash 0.6s ease;
+        }
+        @keyframes valueFlash {
+            0% { color: #fff; }
+            50% { color: var(--aurora-emerald); text-shadow: 0 0 14px rgba(52, 211, 153, 0.6); }
+            100% { color: #fff; }
+        }
+        .kpi-trend { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .kpi-trend.positive { color: var(--aurora-emerald); }
+        .kpi-trend.negative { color: var(--aurora-pink); }
+
+        .chart-title { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.2px; }
+        
+        .echart-container { width: 100%; flex-grow: 1; min-height: 350px; }
+
+        .insights-panel { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--glass-border); display: flex; gap: 14px; flex-wrap: wrap; }
+        .insight-item { flex: 1; background: rgba(2,6,23,0.35); padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); min-width: 140px; }
+        .insight-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 700; }
+        .insight-data { font-size: 15px; font-weight: 800; color: var(--text-highlight); }
+
+        .table-wrapper { flex-grow: 1; overflow-x: auto; overflow-y: auto; max-height: 520px; border-radius: 10px; }
+        .table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-wrapper::-webkit-scrollbar-track { background: rgba(2,6,23,0.3); border-radius: 10px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.25); border-radius: 10px; }
+        .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.45); }
+
+        .erp-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
+        .erp-table th { 
+            position: sticky; top: 0; background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            padding: 14px 16px; font-size: 12px; font-weight: 800; color: var(--text-muted); 
+            text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--glass-border); z-index: 10; 
+        }
+        .erp-table td { padding: 14px 16px; font-size: 13.5px; font-weight: 500; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text-soft); }
+        .erp-table tr { transition: background 0.2s; }
+        .erp-table tr:hover td { background: rgba(167, 139, 250, 0.04); }
+
+        .gauge-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border); border-radius: 18px; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        .gauge-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 18px; padding: 1px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), transparent 50%, rgba(16, 185, 129, 0.15));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            pointer-events: none;
+        }
+        .gauge-card:hover { border-color: var(--glass-border-hover); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 30px rgba(16, 185, 129, 0.1); }
+        .gauge-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; text-align: center; }
+        .gauge-sub { font-size: 11.5px; color: var(--text-muted); margin-top: -10px; opacity: 0.7; text-align: center; }
+        .gauge-canvas { width: 100%; height: 200px; }
+    </style>
+</head>
+<body>
+
+    <div class="aurora-orb-3"></div>
+
+    <div class="config-error" id="config-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <h2>Configuration Required</h2>
+        <p>This dashboard needs its API_URL set before it can fetch data.</p>
+    </div>
+
+    <div id="maintenance-banner" class="maintenance-banner">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+        <span id="maintenance-text">SYSTEM IS UNDER MAINTENANCE</span>
+    </div>
+
+    <div class="mobile-blocker" id="mobile-blocker">
+        <i class="fa-solid fa-laptop-code"></i>
+        <h2>Desktop/Tablet Required</h2>
+        <p>Please open this dashboard on a Laptop, PC, or large Tablet for the best analytics experience.</p>
+    </div>
+
+    <div class="admin-modal-overlay" id="admin-modal-overlay">
+        <div class="admin-modal" id="admin-login-box">
+            <h3 class="text-white fw-bold mb-4">Admin Authentication</h3>
+            <input type="password" id="admin-password" class="admin-input" placeholder="Enter System Password">
+            <button class="admin-btn" onclick="verifyAdmin()">Authenticate</button>
+            <button class="btn btn-link text-muted mt-2" onclick="closeAdmin()">Cancel</button>
+        </div>
+        
+        <div class="admin-modal" id="admin-controls-box" style="display:none; width: 460px;">
+            <h4 class="text-white fw-bold mb-4" style="background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Ikxari Control Center</h4>
+            
+            <div style="text-align: left; margin-bottom: 15px;">
+                <label class="text-muted" style="font-size: 12px; font-weight: 700;">Custom Notification Banner (Bell Icon)</label>
+                <input type="text" id="admin-notif-input" class="admin-input" placeholder="E.g., New API version deployed today.">
+            </div>
+            
+            <div style="text-align: left; margin-bottom: 20px;">
+                <label class="text-muted" style="font-size: 12px; font-weight: 700;">Maintenance Mode Message</label>
+                <input type="text" id="admin-maint-input" class="admin-input" placeholder="E.g., Database sync in progress...">
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="admin-maint-toggle">
+                    <label class="form-check-label" for="admin-maint-toggle">Enable Global Maintenance Mode Alert</label>
+                </div>
+            </div>
+            
+            <button class="admin-btn" onclick="saveAdminSettings()">Save All Changes</button>
+            <button class="btn btn-link text-muted mt-2" onclick="closeAdmin()">Close Control Center</button>
+        </div>
+    </div>
+
+    <div id="loader">
+        <h3 class="fw-bold text-white mb-3" style="letter-spacing: 1px; text-transform: uppercase; z-index: 2; position: relative;">Initializing Ikxari</h3>
+        <p class="text-muted" style="font-size: 14px; font-weight: 500; z-index: 2; position: relative;">Securing ERP Data Tunnel...</p>
+        <div class="loader-line-container">
+            <div class="loader-line"></div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-shapes"></i> <span class="ikxari-text">IKXARI</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item"><a class="nav-link active" onclick="switchView('view-overview', this)"><i class="fa-solid fa-chart-pie"></i> Date Overview</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-summarize', this)"><i class="fa-solid fa-table"></i> Summarize Data</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-expense', this)"><i class="fa-solid fa-wallet"></i> Expense Overview</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-vendor', this)"><i class="fa-solid fa-truck-fast"></i> Vendor Performance</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-gst', this)"><i class="fa-solid fa-file-invoice-dollar"></i> GST Overview</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-items', this)"><i class="fa-solid fa-boxes-stacked"></i> Item Movements</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-customers', this)"><i class="fa-solid fa-users"></i> Customer CRM</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-daily', this)"><i class="fa-solid fa-calendar-day"></i> Daily Report</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-purchase', this)"><i class="fa-solid fa-cart-shopping"></i> Purchase Log</a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                Crafted with <span class="secret-trigger" ondblclick="openAdminModal()">☕</span> by <br>
+                <a href="https://samrises.github.io/Somnath/" target="_blank">SOMNATH</a>
+            </div>
+        </nav>
+
+        <div class="main-wrapper">
+            
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <div class="navbar-search">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="global-search" placeholder="Search actively in current table..." onkeyup="performGlobalSearch()">
+                    </div>
+                </div>
+                
+                <div class="navbar-actions">
+                    <div class="sync-indicator" id="sync-indicator" onclick="manualRefresh()" title="Click to refresh now">
+                        <div class="sync-dot"></div>
+                        <span id="sync-text">Live · Just synced</span>
+                    </div>
+                    <div class="action-icon" id="bell-icon" onclick="toggleNotifications(event)">
+                        <i class="fa-solid fa-bell"></i>
+                        <div class="badge-dot" id="notif-dot" style="display:none;"></div>
+                        
+                        <div class="notif-dropdown" id="notif-dropdown">
+                            <div class="notif-header">System Updates</div>
+                            <ul class="notif-list" id="notif-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                
+                <div class="filter-header">
+                    <div>
+                        <h1 class="page-title" id="dynamic-title">Date Overview</h1>
+                        <p class="page-subtitle">Real-time Ikxari metrics — auto-syncs every 60 seconds</p>
+                    </div>
+                    
+                    <div class="date-picker-group" id="range-picker">
+                        <i class="fa-regular fa-calendar" style="color: var(--text-muted); font-size: 14px;"></i>
+                        <input type="date" id="date-start" class="date-input">
+                        <span style="color: var(--text-muted); font-size: 12px; font-weight: 700;">TO</span>
+                        <input type="date" id="date-end" class="date-input">
+                        <button class="btn-apply" onclick="applyFilters()">Generate</button>
+                    </div>
+
+                    <div class="date-picker-group" id="single-picker" style="display:none;">
+                        <i class="fa-regular fa-calendar" style="color: var(--text-muted); font-size: 14px;"></i>
+                        <input type="date" id="date-single" class="date-input">
+                        <button class="btn-apply" onclick="applyFilters()">Generate Day</button>
+                    </div>
+                </div>
+
+                <div id="view-overview" class="view-section active">
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Net Sales (Ex GST)</span><div class="kpi-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--aurora-green);"><i class="fa-solid fa-indian-rupee-sign"></i></div></div><div class="kpi-value" id="kpi-netsales">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>Revenue Active</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-header"><span class="kpi-title">Gross Profit</span><div class="kpi-icon" style="background: rgba(167, 139, 250, 0.12); color: var(--aurora-violet);"><i class="fa-solid fa-wallet"></i></div></div><div class="kpi-value" id="kpi-gp">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>Margin Active</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-teal);"><div class="kpi-header"><span class="kpi-title">Total COGS</span><div class="kpi-icon" style="background: rgba(45, 212, 191, 0.12); color: var(--aurora-teal);"><i class="fa-solid fa-boxes-stacked"></i></div></div><div class="kpi-value" id="kpi-cogs">₹0</div><div class="kpi-trend"><i class="fa-solid fa-minus"></i> <span class="text-muted">Cost Base</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-pink);"><div class="kpi-header"><span class="kpi-title">Total Expenses</span><div class="kpi-icon" style="background: rgba(244, 114, 182, 0.12); color: var(--aurora-pink);"><i class="fa-solid fa-receipt"></i></div></div><div class="kpi-value" id="kpi-exp">₹0</div><div class="kpi-trend negative"><i class="fa-solid fa-arrow-trend-down"></i> <span>Outflow</span></div></div></div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-xl-8"><div class="glass-card"><div class="chart-title">Revenue & Margin Financial Timeline <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Aurora Trend</span></div><div id="echart-trend" class="echart-container"></div><div class="insights-panel"><div class="insight-item"><div class="insight-label">Highest Revenue Day</div><div class="insight-data" id="insight-high-rev">-</div></div><div class="insight-item"><div class="insight-label">Best Margin Period</div><div class="insight-data" id="insight-best-margin">-</div></div></div></div></div>
+                        <div class="col-12 col-xl-4"><div class="glass-card"><div class="chart-title">Sales Category Radial</div><div id="echart-category" class="echart-container"></div></div></div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <div class="gauge-card">
+                                <div class="gauge-title">Profit Margin Health</div>
+                                <div id="gauge-margin" class="gauge-canvas"></div>
+                                <div class="gauge-sub" id="gauge-margin-sub">GP relative to Net Sales</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="gauge-card">
+                                <div class="gauge-title">Expense Ratio Pressure</div>
+                                <div id="gauge-expense" class="gauge-canvas"></div>
+                                <div class="gauge-sub" id="gauge-expense-sub">Expenses relative to Net Sales</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-summarize" class="view-section">
+                    <div class="glass-card">
+                        <div class="chart-title">Detailed Sales Ledger <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Unlimited Scroll</span></div>
+                        <div class="table-wrapper">
+                            <table class="erp-table" id="table-summarize">
+                                <thead><tr><th>Date</th><th>Invoice ID</th><th>Product Line</th><th>Qty</th><th>Client</th><th>Net Revenue</th><th>Tax (GST)</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-expense" class="view-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-xl-4"><div class="glass-card" style="border-top: 3px solid var(--aurora-pink);"><div class="kpi-header"><span class="kpi-title">Total Outflow</span></div><div class="kpi-value aurora-gradient" id="kpi-total-exp-page" style="font-size: 42px;">₹0</div><p class="text-muted mt-2" style="font-size: 13px;">Aggregate operational expenditure for selected duration.</p></div></div>
+                        <div class="col-12 col-xl-8"><div class="glass-card"><div class="chart-title">Expense Rose — Nightingale Breakdown</div><div id="echart-expense" class="echart-container" style="min-height: 320px;"></div></div></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="chart-title">Dynamic Expense Log</div>
+                        <div class="table-wrapper"><table class="erp-table" id="table-expenses"><thead><tr><th>Record Date</th><th>Expense Name</th><th>Expense Node / Category</th><th>Settled Amount</th></tr></thead><tbody></tbody></table></div>
+                    </div>
+                </div>
+
+                <div id="view-vendor" class="view-section">
+                    <div class="glass-card">
+                        <div class="chart-title">Top Vendors Rank (Net Sales Contribution)</div>
+                        <div id="echart-vendors" class="echart-container" style="min-height: 560px;"></div>
+                        <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Most Profitable Vendor</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Vendor Dependency</div><div class="insight-data" style="color: var(--aurora-amber);">Active Monitoring Required</div></div></div>
+                    </div>
+                </div>
+
+                <div id="view-gst" class="view-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-md-4"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-green)">Output GST (Collected)</div><div class="kpi-value" id="kpi-gst-out">₹0</div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-teal)">Input GST (ITC Credit)</div><div class="kpi-value" id="kpi-gst-in">₹0</div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-pink)">Net Liability Payable</div><div class="kpi-value" id="kpi-gst-net">₹0</div></div></div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12 col-xl-8"><div class="glass-card"><div class="chart-title">Tax Balancing Graph</div><div id="echart-gst" class="echart-container" style="min-height: 360px;"></div></div></div>
+                        <div class="col-12 col-xl-4">
+                            <div class="gauge-card" style="height: 100%;">
+                                <div class="gauge-title">Tax Burden Health</div>
+                                <div id="gauge-tax" class="gauge-canvas" style="height: 280px;"></div>
+                                <div class="gauge-sub" id="gauge-tax-sub">Net GST as % of Output</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-items" class="view-section">
+                    <div class="row g-4">
+                        <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title"><span style="color: var(--aurora-emerald);">Fast-Moving</span> Inventory</div><div id="echart-fast-items" class="echart-container" style="min-height: 520px;"></div></div></div>
+                        <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title"><span style="color: var(--aurora-pink);">Slow-Moving</span> Inventory</div><div id="echart-slow-items" class="echart-container" style="min-height: 520px;"></div></div></div>
+                    </div>
+                </div>
+
+                <div id="view-customers" class="view-section">
+                    <div class="glass-card">
+                        <div class="chart-title">Premium Customer Matrices</div>
+                        <div class="table-wrapper">
+                            <table class="erp-table" id="table-customers">
+                                <thead><tr><th>Customer Identity</th><th>Visit Frequency</th><th>Total Units Volume</th><th>Net LTV (Spend)</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-daily" class="view-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-green)">Day Net Sales</div><div class="kpi-value" id="daily-sales">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-emerald)">Day Gross Profit</div><div class="kpi-value" id="daily-gp">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-teal)">Unique Clients</div><div class="kpi-value" id="daily-cust">0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-violet)">Volume Sold</div><div class="kpi-value" id="daily-items">0</div></div></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="chart-title">Daily Closing Transaction Ledger</div>
+                        <div class="table-wrapper">
+                            <table class="erp-table" id="table-daily">
+                                <thead><tr><th>Invoice ID</th><th>Customer</th><th>Product Line</th><th>Qty</th><th>Gross Amt</th><th>Net Profit Margin</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-purchase" class="view-section">
+                    <div class="glass-card" style="justify-content: center; align-items: center; text-align: center; padding: 100px 20px;">
+                        <i class="fa-solid fa-code-pull-request" style="font-size: 60px; color: var(--aurora-green); margin-bottom: 24px; filter: drop-shadow(0 0 18px rgba(16, 185, 129, 0.5));"></i>
+                        <h2 class="fw-bold mb-3" style="font-size: 28px; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Purchase Module Offline</h2>
+                        <p class="text-muted" style="font-size: 15px; max-width: 500px;">The Purchase Log architecture is currently under scheduled maintenance.<br>It will be fully integrated in the next core software update.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║   ✅ CONFIG READY + AUTO-REFRESH 60 SEC                     ║
+    // ╚══════════════════════════════════════════════════════════════╝
+    
+    const IKXARI_CONFIG = {
+        API_URL: "https://script.google.com/macros/s/AKfycbzoE6EVIz9gEtnoBdqG3KB9_72YYNTgpTGZCsbDuOsj-5Z2Erq5vL6aaoRaPvTLxknpGw/exec",
+        API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
+        AUTO_REFRESH_INTERVAL_MS: 60000  // 60 seconds — change here if needed
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+
+        var rawSalesDataset = [];
+        var rawExpensesDataset = [];
+        var globalCurrentActiveView = 'view-overview';
+        var echartsInstances = {};
+        var autoRefreshTimer = null;
+        var lastSyncTimestamp = 0;
+        var lastSalesCount = 0;
+        var clockTickerTimer = null;
+
+        var AURORA = {
+            green: '#10B981', emerald: '#34D399', violet: '#A78BFA', purple: '#8B5CF6',
+            teal: '#2DD4BF', pink: '#F472B6', blue: '#60A5FA', amber: '#FBBF24',
+            text: '#CBD5E1', muted: '#94A3B8',
+            grid: 'rgba(167, 139, 250, 0.06)',
+            tooltipBg: 'rgba(15, 23, 42, 0.95)',
+            tooltipBorder: 'rgba(167, 139, 250, 0.2)'
+        };
+
+        function openAdminModal() {
+            document.getElementById('admin-modal-overlay').classList.add('show');
+            document.getElementById('admin-login-box').style.display = 'block';
+            document.getElementById('admin-controls-box').style.display = 'none';
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-modal-overlay').classList.remove('show');
+            document.getElementById('admin-password').value = "";
+        }
+
+        function verifyAdmin() {
+            var pass = document.getElementById('admin-password').value;
+            if(pass === "ikxariadmin") {
+                document.getElementById('admin-login-box').style.display = 'none';
+                document.getElementById('admin-controls-box').style.display = 'block';
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
+
+        function saveAdminSettings() {
+            var pass = document.getElementById('admin-password').value;
+            var notif = document.getElementById('admin-notif-input').value;
+            var maintMsg = document.getElementById('admin-maint-input').value;
+            var maintActive = document.getElementById('admin-maint-toggle').checked;
+            
+            fetch(IKXARI_CONFIG.API_URL, {
+                method: 'POST', mode: 'cors', redirect: 'follow',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    token: IKXARI_CONFIG.API_TOKEN, action: 'saveAdmin',
+                    pass: pass, notifMsg: notif, maintMsg: maintMsg, maintStatus: maintActive
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if(res.success) {
+                    alert(res.msg + "\nPlease reload the dashboard to see changes.");
+                    closeAdmin();
+                } else {
+                    alert(res.msg || "Save failed");
+                }
+            })
+            .catch(function(err) { alert("Network error: " + err); });
+        }
+
+        function toggleNotifications(event) {
+            event.stopPropagation();
+            var dd = document.getElementById('notif-dropdown');
+            dd.classList.toggle('show');
+            document.getElementById('notif-dot').style.display = 'none'; 
+        }
+
+        document.addEventListener('click', function(e) {
+            var icon = document.getElementById('bell-icon');
+            if (icon && !icon.contains(e.target)) {
+                var dd = document.getElementById('notif-dropdown');
+                if (dd && dd.classList.contains('show')) {
+                    dd.classList.remove('show');
+                }
+            }
+        });
+
+        function buildNotifications(res, isAutoRefresh) {
+            var notifList = document.getElementById('notif-list');
+            var notifDot = document.getElementById('notif-dot');
+            
+            var storedSales = localStorage.getItem('ikxari_sales_count');
+            var storedCols = localStorage.getItem('ikxari_col_count');
+            
+            var currentSales = res.sales.length;
+            var currentCols = res.totalCols || 0;
+            var latestSale = res.latestSale || {};
+            
+            var newNotifs = [];
+            
+            if (res.adminNotif && res.adminNotif.trim() !== "") {
+                newNotifs.push({ title: "Admin Announcement", desc: res.adminNotif, icon: "fa-bullhorn", color: AURORA.pink, time: "Now" });
+            }
+
+            if (storedCols && currentCols > parseInt(storedCols)) {
+                newNotifs.push({ title: "Database Structure Updated", desc: "New column detected.", icon: "fa-table-columns", color: AURORA.teal, time: "System" });
+            }
+            
+            if (storedSales && currentSales > parseInt(storedSales)) {
+                var diff = currentSales - parseInt(storedSales);
+                var clientName = latestSale.customer || "Unknown Client";
+                var billName = latestSale.billNo || "N/A";
+                newNotifs.push({ title: diff + " New Row(s) Added", desc: "Latest: " + clientName + " (" + billName + ")", icon: "fa-plus", color: AURORA.violet, time: "System" });
+            }
+
+            localStorage.setItem('ikxari_sales_count', currentSales);
+            localStorage.setItem('ikxari_col_count', currentCols);
+
+            if (newNotifs.length > 0) {
+                notifDot.style.display = 'block';
+                var htmlStr = '';
+                for(var i=0; i < newNotifs.length; i++) {
+                    var n = newNotifs[i];
+                    htmlStr += "<li><div class='notif-icon' style='color: " + n.color + "; box-shadow: 0 0 14px " + n.color + "30;'><i class='fa-solid " + n.icon + "'></i></div><div class='notif-text-container'><div class='notif-title'>" + n.title + "</div><div class='notif-time'>" + n.desc + " • " + n.time + "</div></div></li>";
+                }
+                notifList.innerHTML = htmlStr;
+            } else {
+                notifDot.style.display = 'none';
+                notifList.innerHTML = "<li><div class='notif-icon' style='color: " + AURORA.green + ";'><i class='fa-solid fa-check'></i></div><div class='notif-text-container'><div class='notif-title'>System Up to Date</div><div class='notif-time'>No new database changes detected.</div></div></li>";
+            }
+        }
+
+        function performGlobalSearch() {
+            var searchInput = document.getElementById("global-search");
+            var filterString = searchInput.value.toLowerCase();
+            var activeViewDiv = document.querySelector('.view-section.active');
+            if (!activeViewDiv) return;
+            
+            var targetTableRows = activeViewDiv.querySelectorAll('.erp-table tbody tr');
+            for (var i = 0; i < targetTableRows.length; i++) {
+                var rowDataText = targetTableRows[i].textContent || targetTableRows[i].innerText;
+                if (rowDataText.toLowerCase().indexOf(filterString) > -1) {
+                    targetTableRows[i].style.display = "";
+                } else {
+                    targetTableRows[i].style.display = "none";
+                }
+            }
+        }
+
+        function resetGlobalSearch() {
+            var searchInput = document.getElementById("global-search");
+            if(searchInput) { searchInput.value = ""; performGlobalSearch(); }
+        }
+
+        function formatFullCurrencyINR(numericValue) {
+            var num = parseFloat(numericValue) || 0;
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+        }
+        function formatShortCurrency(val) {
+            var num = parseFloat(val) || 0;
+            if (Math.abs(num) >= 100000) return "₹" + (num / 100000).toFixed(2) + "L";
+            if (Math.abs(num) >= 1000) return "₹" + (num / 1000).toFixed(1) + "K";
+            return "₹" + Math.round(num);
+        }
+        function formatQty(val) { return Math.round(val) + " U"; }
+        function formatDate(ms) { return new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+        
+        function sortMap(obj, limit) {
+            var arr = Object.keys(obj).map(function(k) { return { k: k, v: obj[k] }; });
+            arr.sort(function(a, b) { return b.v - a.v; });
+            return arr.slice(0, limit);
+        }
+
+        // ====== SYNC INDICATOR HELPERS ======
+        function setSyncState(state, customText) {
+            var indicator = document.getElementById('sync-indicator');
+            var text = document.getElementById('sync-text');
+            indicator.classList.remove('syncing', 'error');
+            
+            if (state === 'syncing') {
+                indicator.classList.add('syncing');
+                text.innerText = customText || 'Syncing…';
+            } else if (state === 'error') {
+                indicator.classList.add('error');
+                text.innerText = customText || 'Sync failed · Retrying';
+            } else {
+                text.innerText = customText || 'Live · Just synced';
+            }
+        }
+
+        function updateSyncClock() {
+            if (lastSyncTimestamp === 0) return;
+            var indicator = document.getElementById('sync-indicator');
+            if (indicator.classList.contains('syncing') || indicator.classList.contains('error')) return;
+            
+            var secAgo = Math.floor((Date.now() - lastSyncTimestamp) / 1000);
+            var text = document.getElementById('sync-text');
+            
+            if (secAgo < 5) {
+                text.innerText = 'Live · Just synced';
+            } else if (secAgo < 60) {
+                text.innerText = 'Live · ' + secAgo + 's ago';
+            } else {
+                var minAgo = Math.floor(secAgo / 60);
+                text.innerText = 'Live · ' + minAgo + 'm ago';
+            }
+        }
+
+        function startSyncClockTicker() {
+            if (clockTickerTimer) clearInterval(clockTickerTimer);
+            clockTickerTimer = setInterval(updateSyncClock, 5000);
+        }
+
+        // ====== MAIN DATA FETCH ======
+        function fetchDashboardData(isAutoRefresh) {
+            if (IKXARI_CONFIG.API_URL.indexOf("PASTE_YOUR") !== -1) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('config-error').classList.add('show');
+                return;
+            }
+            
+            if (isAutoRefresh) {
+                setSyncState('syncing', 'Auto-syncing…');
+            }
+            
+            var url = IKXARI_CONFIG.API_URL + "?action=dashboard&token=" + encodeURIComponent(IKXARI_CONFIG.API_TOKEN);
+            
+            fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res.status === 'error') { 
+                        if (isAutoRefresh) {
+                            setSyncState('error', 'Sync error · Retrying');
+                        } else {
+                            alert("Sync Failed: " + res.message);
+                        }
+                        return; 
+                    }
+                    
+                    if(res.maintStatus === true) {
+                        var banner = document.getElementById('maintenance-banner');
+                        banner.style.display = 'block';
+                        document.getElementById('maintenance-text').innerText = res.maintMsg || "SYSTEM IS UNDER MAINTENANCE";
+                    } else {
+                        document.getElementById('maintenance-banner').style.display = 'none';
+                    }
+
+                    // Check for new rows (compare with last fetched count, NOT localStorage)
+                    var newRowsAdded = (lastSalesCount > 0 && res.sales.length > lastSalesCount);
+                    lastSalesCount = res.sales.length;
+
+                    rawSalesDataset = res.sales; 
+                    rawExpensesDataset = res.expenses;
+                    
+                    buildNotifications(res, isAutoRefresh);
+                    
+                    lastSyncTimestamp = Date.now();
+                    
+                    if (isAutoRefresh) {
+                        if (newRowsAdded) {
+                            setSyncState('live', 'Live · New data!');
+                            // Flash KPIs briefly to show update
+                            flashKpis();
+                        } else {
+                            setSyncState('live', 'Live · Just synced');
+                        }
+                    } else {
+                        // First load
+                        var loader = document.getElementById('loader');
+                        loader.style.opacity = '0';
+                        setTimeout(function() { loader.style.display = 'none'; }, 500);
+                        setSyncState('live', 'Live · Just synced');
+                        startSyncClockTicker();
+                        startAutoRefresh();
+                    }
+                    
+                    applyFilters(); 
+                })
+                .catch(function(err) { 
+                    if (isAutoRefresh) {
+                        setSyncState('error', 'Offline · Retrying');
+                    } else {
+                        alert("Fatal Error connecting to API: " + err); 
+                    }
+                });
+        }
+
+        function flashKpis() {
+            var kpiElements = document.querySelectorAll('.kpi-value');
+            kpiElements.forEach(function(el) {
+                el.classList.remove('value-flash');
+                void el.offsetWidth;
+                el.classList.add('value-flash');
+            });
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            autoRefreshTimer = setInterval(function() {
+                // Don't refresh if user is typing in search
+                var searchInput = document.getElementById('global-search');
+                if (searchInput && searchInput.value.length > 0) return;
+                
+                // Don't refresh if admin modal is open
+                if (document.getElementById('admin-modal-overlay').classList.contains('show')) return;
+                
+                // Don't refresh if tab is hidden (saves quota)
+                if (document.hidden) return;
+                
+                fetchDashboardData(true);
+            }, IKXARI_CONFIG.AUTO_REFRESH_INTERVAL_MS);
+        }
+
+        function manualRefresh() {
+            fetchDashboardData(true);
+        }
+
+        // When tab becomes visible again, do an immediate refresh
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && lastSyncTimestamp > 0) {
+                var minutesAway = (Date.now() - lastSyncTimestamp) / 60000;
+                if (minutesAway > 1) {
+                    fetchDashboardData(true);
+                }
+            }
+        });
+
+        window.onload = function() {
+            var currentDate = new Date();
+            var lookbackDate = new Date(2024, 0, 1); 
+            
+            document.getElementById('date-start').value = lookbackDate.toISOString().split('T')[0];
+            document.getElementById('date-end').value = currentDate.toISOString().split('T')[0];
+            document.getElementById('date-single').value = currentDate.toISOString().split('T')[0];
+            
+            fetchDashboardData(false);
+        };
+
+        window.addEventListener('resize', function() {
+            for (var key in echartsInstances) {
+                if (echartsInstances.hasOwnProperty(key) && echartsInstances[key]) {
+                    echartsInstances[key].resize();
+                }
+            }
+        });
+
+        function switchView(targetId, clickedEl) {
+            document.querySelectorAll('.nav-link').forEach(function(el) { el.classList.remove('active'); });
+            document.querySelectorAll('.view-section').forEach(function(el) { el.classList.remove('active'); });
+            
+            document.getElementById(targetId).classList.add('active');
+            clickedEl.classList.add('active');
+            document.getElementById('dynamic-title').innerText = clickedEl.innerText.trim();
+            
+            globalCurrentActiveView = targetId;
+            resetGlobalSearch();
+
+            if (targetId === 'view-daily') {
+                document.getElementById('range-picker').style.display = 'none';
+                document.getElementById('single-picker').style.display = 'flex';
+            } else if (targetId === 'view-purchase') {
+                document.getElementById('range-picker').style.display = 'none';
+                document.getElementById('single-picker').style.display = 'none';
+            } else {
+                document.getElementById('range-picker').style.display = 'flex';
+                document.getElementById('single-picker').style.display = 'none';
+            }
+            
+            setTimeout(applyFilters, 50); 
+        }
+
+        function applyFilters() {
+            if (rawSalesDataset.length === 0 && rawExpensesDataset.length === 0) return;
+
+            var startTime, endTime;
+            if (globalCurrentActiveView === 'view-daily') {
+                var singleVal = document.getElementById('date-single').value;
+                startTime = new Date(singleVal).setHours(0,0,0,0); 
+                endTime = new Date(singleVal).setHours(23,59,59,999);
+            } else {
+                var startVal = document.getElementById('date-start').value;
+                var endVal = document.getElementById('date-end').value;
+                startTime = new Date(startVal).setHours(0,0,0,0);
+                endTime = new Date(endVal).setHours(23,59,59,999);
+            }
+
+            var fSales = [];
+            for(var a=0; a<rawSalesDataset.length; a++){
+                if(rawSalesDataset[a].dateObj >= startTime && rawSalesDataset[a].dateObj <= endTime) { fSales.push(rawSalesDataset[a]); }
+            }
+            var fExp = [];
+            for(var b=0; b<rawExpensesDataset.length; b++){
+                if(rawExpensesDataset[b].dateObj >= startTime && rawExpensesDataset[b].dateObj <= endTime) { fExp.push(rawExpensesDataset[b]); }
+            }
+
+            var kpis = { netSales: 0, cogs: 0, gp: 0, exp: 0, outGst: 0 };
+            var trendMap = {}, catMap = {}, vendorMap = {}, itemMap = {}, custMap = {};
+
+            for(var c=0; c<fSales.length; c++) {
+                var item = fSales[c];
+                var net = item.netSales;
+                var cost = item.cogsPerUnit * item.qty; 
+                var profit = item.grossProfit;
+
+                kpis.netSales += net; kpis.cogs += cost; kpis.gp += profit; kpis.outGst += item.gstAmount;
+
+                var dStr = new Date(item.dateObj).toISOString().split('T')[0];
+                if (!trendMap[dStr]) trendMap[dStr] = { s: 0, p: 0 };
+                trendMap[dStr].s += net; trendMap[dStr].p += profit;
+
+                catMap[item.category] = (catMap[item.category] || 0) + net;
+                vendorMap[item.vendor] = (vendorMap[item.vendor] || 0) + net;
+                itemMap[item.item] = (itemMap[item.item] || 0) + item.qty;
+
+                if (!custMap[item.customer]) custMap[item.customer] = { spend: 0, bills: new Set(), qty: 0 };
+                custMap[item.customer].spend += net; custMap[item.customer].bills.add(item.billNo); custMap[item.customer].qty += item.qty;
+            }
+
+            var expCatMap = {};
+            for(var d=0; d<fExp.length; d++) {
+                kpis.exp += fExp[d].amount; 
+                expCatMap[fExp[d].category] = (expCatMap[fExp[d].category] || 0) + fExp[d].amount; 
+            }
+
+            var taxRatio = kpis.netSales > 0 ? (kpis.outGst / kpis.netSales) : 0;
+            var inGst = kpis.cogs * taxRatio; 
+            var netGst = kpis.outGst - inGst;
+
+            if (globalCurrentActiveView === 'view-overview') renderOverview(kpis, trendMap, catMap);
+            if (globalCurrentActiveView === 'view-summarize') renderSummarize(fSales);
+            if (globalCurrentActiveView === 'view-expense') renderExpense(kpis.exp, expCatMap, fExp);
+            if (globalCurrentActiveView === 'view-vendor') renderVendor(vendorMap);
+            if (globalCurrentActiveView === 'view-gst') renderGST(kpis.outGst, inGst, netGst);
+            if (globalCurrentActiveView === 'view-items') renderItems(itemMap);
+            if (globalCurrentActiveView === 'view-customers') renderCustomers(custMap);
+            if (globalCurrentActiveView === 'view-daily') renderDaily(kpis, fSales, custMap);
+            
+            resetGlobalSearch();
+        }
+
+        function initEChart(domId, options) {
+            var dom = document.getElementById(domId);
+            if (!dom) return;
+            if (!echartsInstances[domId]) { echartsInstances[domId] = echarts.init(dom); }
+            echartsInstances[domId].setOption(options, true);
+        }
+
+        function auroraTooltip(extra) {
+            var base = {
+                backgroundColor: AURORA.tooltipBg, borderColor: AURORA.tooltipBorder, borderWidth: 1,
+                textStyle: { color: '#fff', fontFamily: 'Jost', fontSize: 12 }, padding: [10, 14],
+                extraCssText: 'box-shadow: 0 8px 24px rgba(0,0,0,0.4); backdrop-filter: blur(10px); border-radius: 10px;'
+            };
+            if (extra) { for (var k in extra) { base[k] = extra[k]; } }
+            return base;
+        }
+
+        function renderOverview(kpis, trendMap, catMap) {
+            document.getElementById('kpi-netsales').innerText = formatFullCurrencyINR(kpis.netSales);
+            document.getElementById('kpi-gp').innerText = formatFullCurrencyINR(kpis.gp);
+            document.getElementById('kpi-cogs').innerText = formatFullCurrencyINR(kpis.cogs);
+            document.getElementById('kpi-exp').innerText = formatFullCurrencyINR(kpis.exp);
+
+            var dates = Object.keys(trendMap).sort();
+            var salesData = [], profitData = [];
+            for(var x=0; x<dates.length; x++) {
+                salesData.push(Math.round(trendMap[dates[x]].s));
+                profitData.push(Math.round(trendMap[dates[x]].p));
+            }
+
+            if(dates.length > 0) {
+                var maxRev = 0, bestDate = "-";
+                for(var y=0; y<dates.length; y++) {
+                    if(trendMap[dates[y]].s > maxRev) { maxRev = trendMap[dates[y]].s; bestDate = formatDate(new Date(dates[y]).getTime()); }
+                }
+                document.getElementById('insight-high-rev').innerText = formatShortCurrency(maxRev) + " (" + bestDate + ")";
+                document.getElementById('insight-best-margin').innerText = formatFullCurrencyINR(kpis.gp > 0 ? kpis.gp : 0);
+            }
+
+            initEChart('echart-trend', {
+                tooltip: auroraTooltip({ 
+                    trigger: 'axis',
+                    formatter: function(p) { 
+                        return '<div style="font-weight:700; margin-bottom:6px;">' + p[0].axisValue + '</div>' +
+                               p[0].marker + ' Net Sales: <b style="color:' + AURORA.emerald + '">' + formatFullCurrencyINR(p[0].value) + '</b><br/>' + 
+                               p[1].marker + ' Gross Profit: <b style="color:' + AURORA.violet + '">' + formatFullCurrencyINR(p[1].value) + '</b>'; 
+                    }
+                }),
+                legend: { data: ['Net Sales', 'Gross Profit'], textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600 }, bottom: 0, itemWidth: 14, itemHeight: 8, itemGap: 24 },
+                grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
+                xAxis: { type: 'category', boundaryGap: false, data: dates, axisLine: { lineStyle: { color: AURORA.grid } }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11 } },
+                yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v) { return formatShortCurrency(v); } } },
+                series: [
+                    { 
+                        name: 'Net Sales', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, showSymbol: false,
+                        lineStyle: { color: AURORA.emerald, width: 3, shadowBlur: 14, shadowColor: 'rgba(52, 211, 153, 0.55)', shadowOffsetY: 2 }, 
+                        itemStyle: { color: AURORA.emerald, borderColor: '#fff', borderWidth: 2 },
+                        emphasis: { focus: 'series', scale: 1.4 },
+                        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(52, 211, 153, 0.45)'}, {offset: 0.7, color: 'rgba(52, 211, 153, 0.08)'}, {offset: 1, color: 'rgba(52, 211, 153, 0)'}]) }, 
+                        data: salesData 
+                    },
+                    { 
+                        name: 'Gross Profit', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, showSymbol: false,
+                        lineStyle: { color: AURORA.violet, width: 3, shadowBlur: 14, shadowColor: 'rgba(167, 139, 250, 0.55)', shadowOffsetY: 2 }, 
+                        itemStyle: { color: AURORA.violet, borderColor: '#fff', borderWidth: 2 },
+                        emphasis: { focus: 'series', scale: 1.4 },
+                        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(167, 139, 250, 0.4)'}, {offset: 0.7, color: 'rgba(167, 139, 250, 0.06)'}, {offset: 1, color: 'rgba(167, 139, 250, 0)'}]) }, 
+                        data: profitData 
+                    }
+                ],
+                animation: true, animationDuration: 1200, animationEasing: 'cubicOut'
+            });
+
+            var catArr = sortMap(catMap, 6);
+            var catNames = catArr.map(function(item) { return item.k; });
+            var catValues = catArr.map(function(item) { return Math.round(item.v); });
+            var auroraColors = [AURORA.green, AURORA.violet, AURORA.teal, AURORA.pink, AURORA.blue, AURORA.amber];
+
+            initEChart('echart-category', {
+                tooltip: auroraTooltip({ 
+                    trigger: 'item',
+                    formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value); }
+                }),
+                polar: { radius: ['18%', '88%'], center: ['50%', '54%'] },
+                angleAxis: { max: catValues.length > 0 ? Math.max.apply(null, catValues) * 1.05 : 100, startAngle: 90, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { show: false }, splitLine: { show: false } },
+                radiusAxis: { type: 'category', data: catNames, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontFamily: 'Jost', fontWeight: 600, fontSize: 11 }, z: 10 },
+                series: [{ 
+                    type: 'bar', coordinateSystem: 'polar', 
+                    data: catValues.map(function(v, idx) {
+                        return {
+                            value: v,
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                    { offset: 0, color: auroraColors[idx % auroraColors.length] + '40' },
+                                    { offset: 1, color: auroraColors[idx % auroraColors.length] }
+                                ]),
+                                borderRadius: [0, 100, 100, 0], shadowBlur: 10, shadowColor: auroraColors[0] + '40'
+                            }
+                        };
+                    }),
+                    label: { show: true, position: 'middle', color: '#fff', fontFamily: 'Jost', fontWeight: 700, fontSize: 10, formatter: function(p) { return formatShortCurrency(p.value); } },
+                    emphasis: { itemStyle: { shadowBlur: 18 } }
+                }],
+                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+            });
+
+            var marginPct = kpis.netSales > 0 ? Math.round((kpis.gp / kpis.netSales) * 100) : 0;
+            var expensePct = kpis.netSales > 0 ? Math.round((kpis.exp / kpis.netSales) * 100) : 0;
+
+            initEChart('gauge-margin', buildGauge(marginPct, AURORA.emerald, AURORA.green));
+            initEChart('gauge-expense', buildGauge(Math.min(expensePct, 100), AURORA.pink, AURORA.violet));
+
+            document.getElementById('gauge-margin-sub').innerText = "GP " + formatShortCurrency(kpis.gp) + " of " + formatShortCurrency(kpis.netSales) + " Net Sales";
+            document.getElementById('gauge-expense-sub').innerText = "Expenses " + formatShortCurrency(kpis.exp) + " of " + formatShortCurrency(kpis.netSales) + " Net Sales";
+        }
+
+        function buildGauge(value, colorMain, colorSecondary) {
+            return {
+                series: [{
+                    type: 'gauge', startAngle: 200, endAngle: -20, min: 0, max: 100, radius: '92%', center: ['50%', '62%'],
+                    progress: {
+                        show: true, width: 16, roundCap: true,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: colorSecondary }, { offset: 1, color: colorMain }]),
+                            shadowBlur: 14, shadowColor: colorMain + '80'
+                        }
+                    },
+                    axisLine: { lineStyle: { width: 16, color: [[1, 'rgba(255, 255, 255, 0.05)']] } },
+                    pointer: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { show: false }, title: { show: false },
+                    detail: { valueAnimation: true, color: '#fff', fontSize: 36, fontWeight: 800, fontFamily: 'Jost', formatter: '{value}%', offsetCenter: [0, '5%'] },
+                    data: [{ value: value }]
+                }],
+                animationDuration: 1500, animationEasing: 'cubicOut'
+            };
+        }
+
+        function renderSummarize(fSales) {
+            var tbody = document.querySelector('#table-summarize tbody');
+            var rHtml = [];
+            for(var i=0; i<fSales.length; i++) {
+                var r = fSales[i];
+                rHtml.push("<tr><td>" + formatDate(r.dateObj) + "</td><td>" + r.billNo + "</td><td>" + r.item + "</td><td>" + r.qty + "</td><td>" + r.customer + "</td><td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(r.netSales) + "</td><td style='color:" + AURORA.pink + ";'>" + formatFullCurrencyINR(r.gstAmount) + "</td></tr>");
+            }
+            tbody.innerHTML = rHtml.join('');
+        }
+
+        function renderExpense(total, expMap, rows) {
+            document.getElementById('kpi-total-exp-page').innerText = formatFullCurrencyINR(total);
+            var eArr = sortMap(expMap, 10);
+            var auroraColors = [AURORA.pink, AURORA.violet, AURORA.teal, AURORA.amber, AURORA.green, AURORA.blue, AURORA.emerald, AURORA.purple];
+            var pieData = eArr.map(function(item, idx) { 
+                return { 
+                    name: item.k, value: Math.round(item.v),
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: auroraColors[idx % auroraColors.length] }, { offset: 1, color: auroraColors[idx % auroraColors.length] + '70' }]),
+                        shadowBlur: 12, shadowColor: auroraColors[idx % auroraColors.length] + '50'
+                    }
+                }; 
+            });
+            
+            initEChart('echart-expense', {
+                tooltip: auroraTooltip({ 
+                    trigger: 'item',
+                    formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value) + ' (' + p.percent + '%)'; }
+                }),
+                legend: { orient: 'vertical', right: 16, top: 'middle', textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600, fontSize: 12 }, itemWidth: 12, itemHeight: 12, itemGap: 10 }, 
+                series: [{ 
+                    type: 'pie', radius: [25, '80%'], center: ['38%', '50%'], roseType: 'area',
+                    itemStyle: { borderRadius: 6, borderColor: 'rgba(2, 6, 23, 0.6)', borderWidth: 2 }, 
+                    label: { color: AURORA.text, fontFamily: 'Jost', fontSize: 11, fontWeight: 600, formatter: '{b}' }, 
+                    labelLine: { lineStyle: { color: AURORA.muted } },
+                    emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 },
+                    data: pieData 
+                }],
+                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+            });
+
+            var tbody = document.querySelector('#table-expenses tbody');
+            var rHtml = [];
+            for(var i=0; i<rows.length; i++) {
+                rHtml.push("<tr><td>" + formatDate(rows[i].dateObj) + "</td><td style='color:#fff; font-weight:600;'>" + rows[i].name + "</td><td>" + rows[i].category + "</td><td style='color:" + AURORA.pink + "; font-weight:700;'>" + formatFullCurrencyINR(rows[i].amount) + "</td></tr>");
+            }
+            tbody.innerHTML = rHtml.join('');
+        }
+
+        function renderVendor(vendorMap) {
+            var vArr = sortMap(vendorMap, 15); 
+            vArr.reverse(); 
+            var names = vArr.map(function(v) { return v.k; });
+            var values = vArr.map(function(v) { return Math.round(v.v); });
+
+            if(vArr.length > 0) { document.getElementById('insight-top-vendor').innerText = vArr[vArr.length-1].k; }
+
+            initEChart('echart-vendors', {
+                tooltip: auroraTooltip({ 
+                    trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } },
+                    formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Net Sales: ' + formatFullCurrencyINR(p[0].value); }
+                }),
+                grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
+                xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
+                yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12 } },
+                series: [{ 
+                    type: 'bar', data: values, barWidth: '55%', 
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: 'rgba(16, 185, 129, 0.15)' },
+                            { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' },
+                            { offset: 1, color: AURORA.emerald }
+                        ]), 
+                        borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)'
+                    }, 
+                    label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} },
+                    emphasis: { itemStyle: { shadowBlur: 20 } }
+                }],
+                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+            });
+        }
+
+        function renderGST(outT, inT, net) {
+            document.getElementById('kpi-gst-out').innerText = formatFullCurrencyINR(outT);
+            document.getElementById('kpi-gst-in').innerText = formatFullCurrencyINR(inT);
+            document.getElementById('kpi-gst-net').innerText = formatFullCurrencyINR(net);
+
+            initEChart('echart-gst', {
+                tooltip: auroraTooltip({ 
+                    trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } },
+                    formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' ' + formatFullCurrencyINR(p[0].value); }
+                }),
+                grid: { left: '3%', right: '4%', bottom: '8%', top: '12%', containLabel: true },
+                xAxis: { type: 'category', data: ['Output GST', 'Input GST (ITC)', 'Net Payable'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12 } },
+                yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
+                series: [{
+                    type: 'bar', barWidth: '45%',
+                    data: [ 
+                        { value: Math.round(outT), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.emerald }, { offset: 1, color: 'rgba(16, 185, 129, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(16, 185, 129, 0.45)' }}, 
+                        { value: Math.round(inT), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.teal }, { offset: 1, color: 'rgba(45, 212, 191, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(45, 212, 191, 0.45)' }}, 
+                        { value: Math.round(net), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.pink }, { offset: 1, color: 'rgba(244, 114, 182, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(244, 114, 182, 0.45)' }} 
+                    ],
+                    label: { show: true, position: 'top', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }
+                }],
+                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+            });
+
+            var taxBurdenPct = outT > 0 ? Math.min(Math.round((net / outT) * 100), 100) : 0;
+            initEChart('gauge-tax', buildGauge(taxBurdenPct, AURORA.amber, AURORA.pink));
+            document.getElementById('gauge-tax-sub').innerText = "Net Payable: " + formatShortCurrency(net) + " | Output: " + formatShortCurrency(outT);
+        }
+
+        function renderItems(itemMap) {
+            var iArr = Object.keys(itemMap).map(function(k) { return { k: k, v: itemMap[k] }; }).filter(function(i) { return i.v > 0; });
+            iArr.sort(function(a, b) { return b.v - a.v; });
+            
+            var fast = iArr.slice(0, 15).reverse();
+            var slow = iArr.slice().reverse().slice(0, 15);
+
+            var commonOpts = function(gradient, dataArr, shadowCol) {
+                return {
+                    tooltip: auroraTooltip({ trigger: 'axis', formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Qty: ' + p[0].value + ' units'; } }),
+                    grid: { left: '2%', right: '12%', bottom: '2%', top: '2%', containLabel: true },
+                    xAxis: { type: 'value', splitLine: { show: false }, axisLabel: { show: false }, axisLine: {show: false}, axisTick: {show: false} },
+                    yAxis: { type: 'category', data: dataArr.map(function(d){return d.k;}), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, width: 130, overflow: 'truncate', fontFamily: 'Jost', fontSize: 12, fontWeight: 600 } },
+                    series: [{ 
+                        type: 'bar', data: dataArr.map(function(d){return Math.round(d.v);}), barWidth: '65%', 
+                        itemStyle: { color: gradient, borderRadius: [0, 6, 6, 0], shadowBlur: 10, shadowColor: shadowCol }, 
+                        label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return p.value + " U";} },
+                        emphasis: { itemStyle: { shadowBlur: 18 } }
+                    }],
+                    animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+                };
+            };
+
+            var gradFast = new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: 'rgba(16, 185, 129, 0.15)' },
+                { offset: 0.5, color: 'rgba(52, 211, 153, 0.8)' },
+                { offset: 1, color: AURORA.emerald }
+            ]);
+            var gradSlow = new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: 'rgba(167, 139, 250, 0.15)' },
+                { offset: 0.5, color: 'rgba(244, 114, 182, 0.8)' },
+                { offset: 1, color: AURORA.pink }
+            ]);
+
+            initEChart('echart-fast-items', commonOpts(gradFast, fast, 'rgba(16, 185, 129, 0.35)'));
+            initEChart('echart-slow-items', commonOpts(gradSlow, slow, 'rgba(244, 114, 182, 0.35)'));
+        }
+
+        function renderCustomers(custMap) {
+            var cArr = [];
+            var keys = Object.keys(custMap);
+            for(var i=0; i<keys.length; i++) {
+                cArr.push({ k: keys[i], v: custMap[keys[i]] });
+            }
+            cArr.sort(function(a, b) { return b.v.spend - a.v.spend; });
+            cArr = cArr.slice(0, 20);
+
+            var tbody = document.querySelector('#table-customers tbody');
+            var rHtml = [];
+            for(var j=0; j<cArr.length; j++) {
+                var c = cArr[j];
+                rHtml.push("<tr><td style='font-weight:700; color:#fff;'><i class='fa-solid fa-user-circle me-2' style='color:" + AURORA.violet + ";'></i>" + c.k + "</td><td>" + c.v.bills.size + "</td><td>" + formatQty(c.v.qty) + "</td><td style='color:" + AURORA.emerald + "; font-weight:800;'>" + formatFullCurrencyINR(c.v.spend) + "</td></tr>");
+            }
+            tbody.innerHTML = rHtml.join('');
+        }
+
+        function renderDaily(kpis, fSales, custMap) {
+            document.getElementById('daily-sales').innerText = formatFullCurrencyINR(kpis.netSales); 
+            document.getElementById('daily-gp').innerText = formatFullCurrencyINR(kpis.gp); 
+            document.getElementById('daily-cust').innerText = Object.keys(custMap).length; 
+            document.getElementById('daily-items').innerText = fSales.reduce(function(s, r) { return s + r.qty; }, 0);
+            
+            var tbody = document.querySelector('#table-daily tbody');
+            var rHtml = [];
+            for(var i=0; i<fSales.length; i++) {
+                var r = fSales[i];
+                rHtml.push("<tr><td>" + r.billNo + "</td><td>" + r.customer + "</td><td>" + r.item + "</td><td>" + r.qty + "</td><td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(r.netSales) + "</td><td style='color:" + AURORA.violet + "; font-weight:700;'>" + formatFullCurrencyINR(r.grossProfit) + "</td></tr>");
+            }
+            tbody.innerHTML = rHtml.join('');
+        }
+    </script>
+</body>
+</html>
