@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
@@ -30,6 +32,8 @@
             --aurora-pink: #F472B6;
             --aurora-blue: #60A5FA;
             --aurora-amber: #FBBF24;
+            --aurora-red: #EF4444;
+            --aurora-black-status: #475569;
 
             --glass-bg: rgba(15, 23, 42, 0.45);
             --glass-bg-strong: rgba(15, 23, 42, 0.7);
@@ -44,6 +48,20 @@
         }
 
         * { box-sizing: border-box; }
+
+        /* ===== AURORA CUSTOM SCROLLBAR (global) ===== */
+        *::-webkit-scrollbar { width: 8px; height: 8px; }
+        *::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.4); border-radius: 10px; }
+        *::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, var(--aurora-violet), var(--aurora-green)); 
+            border-radius: 10px; 
+            border: 1px solid rgba(2, 6, 23, 0.6);
+        }
+        *::-webkit-scrollbar-thumb:hover { 
+            background: linear-gradient(180deg, var(--aurora-emerald), var(--aurora-purple)); 
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+        * { scrollbar-width: thin; scrollbar-color: var(--aurora-violet) rgba(2, 6, 23, 0.4); }
 
         body { 
             font-family: 'Jost', sans-serif; 
@@ -79,7 +97,7 @@
         @keyframes floatB { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-100px, -80px) scale(1.15); } }
         @keyframes floatC { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-60px, 80px) scale(0.9); } 66% { transform: translate(70px, -50px) scale(1.1); } }
 
-        h1, h2, h3, h4, h5, h6, th, td, button, input, label, span, p, a, div { font-family: 'Jost', sans-serif !important; }
+        h1, h2, h3, h4, h5, h6, th, td, button, input, label, span, p, a, div, select { font-family: 'Jost', sans-serif !important; }
 
         .maintenance-banner {
             display: none; width: 100%; background: linear-gradient(90deg, #EF4444, #F59E0B);
@@ -281,11 +299,7 @@
         .notif-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.3;}
         .notif-time { font-size: 11px; color: var(--text-muted); font-weight: 500;}
 
-        .notif-list::-webkit-scrollbar { width: 4px; }
-        .notif-list::-webkit-scrollbar-track { background: transparent; }
-        .notif-list::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.2); border-radius: 10px; }
-
-        /* ===== AUTO-REFRESH SYNC INDICATOR ===== */
+        /* ===== SYNC INDICATOR ===== */
         .sync-indicator {
             display: flex; align-items: center; gap: 8px;
             padding: 6px 12px; border-radius: 100px;
@@ -295,46 +309,14 @@
             color: var(--aurora-emerald); cursor: pointer;
             transition: 0.3s ease;
         }
-        .sync-indicator:hover {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: rgba(16, 185, 129, 0.4);
-            transform: translateY(-1px);
-        }
-        .sync-indicator .sync-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: var(--aurora-emerald);
-            box-shadow: 0 0 8px var(--aurora-emerald);
-            animation: syncPulse 2s infinite;
-        }
-        .sync-indicator.syncing .sync-dot {
-            background: var(--aurora-amber);
-            box-shadow: 0 0 8px var(--aurora-amber);
-            animation: syncSpin 0.8s linear infinite;
-        }
-        .sync-indicator.syncing {
-            background: rgba(251, 191, 36, 0.08);
-            border-color: rgba(251, 191, 36, 0.25);
-            color: var(--aurora-amber);
-        }
-        .sync-indicator.error {
-            background: rgba(244, 114, 182, 0.08);
-            border-color: rgba(244, 114, 182, 0.25);
-            color: var(--aurora-pink);
-        }
-        .sync-indicator.error .sync-dot {
-            background: var(--aurora-pink);
-            box-shadow: 0 0 8px var(--aurora-pink);
-            animation: none;
-        }
-        @keyframes syncPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.85); }
-        }
-        @keyframes syncSpin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(0.7); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
+        .sync-indicator:hover { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); transform: translateY(-1px); }
+        .sync-indicator .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--aurora-emerald); box-shadow: 0 0 8px var(--aurora-emerald); animation: syncPulse 2s infinite; }
+        .sync-indicator.syncing .sync-dot { background: var(--aurora-amber); box-shadow: 0 0 8px var(--aurora-amber); animation: syncSpin 0.8s linear infinite; }
+        .sync-indicator.syncing { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.25); color: var(--aurora-amber); }
+        .sync-indicator.error { background: rgba(244, 114, 182, 0.08); border-color: rgba(244, 114, 182, 0.25); color: var(--aurora-pink); }
+        .sync-indicator.error .sync-dot { background: var(--aurora-pink); box-shadow: 0 0 8px var(--aurora-pink); animation: none; }
+        @keyframes syncPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+        @keyframes syncSpin { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(0.7); } 100% { transform: rotate(360deg) scale(1); } }
 
         .content-area { padding: 32px; position: relative; z-index: 1; }
 
@@ -351,12 +333,15 @@
             padding: 8px 14px; border-radius: 12px; border: 1px solid var(--glass-border); 
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
-        .date-input { 
+        .date-input, .ims-select { 
             background: rgba(2,6,23,0.45); border: 1px solid rgba(255,255,255,0.08); color: #fff; 
             padding: 9px 14px; border-radius: 8px; font-weight: 600; font-size: 13.5px; outline: none; transition: 0.3s; 
         }
-        .date-input:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .date-input:focus, .ims-select:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
         .date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; cursor: pointer; }
+        .ims-select { cursor: pointer; appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; }
+        .ims-select option { background: var(--bg-soft); color: #fff; }
+
         .btn-apply { 
             background: linear-gradient(135deg, var(--aurora-green), var(--aurora-emerald)); 
             color: var(--bg-base); border: none; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; 
@@ -389,18 +374,9 @@
         .kpi-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 17px; }
         
         .kpi-value { font-size: 32px; font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -1px; margin-bottom: 8px; transition: opacity 0.4s ease; }
-        .kpi-value.aurora-gradient {
-            background: linear-gradient(135deg, var(--aurora-emerald), var(--aurora-violet));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .kpi-value.value-flash {
-            animation: valueFlash 0.6s ease;
-        }
-        @keyframes valueFlash {
-            0% { color: #fff; }
-            50% { color: var(--aurora-emerald); text-shadow: 0 0 14px rgba(52, 211, 153, 0.6); }
-            100% { color: #fff; }
-        }
+        .kpi-value.aurora-gradient { background: linear-gradient(135deg, var(--aurora-emerald), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .kpi-value.value-flash { animation: valueFlash 0.6s ease; }
+        @keyframes valueFlash { 0% { color: #fff; } 50% { color: var(--aurora-emerald); text-shadow: 0 0 14px rgba(52, 211, 153, 0.6); } 100% { color: #fff; } }
         .kpi-trend { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .kpi-trend.positive { color: var(--aurora-emerald); }
         .kpi-trend.negative { color: var(--aurora-pink); }
@@ -414,11 +390,7 @@
         .insight-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 700; }
         .insight-data { font-size: 15px; font-weight: 800; color: var(--text-highlight); }
 
-        .table-wrapper { flex-grow: 1; overflow-x: auto; overflow-y: auto; max-height: 520px; border-radius: 10px; }
-        .table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
-        .table-wrapper::-webkit-scrollbar-track { background: rgba(2,6,23,0.3); border-radius: 10px; }
-        .table-wrapper::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.25); border-radius: 10px; }
-        .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.45); }
+        .table-wrapper { flex-grow: 1; overflow-x: auto; overflow-y: auto; max-height: 600px; border-radius: 10px; }
 
         .erp-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
         .erp-table th { 
@@ -451,6 +423,181 @@
         .gauge-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; text-align: center; }
         .gauge-sub { font-size: 11.5px; color: var(--text-muted); margin-top: -10px; opacity: 0.7; text-align: center; }
         .gauge-canvas { width: 100%; height: 200px; }
+
+        /* ============================================================
+           IMS STATUS PILLS & CARDS
+           ============================================================ */
+        .ims-status-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 18px 20px;
+            transition: all 0.3s ease; position: relative; overflow: hidden; cursor: pointer;
+        }
+        .ims-status-card::after {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--accent, var(--aurora-green));
+        }
+        .ims-status-card:hover { transform: translateY(-3px); border-color: var(--glass-border-hover); }
+        .ims-status-card.active-filter {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent), 0 8px 28px rgba(0,0,0,0.4);
+            transform: translateY(-3px);
+        }
+        .ims-status-card.active-filter::after { width: 6px; }
+
+        /* IMS Password Lock Screen */
+        .ims-lock-screen {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 500px; padding: 40px 20px;
+        }
+        .ims-lock-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 44px 38px; width: 100%; max-width: 420px; text-align: center;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            position: relative; overflow: hidden;
+        }
+        .ims-lock-box::before {
+            content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 1px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), transparent 50%, rgba(16, 185, 129, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+        .ims-lock-icon {
+            width: 70px; height: 70px; border-radius: 18px; margin: 0 auto 22px;
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: var(--bg-base);
+            box-shadow: 0 8px 28px rgba(16, 185, 129, 0.35);
+        }
+        .ims-lock-box h3 {
+            font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 10px;
+        }
+        .ims-lock-box p {
+            font-size: 13.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;
+        }
+        .ims-lock-error {
+            color: var(--aurora-pink); font-size: 13px; font-weight: 700; margin-top: 10px; min-height: 18px;
+        }
+
+        /* IMS Filter Active Banner */
+        .ims-filter-banner {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(167, 139, 250, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px; padding: 12px 18px; margin-bottom: 20px;
+            font-size: 13.5px; font-weight: 600; color: var(--text-soft);
+        }
+        .ims-filter-banner b { color: #fff; }
+        .ims-clear-btn {
+            background: rgba(244, 114, 182, 0.12); color: var(--aurora-pink);
+            border: 1px solid rgba(244, 114, 182, 0.25); border-radius: 8px;
+            padding: 6px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+            transition: 0.2s;
+        }
+        .ims-clear-btn:hover { background: rgba(244, 114, 182, 0.2); transform: translateY(-1px); }
+
+        .ims-pdf-btn {
+            background: linear-gradient(135deg, var(--aurora-pink), var(--aurora-amber));
+            color: #fff; border: none; border-radius: 8px;
+            padding: 7px 14px; font-size: 12px; font-weight: 800; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
+            box-shadow: 0 4px 14px rgba(244, 114, 182, 0.3);
+        }
+        .ims-pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(244, 114, 182, 0.45); }
+
+        /* IMS table card — color tint when a status filter is active */
+        .ims-table-card { transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
+        .ims-table-card.tint-purple { background: rgba(139, 92, 246, 0.10); border-color: rgba(139, 92, 246, 0.35); box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12); }
+        .ims-table-card.tint-green  { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 8px 32px rgba(16, 185, 129, 0.12); }
+        .ims-table-card.tint-yellow { background: rgba(251, 191, 36, 0.10); border-color: rgba(251, 191, 36, 0.35); box-shadow: 0 8px 32px rgba(251, 191, 36, 0.12); }
+        .ims-table-card.tint-red    { background: rgba(239, 68, 68, 0.10);  border-color: rgba(239, 68, 68, 0.35);  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.12); }
+        .ims-table-card.tint-black  { background: rgba(71, 85, 105, 0.18);  border-color: rgba(71, 85, 105, 0.5);   box-shadow: 0 8px 32px rgba(71, 85, 105, 0.15); }
+        .ims-status-card .label { 
+            font-size: 11px; font-weight: 800; color: var(--text-muted); 
+            text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .ims-status-card .label .dot {
+            width: 9px; height: 9px; border-radius: 50%; background: var(--accent); 
+            box-shadow: 0 0 8px var(--accent);
+        }
+        .ims-status-card .count { font-size: 30px; font-weight: 800; color: #fff; line-height: 1; }
+        .ims-status-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+        /* Status badges in table */
+        .status-pill-ims {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 100px;
+            font-size: 11px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;
+        }
+        .status-pill-ims .dot {
+            width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .status-purple { background: rgba(139, 92, 246, 0.12); color: #C4B5FD; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .status-green { background: rgba(16, 185, 129, 0.12); color: var(--aurora-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-yellow { background: rgba(251, 191, 36, 0.12); color: var(--aurora-amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .status-red { background: rgba(239, 68, 68, 0.12); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-black { background: rgba(71, 85, 105, 0.25); color: #94A3B8; border: 1px solid rgba(71, 85, 105, 0.5); }
+
+        /* Reorder priority list */
+        .reorder-priority-list { 
+            list-style: none; padding: 0; margin: 0; 
+            max-height: 480px; overflow-y: auto;
+        }
+        .reorder-priority-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px; margin-bottom: 8px;
+            background: rgba(2, 6, 23, 0.4); border-radius: 12px;
+            border-left: 3px solid var(--accent, var(--aurora-red));
+            transition: all 0.2s ease;
+        }
+        .reorder-priority-item:hover { background: rgba(2, 6, 23, 0.6); transform: translateX(4px); }
+        .reorder-priority-item .rank {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--aurora-pink), var(--aurora-amber));
+            color: #fff; font-weight: 800; font-size: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; box-shadow: 0 4px 12px rgba(244, 114, 182, 0.3);
+        }
+        .reorder-priority-item .info { flex: 1; min-width: 0; }
+        .reorder-priority-item .name { 
+            font-size: 13.5px; font-weight: 700; color: #fff; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .reorder-priority-item .meta { 
+            font-size: 11.5px; color: var(--text-muted); margin-top: 3px; font-weight: 500;
+        }
+        .reorder-priority-item .action {
+            text-align: right; flex-shrink: 0;
+        }
+        .reorder-priority-item .action .qty {
+            font-size: 18px; font-weight: 800; color: var(--aurora-emerald);
+            line-height: 1;
+        }
+        .reorder-priority-item .action .label-small {
+            font-size: 10px; color: var(--text-muted); margin-top: 4px; 
+            text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+        }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--aurora-emerald); opacity: 0.5; }
+        .empty-state h4 { font-size: 16px; font-weight: 700; color: var(--text-highlight); margin-bottom: 8px; }
+        .empty-state p { font-size: 13px; line-height: 1.6; }
+
+        .data-source-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 6px;
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .data-source-badge.live { background: rgba(16, 185, 129, 0.1); color: var(--aurora-emerald); border: 1px solid rgba(16, 185, 129, 0.25); }
+        .data-source-badge.mock { background: rgba(251, 191, 36, 0.1); color: var(--aurora-amber); border: 1px solid rgba(251, 191, 36, 0.25); }
     </style>
 </head>
 <body>
@@ -526,6 +673,7 @@
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-vendor', this)"><i class="fa-solid fa-truck-fast"></i> Vendor Performance</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-gst', this)"><i class="fa-solid fa-file-invoice-dollar"></i> GST Overview</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-items', this)"><i class="fa-solid fa-boxes-stacked"></i> Item Movements</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-inventory', this)"><i class="fa-solid fa-warehouse"></i> Inventory (IMS)</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-customers', this)"><i class="fa-solid fa-users"></i> Customer CRM</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-daily', this)"><i class="fa-solid fa-calendar-day"></i> Daily Report</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-purchase', this)"><i class="fa-solid fa-cart-shopping"></i> Purchase Log</a></li>
@@ -569,7 +717,7 @@
                 <div class="filter-header">
                     <div>
                         <h1 class="page-title" id="dynamic-title">Date Overview</h1>
-                        <p class="page-subtitle">Real-time Ikxari metrics — auto-syncs every 60 seconds</p>
+                        <p class="page-subtitle" id="dynamic-subtitle">Real-time Ikxari metrics — auto-syncs every 60 seconds</p>
                     </div>
                     
                     <div class="date-picker-group" id="range-picker">
@@ -584,6 +732,26 @@
                         <i class="fa-regular fa-calendar" style="color: var(--text-muted); font-size: 14px;"></i>
                         <input type="date" id="date-single" class="date-input">
                         <button class="btn-apply" onclick="applyFilters()">Generate Day</button>
+                    </div>
+
+                    <!-- IMS Specific Controls -->
+                    <div class="date-picker-group" id="ims-controls" style="display:none;">
+                        <i class="fa-solid fa-sliders" style="color: var(--text-muted); font-size: 14px;"></i>
+                        <select id="ims-period" class="ims-select" onchange="applyFilters()">
+                            <option value="30">Last 30 days avg</option>
+                            <option value="90">Last 90 days avg</option>
+                            <option value="365">Last 1 year avg</option>
+                        </select>
+                        <select id="ims-safety" class="ims-select" onchange="applyFilters()">
+                            <option value="1.2">Safety 1.2x</option>
+                            <option value="1.5">Safety 1.5x</option>
+                            <option value="2.0">Safety 2.0x</option>
+                        </select>
+                        <select id="ims-leadtime" class="ims-select" onchange="applyFilters()">
+                            <option value="10">Lead 10d</option>
+                            <option value="15">Lead 15d</option>
+                            <option value="20">Lead 20d</option>
+                        </select>
                     </div>
                 </div>
 
@@ -674,6 +842,82 @@
                     </div>
                 </div>
 
+                <!-- ============================================================
+                     IMS VIEW — Inventory Management System
+                     ============================================================ -->
+                <div id="view-inventory" class="view-section">
+
+                    <!-- ===== PASSWORD GATE (shows when locked) ===== -->
+                    <div id="ims-lock-screen" class="ims-lock-screen">
+                        <div class="ims-lock-box">
+                            <div class="ims-lock-icon"><i class="fa-solid fa-lock"></i></div>
+                            <h3>Inventory Locked</h3>
+                            <p>This module holds sensitive stock & capital data. Enter the access password to continue.</p>
+                            <input type="password" id="ims-password" class="admin-input" placeholder="Enter access password" onkeypress="if(event.key==='Enter') unlockIMS()">
+                            <button class="admin-btn" onclick="unlockIMS()"><i class="fa-solid fa-unlock me-2"></i>Unlock Inventory</button>
+                            <div id="ims-lock-error" class="ims-lock-error"></div>
+                        </div>
+                    </div>
+
+                    <!-- ===== ACTUAL IMS CONTENT (hidden until unlocked) ===== -->
+                    <div id="ims-content" style="display:none;">
+
+                    <!-- 5 Clickable Status Filter Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-2"><div class="ims-status-card" data-status="4" style="--accent: #8B5CF6;" onclick="filterImsByStatus(4, this)"><div class="label"><span class="dot"></span> Overstock</div><div class="count" id="ims-count-purple">0</div><div class="sub">≥ 100% · click to filter</div></div></div>
+                        <div class="col-6 col-md-2"><div class="ims-status-card" data-status="3" style="--accent: #10B981;" onclick="filterImsByStatus(3, this)"><div class="label"><span class="dot"></span> Healthy</div><div class="count" id="ims-count-green">0</div><div class="sub">66–99% · click to filter</div></div></div>
+                        <div class="col-6 col-md-2"><div class="ims-status-card" data-status="2" style="--accent: #FBBF24;" onclick="filterImsByStatus(2, this)"><div class="label"><span class="dot"></span> Watch</div><div class="count" id="ims-count-yellow">0</div><div class="sub">33–65% · click to filter</div></div></div>
+                        <div class="col-6 col-md-2"><div class="ims-status-card" data-status="1" style="--accent: #EF4444;" onclick="filterImsByStatus(1, this)"><div class="label"><span class="dot"></span> Critical</div><div class="count" id="ims-count-red">0</div><div class="sub">10–32% · click to filter</div></div></div>
+                        <div class="col-12 col-md-4"><div class="ims-status-card" data-status="0" style="--accent: #475569;" onclick="filterImsByStatus(0, this)"><div class="label"><span class="dot"></span> Stock-Out · Capital Locked</div><div class="count" id="ims-count-black">0</div><div class="sub">0% · Total Locked: <span id="ims-capital-locked" style="color: var(--aurora-emerald); font-weight: 800;">₹0</span></div></div></div>
+                    </div>
+
+                    <!-- Filter active banner -->
+                    <div id="ims-filter-banner" class="ims-filter-banner" style="display:none;">
+                        <span><i class="fa-solid fa-filter me-2"></i>Showing: <b id="ims-filter-label">All</b></span>
+                        <button onclick="clearImsFilter()" class="ims-clear-btn"><i class="fa-solid fa-xmark me-1"></i>Clear filter · show all</button>
+                    </div>
+
+                    <!-- Reorder Section + Donut Row -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-xl-7">
+                            <div class="glass-card">
+                                <div class="chart-title">
+                                    <span><i class="fa-solid fa-cart-arrow-down me-2" style="color: var(--aurora-amber);"></i> Items To Re-Order Now</span>
+                                    <span style="display:flex; align-items:center; gap:10px;">
+                                        <span id="ims-data-source" class="data-source-badge mock"><i class="fa-solid fa-flask"></i> Mock</span>
+                                        <button class="ims-pdf-btn" onclick="downloadReorderPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                                    </span>
+                                </div>
+                                <ul class="reorder-priority-list" id="ims-reorder-list"></ul>
+                            </div>
+                        </div>
+                        <div class="col-12 col-xl-5">
+                            <div class="glass-card">
+                                <div class="chart-title">Stock Health Distribution</div>
+                                <div id="echart-ims-donut" class="echart-container" style="min-height: 320px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Top 50 Table -->
+                    <div class="glass-card ims-table-card" id="ims-table-card">
+                        <div class="chart-title">
+                            <span>Top 50 Capital-Heavy Items <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Sorted by Landing Cost</span></span>
+                        </div>
+                        <div class="table-wrapper" style="max-height: 700px;">
+                            <table class="erp-table" id="table-ims">
+                                <thead><tr>
+                                    <th>#</th><th>Item</th><th>Landing Cost</th><th>Avg Daily Sale</th>
+                                    <th>Current Stock</th><th>Max Level</th><th>Stock %</th><th>Status</th><th>Reorder Qty</th>
+                                </tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    </div><!-- /ims-content -->
+                </div>
+
                 <div id="view-customers" class="view-section">
                     <div class="glass-card">
                         <div class="chart-title">Premium Customer Matrices</div>
@@ -705,10 +949,21 @@
                 </div>
 
                 <div id="view-purchase" class="view-section">
-                    <div class="glass-card" style="justify-content: center; align-items: center; text-align: center; padding: 100px 20px;">
-                        <i class="fa-solid fa-code-pull-request" style="font-size: 60px; color: var(--aurora-green); margin-bottom: 24px; filter: drop-shadow(0 0 18px rgba(16, 185, 129, 0.5));"></i>
-                        <h2 class="fw-bold mb-3" style="font-size: 28px; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Purchase Module Offline</h2>
-                        <p class="text-muted" style="font-size: 15px; max-width: 500px;">The Purchase Log architecture is currently under scheduled maintenance.<br>It will be fully integrated in the next core software update.</p>
+                    <div class="glass-card">
+                        <div class="chart-title">
+                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From As_EOM_Data</span></span>
+                            <span id="purchase-count" style="font-size: 12px; color: var(--text-muted); font-weight: 600;"></span>
+                        </div>
+                        <div class="table-wrapper" style="max-height: 680px;">
+                            <table class="erp-table" id="table-purchase">
+                                <thead><tr>
+                                    <th>Date</th><th>Item</th><th>Distributor</th>
+                                    <th>Purchase Price</th><th>Received</th><th>Sold</th>
+                                    <th>Landing Cost</th><th>Selling</th><th>MRP</th><th>Closing Stock</th>
+                                </tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -717,30 +972,32 @@
     </div>
 
     <script>
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║   ✅ CONFIG READY + AUTO-REFRESH 60 SEC                     ║
-    // ╚══════════════════════════════════════════════════════════════╝
-    
     const IKXARI_CONFIG = {
         API_URL: "https://script.google.com/macros/s/AKfycbzoE6EVIz9gEtnoBdqG3KB9_72YYNTgpTGZCsbDuOsj-5Z2Erq5vL6aaoRaPvTLxknpGw/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
-        AUTO_REFRESH_INTERVAL_MS: 60000  // 60 seconds — change here if needed
+        AUTO_REFRESH_INTERVAL_MS: 60000
     };
-
-    // ═══════════════════════════════════════════════════════════════
 
         var rawSalesDataset = [];
         var rawExpensesDataset = [];
+        var rawEomItems = [];
+        var rawPurchaseLog = [];
+        var eomFound = false;
         var globalCurrentActiveView = 'view-overview';
         var echartsInstances = {};
         var autoRefreshTimer = null;
         var lastSyncTimestamp = 0;
         var lastSalesCount = 0;
+        var imsUnlocked = false;
+        var imsStatusFilter = null;   // null = all, else 0-4
+        var imsTop50Cache = [];        // cache last computed top50 for filtering
+        var imsReorderCache = [];      // cache reorder items for PDF export
         var clockTickerTimer = null;
 
         var AURORA = {
             green: '#10B981', emerald: '#34D399', violet: '#A78BFA', purple: '#8B5CF6',
             teal: '#2DD4BF', pink: '#F472B6', blue: '#60A5FA', amber: '#FBBF24',
+            red: '#EF4444', black: '#475569',
             text: '#CBD5E1', muted: '#94A3B8',
             grid: 'rgba(167, 139, 250, 0.06)',
             tooltipBg: 'rgba(15, 23, 42, 0.95)',
@@ -752,46 +1009,29 @@
             document.getElementById('admin-login-box').style.display = 'block';
             document.getElementById('admin-controls-box').style.display = 'none';
         }
-
         function closeAdmin() {
             document.getElementById('admin-modal-overlay').classList.remove('show');
             document.getElementById('admin-password').value = "";
         }
-
         function verifyAdmin() {
             var pass = document.getElementById('admin-password').value;
             if(pass === "ikxariadmin") {
                 document.getElementById('admin-login-box').style.display = 'none';
                 document.getElementById('admin-controls-box').style.display = 'block';
-            } else {
-                alert("Incorrect Password!");
-            }
+            } else { alert("Incorrect Password!"); }
         }
-
         function saveAdminSettings() {
             var pass = document.getElementById('admin-password').value;
             var notif = document.getElementById('admin-notif-input').value;
             var maintMsg = document.getElementById('admin-maint-input').value;
             var maintActive = document.getElementById('admin-maint-toggle').checked;
-            
             fetch(IKXARI_CONFIG.API_URL, {
                 method: 'POST', mode: 'cors', redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    token: IKXARI_CONFIG.API_TOKEN, action: 'saveAdmin',
-                    pass: pass, notifMsg: notif, maintMsg: maintMsg, maintStatus: maintActive
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                if(res.success) {
-                    alert(res.msg + "\nPlease reload the dashboard to see changes.");
-                    closeAdmin();
-                } else {
-                    alert(res.msg || "Save failed");
-                }
-            })
-            .catch(function(err) { alert("Network error: " + err); });
+                body: JSON.stringify({ token: IKXARI_CONFIG.API_TOKEN, action: 'saveAdmin', pass: pass, notifMsg: notif, maintMsg: maintMsg, maintStatus: maintActive })
+            }).then(function(r) { return r.json(); }).then(function(res) {
+                if(res.success) { alert(res.msg + "\nPlease reload."); closeAdmin(); } else { alert(res.msg || "Save failed"); }
+            }).catch(function(err) { alert("Network error: " + err); });
         }
 
         function toggleNotifications(event) {
@@ -800,48 +1040,35 @@
             dd.classList.toggle('show');
             document.getElementById('notif-dot').style.display = 'none'; 
         }
-
         document.addEventListener('click', function(e) {
             var icon = document.getElementById('bell-icon');
             if (icon && !icon.contains(e.target)) {
                 var dd = document.getElementById('notif-dropdown');
-                if (dd && dd.classList.contains('show')) {
-                    dd.classList.remove('show');
-                }
+                if (dd && dd.classList.contains('show')) { dd.classList.remove('show'); }
             }
         });
 
-        function buildNotifications(res, isAutoRefresh) {
+        function buildNotifications(res) {
             var notifList = document.getElementById('notif-list');
             var notifDot = document.getElementById('notif-dot');
-            
             var storedSales = localStorage.getItem('ikxari_sales_count');
             var storedCols = localStorage.getItem('ikxari_col_count');
-            
             var currentSales = res.sales.length;
             var currentCols = res.totalCols || 0;
             var latestSale = res.latestSale || {};
-            
             var newNotifs = [];
-            
             if (res.adminNotif && res.adminNotif.trim() !== "") {
                 newNotifs.push({ title: "Admin Announcement", desc: res.adminNotif, icon: "fa-bullhorn", color: AURORA.pink, time: "Now" });
             }
-
             if (storedCols && currentCols > parseInt(storedCols)) {
                 newNotifs.push({ title: "Database Structure Updated", desc: "New column detected.", icon: "fa-table-columns", color: AURORA.teal, time: "System" });
             }
-            
             if (storedSales && currentSales > parseInt(storedSales)) {
                 var diff = currentSales - parseInt(storedSales);
-                var clientName = latestSale.customer || "Unknown Client";
-                var billName = latestSale.billNo || "N/A";
-                newNotifs.push({ title: diff + " New Row(s) Added", desc: "Latest: " + clientName + " (" + billName + ")", icon: "fa-plus", color: AURORA.violet, time: "System" });
+                newNotifs.push({ title: diff + " New Row(s) Added", desc: "Latest: " + (latestSale.customer || "Unknown") + " (" + (latestSale.billNo || "N/A") + ")", icon: "fa-plus", color: AURORA.violet, time: "System" });
             }
-
             localStorage.setItem('ikxari_sales_count', currentSales);
             localStorage.setItem('ikxari_col_count', currentCols);
-
             if (newNotifs.length > 0) {
                 notifDot.style.display = 'block';
                 var htmlStr = '';
@@ -861,27 +1088,18 @@
             var filterString = searchInput.value.toLowerCase();
             var activeViewDiv = document.querySelector('.view-section.active');
             if (!activeViewDiv) return;
-            
             var targetTableRows = activeViewDiv.querySelectorAll('.erp-table tbody tr');
             for (var i = 0; i < targetTableRows.length; i++) {
                 var rowDataText = targetTableRows[i].textContent || targetTableRows[i].innerText;
-                if (rowDataText.toLowerCase().indexOf(filterString) > -1) {
-                    targetTableRows[i].style.display = "";
-                } else {
-                    targetTableRows[i].style.display = "none";
-                }
+                targetTableRows[i].style.display = (rowDataText.toLowerCase().indexOf(filterString) > -1) ? "" : "none";
             }
         }
-
         function resetGlobalSearch() {
-            var searchInput = document.getElementById("global-search");
-            if(searchInput) { searchInput.value = ""; performGlobalSearch(); }
+            var s = document.getElementById("global-search");
+            if(s) { s.value = ""; performGlobalSearch(); }
         }
 
-        function formatFullCurrencyINR(numericValue) {
-            var num = parseFloat(numericValue) || 0;
-            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
-        }
+        function formatFullCurrencyINR(v) { var n = parseFloat(v) || 0; return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n); }
         function formatShortCurrency(val) {
             var num = parseFloat(val) || 0;
             if (Math.abs(num) >= 100000) return "₹" + (num / 100000).toFixed(2) + "L";
@@ -890,108 +1108,68 @@
         }
         function formatQty(val) { return Math.round(val) + " U"; }
         function formatDate(ms) { return new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
-        
         function sortMap(obj, limit) {
             var arr = Object.keys(obj).map(function(k) { return { k: k, v: obj[k] }; });
             arr.sort(function(a, b) { return b.v - a.v; });
             return arr.slice(0, limit);
         }
 
-        // ====== SYNC INDICATOR HELPERS ======
         function setSyncState(state, customText) {
             var indicator = document.getElementById('sync-indicator');
             var text = document.getElementById('sync-text');
             indicator.classList.remove('syncing', 'error');
-            
-            if (state === 'syncing') {
-                indicator.classList.add('syncing');
-                text.innerText = customText || 'Syncing…';
-            } else if (state === 'error') {
-                indicator.classList.add('error');
-                text.innerText = customText || 'Sync failed · Retrying';
-            } else {
-                text.innerText = customText || 'Live · Just synced';
-            }
+            if (state === 'syncing') { indicator.classList.add('syncing'); text.innerText = customText || 'Syncing…'; }
+            else if (state === 'error') { indicator.classList.add('error'); text.innerText = customText || 'Sync failed · Retrying'; }
+            else { text.innerText = customText || 'Live · Just synced'; }
         }
-
         function updateSyncClock() {
             if (lastSyncTimestamp === 0) return;
             var indicator = document.getElementById('sync-indicator');
             if (indicator.classList.contains('syncing') || indicator.classList.contains('error')) return;
-            
             var secAgo = Math.floor((Date.now() - lastSyncTimestamp) / 1000);
             var text = document.getElementById('sync-text');
-            
-            if (secAgo < 5) {
-                text.innerText = 'Live · Just synced';
-            } else if (secAgo < 60) {
-                text.innerText = 'Live · ' + secAgo + 's ago';
-            } else {
-                var minAgo = Math.floor(secAgo / 60);
-                text.innerText = 'Live · ' + minAgo + 'm ago';
-            }
+            if (secAgo < 5) { text.innerText = 'Live · Just synced'; }
+            else if (secAgo < 60) { text.innerText = 'Live · ' + secAgo + 's ago'; }
+            else { text.innerText = 'Live · ' + Math.floor(secAgo / 60) + 'm ago'; }
         }
-
         function startSyncClockTicker() {
             if (clockTickerTimer) clearInterval(clockTickerTimer);
             clockTickerTimer = setInterval(updateSyncClock, 5000);
         }
 
-        // ====== MAIN DATA FETCH ======
         function fetchDashboardData(isAutoRefresh) {
             if (IKXARI_CONFIG.API_URL.indexOf("PASTE_YOUR") !== -1) {
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('config-error').classList.add('show');
                 return;
             }
-            
-            if (isAutoRefresh) {
-                setSyncState('syncing', 'Auto-syncing…');
-            }
-            
+            if (isAutoRefresh) { setSyncState('syncing', 'Auto-syncing…'); }
             var url = IKXARI_CONFIG.API_URL + "?action=dashboard&token=" + encodeURIComponent(IKXARI_CONFIG.API_TOKEN);
-            
             fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' })
                 .then(function(r) { return r.json(); })
                 .then(function(res) {
                     if (res.status === 'error') { 
-                        if (isAutoRefresh) {
-                            setSyncState('error', 'Sync error · Retrying');
-                        } else {
-                            alert("Sync Failed: " + res.message);
-                        }
+                        if (isAutoRefresh) { setSyncState('error', 'Sync error · Retrying'); }
+                        else { alert("Sync Failed: " + res.message); }
                         return; 
                     }
-                    
                     if(res.maintStatus === true) {
-                        var banner = document.getElementById('maintenance-banner');
-                        banner.style.display = 'block';
+                        document.getElementById('maintenance-banner').style.display = 'block';
                         document.getElementById('maintenance-text').innerText = res.maintMsg || "SYSTEM IS UNDER MAINTENANCE";
-                    } else {
-                        document.getElementById('maintenance-banner').style.display = 'none';
-                    }
-
-                    // Check for new rows (compare with last fetched count, NOT localStorage)
+                    } else { document.getElementById('maintenance-banner').style.display = 'none'; }
                     var newRowsAdded = (lastSalesCount > 0 && res.sales.length > lastSalesCount);
                     lastSalesCount = res.sales.length;
-
                     rawSalesDataset = res.sales; 
                     rawExpensesDataset = res.expenses;
-                    
-                    buildNotifications(res, isAutoRefresh);
-                    
+                    rawEomItems = res.eomItems || [];
+                    rawPurchaseLog = res.purchaseLog || [];
+                    eomFound = res.eomFound || false;
+                    buildNotifications(res);
                     lastSyncTimestamp = Date.now();
-                    
                     if (isAutoRefresh) {
-                        if (newRowsAdded) {
-                            setSyncState('live', 'Live · New data!');
-                            // Flash KPIs briefly to show update
-                            flashKpis();
-                        } else {
-                            setSyncState('live', 'Live · Just synced');
-                        }
+                        if (newRowsAdded) { setSyncState('live', 'Live · New data!'); flashKpis(); }
+                        else { setSyncState('live', 'Live · Just synced'); }
                     } else {
-                        // First load
                         var loader = document.getElementById('loader');
                         loader.style.opacity = '0';
                         setTimeout(function() { loader.style.display = 'none'; }, 500);
@@ -999,104 +1177,103 @@
                         startSyncClockTicker();
                         startAutoRefresh();
                     }
-                    
                     applyFilters(); 
                 })
                 .catch(function(err) { 
-                    if (isAutoRefresh) {
-                        setSyncState('error', 'Offline · Retrying');
-                    } else {
-                        alert("Fatal Error connecting to API: " + err); 
-                    }
+                    if (isAutoRefresh) { setSyncState('error', 'Offline · Retrying'); }
+                    else { alert("Fatal Error: " + err); }
                 });
         }
 
         function flashKpis() {
-            var kpiElements = document.querySelectorAll('.kpi-value');
-            kpiElements.forEach(function(el) {
-                el.classList.remove('value-flash');
-                void el.offsetWidth;
-                el.classList.add('value-flash');
+            document.querySelectorAll('.kpi-value').forEach(function(el) {
+                el.classList.remove('value-flash'); void el.offsetWidth; el.classList.add('value-flash');
             });
         }
 
         function startAutoRefresh() {
             if (autoRefreshTimer) clearInterval(autoRefreshTimer);
             autoRefreshTimer = setInterval(function() {
-                // Don't refresh if user is typing in search
                 var searchInput = document.getElementById('global-search');
                 if (searchInput && searchInput.value.length > 0) return;
-                
-                // Don't refresh if admin modal is open
                 if (document.getElementById('admin-modal-overlay').classList.contains('show')) return;
-                
-                // Don't refresh if tab is hidden (saves quota)
                 if (document.hidden) return;
-                
                 fetchDashboardData(true);
             }, IKXARI_CONFIG.AUTO_REFRESH_INTERVAL_MS);
         }
+        function manualRefresh() { fetchDashboardData(true); }
 
-        function manualRefresh() {
-            fetchDashboardData(true);
-        }
-
-        // When tab becomes visible again, do an immediate refresh
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden && lastSyncTimestamp > 0) {
-                var minutesAway = (Date.now() - lastSyncTimestamp) / 60000;
-                if (minutesAway > 1) {
-                    fetchDashboardData(true);
-                }
+                if ((Date.now() - lastSyncTimestamp) / 60000 > 1) { fetchDashboardData(true); }
             }
         });
 
         window.onload = function() {
             var currentDate = new Date();
             var lookbackDate = new Date(2024, 0, 1); 
-            
             document.getElementById('date-start').value = lookbackDate.toISOString().split('T')[0];
             document.getElementById('date-end').value = currentDate.toISOString().split('T')[0];
             document.getElementById('date-single').value = currentDate.toISOString().split('T')[0];
-            
             fetchDashboardData(false);
         };
 
         window.addEventListener('resize', function() {
             for (var key in echartsInstances) {
-                if (echartsInstances.hasOwnProperty(key) && echartsInstances[key]) {
-                    echartsInstances[key].resize();
-                }
+                if (echartsInstances.hasOwnProperty(key) && echartsInstances[key]) { echartsInstances[key].resize(); }
             }
         });
 
         function switchView(targetId, clickedEl) {
             document.querySelectorAll('.nav-link').forEach(function(el) { el.classList.remove('active'); });
             document.querySelectorAll('.view-section').forEach(function(el) { el.classList.remove('active'); });
-            
             document.getElementById(targetId).classList.add('active');
             clickedEl.classList.add('active');
             document.getElementById('dynamic-title').innerText = clickedEl.innerText.trim();
-            
             globalCurrentActiveView = targetId;
             resetGlobalSearch();
 
+            // Picker swap
+            var rangeP = document.getElementById('range-picker');
+            var singleP = document.getElementById('single-picker');
+            var imsCtl = document.getElementById('ims-controls');
+            var subtitle = document.getElementById('dynamic-subtitle');
+
+            rangeP.style.display = 'none'; singleP.style.display = 'none'; imsCtl.style.display = 'none';
+
             if (targetId === 'view-daily') {
-                document.getElementById('range-picker').style.display = 'none';
-                document.getElementById('single-picker').style.display = 'flex';
+                singleP.style.display = 'flex';
+                subtitle.innerText = 'Single-day deep dive — bills and margins';
             } else if (targetId === 'view-purchase') {
-                document.getElementById('range-picker').style.display = 'none';
-                document.getElementById('single-picker').style.display = 'none';
+                subtitle.innerText = 'Purchase log · received, sold & closing stock per item';
+            } else if (targetId === 'view-inventory') {
+                subtitle.innerText = 'Smart stock management · Max-level engine · Reorder priority';
+                // Show IMS controls only if unlocked
+                if (imsUnlocked) {
+                    imsCtl.style.display = 'flex';
+                } else {
+                    imsCtl.style.display = 'none';
+                }
             } else {
-                document.getElementById('range-picker').style.display = 'flex';
-                document.getElementById('single-picker').style.display = 'none';
+                rangeP.style.display = 'flex';
+                subtitle.innerText = 'Real-time Ikxari metrics — auto-syncs every 60 seconds';
             }
-            
             setTimeout(applyFilters, 50); 
         }
 
         function applyFilters() {
             if (rawSalesDataset.length === 0 && rawExpensesDataset.length === 0) return;
+
+            // ===== INVENTORY VIEW — separate logic =====
+            if (globalCurrentActiveView === 'view-inventory') {
+                if (imsUnlocked) { renderInventory(); resetGlobalSearch(); }
+                return;
+            }
+            if (globalCurrentActiveView === 'view-purchase') {
+                renderPurchase();
+                resetGlobalSearch();
+                return;
+            }
 
             var startTime, endTime;
             if (globalCurrentActiveView === 'view-daily') {
@@ -1127,17 +1304,13 @@
                 var net = item.netSales;
                 var cost = item.cogsPerUnit * item.qty; 
                 var profit = item.grossProfit;
-
                 kpis.netSales += net; kpis.cogs += cost; kpis.gp += profit; kpis.outGst += item.gstAmount;
-
                 var dStr = new Date(item.dateObj).toISOString().split('T')[0];
                 if (!trendMap[dStr]) trendMap[dStr] = { s: 0, p: 0 };
                 trendMap[dStr].s += net; trendMap[dStr].p += profit;
-
                 catMap[item.category] = (catMap[item.category] || 0) + net;
                 vendorMap[item.vendor] = (vendorMap[item.vendor] || 0) + net;
                 itemMap[item.item] = (itemMap[item.item] || 0) + item.qty;
-
                 if (!custMap[item.customer]) custMap[item.customer] = { spend: 0, bills: new Set(), qty: 0 };
                 custMap[item.customer].spend += net; custMap[item.customer].bills.add(item.billNo); custMap[item.customer].qty += item.qty;
             }
@@ -1160,7 +1333,6 @@
             if (globalCurrentActiveView === 'view-items') renderItems(itemMap);
             if (globalCurrentActiveView === 'view-customers') renderCustomers(custMap);
             if (globalCurrentActiveView === 'view-daily') renderDaily(kpis, fSales, custMap);
-            
             resetGlobalSearch();
         }
 
@@ -1170,7 +1342,6 @@
             if (!echartsInstances[domId]) { echartsInstances[domId] = echarts.init(dom); }
             echartsInstances[domId].setOption(options, true);
         }
-
         function auroraTooltip(extra) {
             var base = {
                 backgroundColor: AURORA.tooltipBg, borderColor: AURORA.tooltipBorder, borderWidth: 1,
@@ -1181,19 +1352,383 @@
             return base;
         }
 
+        // ============================================================
+        // INVENTORY MANAGEMENT SYSTEM (IMS) ENGINE
+        // ============================================================
+        function unlockIMS() {
+            var pass = document.getElementById('ims-password').value;
+            var errEl = document.getElementById('ims-lock-error');
+            if (pass === "ikxariadmin") {
+                imsUnlocked = true;
+                document.getElementById('ims-lock-screen').style.display = 'none';
+                document.getElementById('ims-content').style.display = 'block';
+                document.getElementById('ims-controls').style.display = 'flex';
+                errEl.innerText = "";
+                document.getElementById('ims-password').value = "";
+                renderInventory();
+            } else {
+                errEl.innerText = "Wrong password. Try again.";
+                document.getElementById('ims-password').value = "";
+            }
+        }
+
+        function filterImsByStatus(statusOrder, cardEl) {
+            // Toggle: if same filter clicked again, clear it
+            if (imsStatusFilter === statusOrder) {
+                clearImsFilter();
+                return;
+            }
+            imsStatusFilter = statusOrder;
+            // Highlight active card
+            document.querySelectorAll('.ims-status-card').forEach(function(c) { c.classList.remove('active-filter'); });
+            cardEl.classList.add('active-filter');
+            // Show banner
+            var labels = { 0: 'Stock-Out items', 1: 'Critical items', 2: 'Watch items', 3: 'Healthy items', 4: 'Overstock items' };
+            document.getElementById('ims-filter-label').innerText = labels[statusOrder] || 'All';
+            document.getElementById('ims-filter-banner').style.display = 'flex';
+            // Tint the table card with the matching color
+            var tintMap = { 0: 'tint-black', 1: 'tint-red', 2: 'tint-yellow', 3: 'tint-green', 4: 'tint-purple' };
+            var card = document.getElementById('ims-table-card');
+            card.classList.remove('tint-black','tint-red','tint-yellow','tint-green','tint-purple');
+            card.classList.add(tintMap[statusOrder]);
+            renderImsTable();
+        }
+
+        function clearImsFilter() {
+            imsStatusFilter = null;
+            document.querySelectorAll('.ims-status-card').forEach(function(c) { c.classList.remove('active-filter'); });
+            document.getElementById('ims-filter-banner').style.display = 'none';
+            var card = document.getElementById('ims-table-card');
+            card.classList.remove('tint-black','tint-red','tint-yellow','tint-green','tint-purple');
+            renderImsTable();
+        }
+
+        function renderImsTable() {
+            var tbody = document.querySelector('#table-ims tbody');
+            var rHtml = [];
+            var displayList = imsTop50Cache;
+            if (imsStatusFilter !== null) {
+                displayList = imsTop50Cache.filter(function(it) { return it.statusOrder === imsStatusFilter; });
+            }
+            if (displayList.length === 0) {
+                rHtml.push("<tr><td colspan='9' style='text-align:center; padding:40px; color:var(--text-muted);'>No items in this category.</td></tr>");
+            } else {
+                for (var t = 0; t < displayList.length; t++) {
+                    var it2 = displayList[t];
+                    rHtml.push("<tr>" +
+                        "<td style='font-weight:800; color:var(--text-muted);'>" + (it2.rank) + "</td>" +
+                        "<td style='color:#fff; font-weight:600;'>" + it2.name + "</td>" +
+                        "<td style='color:" + AURORA.amber + "; font-weight:700;'>" + formatFullCurrencyINR(it2.landingCost) + "</td>" +
+                        "<td>" + it2.avgDaily.toFixed(2) + " U/day</td>" +
+                        "<td style='font-weight:700; color:#fff;'>" + it2.currentStock + "</td>" +
+                        "<td style='color:var(--text-muted);'>" + it2.maxLevel + "</td>" +
+                        "<td style='font-weight:700;'>" + Math.round(it2.stockPct) + "%</td>" +
+                        "<td><span class='status-pill-ims " + it2.statusClass + "'><span class='dot'></span>" + it2.status + "</span></td>" +
+                        "<td style='color:" + (it2.reorderQty > 0 ? AURORA.emerald : 'var(--text-muted)') + "; font-weight:700;'>" + (it2.reorderQty > 0 ? '+' + it2.reorderQty : '—') + "</td>" +
+                    "</tr>");
+                }
+            }
+            tbody.innerHTML = rHtml.join('');
+        }
+
+        function renderPurchase() {
+            var tbody = document.querySelector('#table-purchase tbody');
+            var rows = rawPurchaseLog.slice();
+            // Sort by date descending (newest first)
+            rows.sort(function(a, b) { return b.date - a.date; });
+            document.getElementById('purchase-count').innerText = rows.length + " purchase entries";
+            var rHtml = [];
+            for (var i = 0; i < rows.length; i++) {
+                var p = rows[i];
+                var dateStr = p.date > 0 ? formatDate(p.date) : '—';
+                rHtml.push("<tr>" +
+                    "<td>" + dateStr + "</td>" +
+                    "<td style='color:#fff; font-weight:600;'>" + p.item + "</td>" +
+                    "<td style='color:var(--aurora-teal);'>" + p.distributor + "</td>" +
+                    "<td>" + formatFullCurrencyINR(p.purchasePrice) + "</td>" +
+                    "<td style='font-weight:700; color:var(--aurora-emerald);'>" + p.receivedQty + "</td>" +
+                    "<td style='color:var(--aurora-pink);'>" + p.soldQty + "</td>" +
+                    "<td style='color:var(--aurora-amber);'>" + formatFullCurrencyINR(p.landingCost) + "</td>" +
+                    "<td>" + formatFullCurrencyINR(p.selling) + "</td>" +
+                    "<td style='color:var(--text-muted);'>" + formatFullCurrencyINR(p.mrp) + "</td>" +
+                    "<td style='font-weight:700; color:#fff;'>" + p.closingStock + "</td>" +
+                "</tr>");
+            }
+            if (rHtml.length === 0) {
+                rHtml.push("<tr><td colspan='10' style='text-align:center; padding:40px; color:var(--text-muted);'>No purchase data found in As_EOM_Data.</td></tr>");
+            }
+            tbody.innerHTML = rHtml.join('');
+        }
+
+        // ====== PDF EXPORT — Reorder list ======
+        function downloadReorderPDF() {
+            if (!imsReorderCache || imsReorderCache.length === 0) {
+                alert("No items need reordering right now — nothing to download.");
+                return;
+            }
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert("PDF library still loading. Please wait a moment and try again.");
+                return;
+            }
+            var jsPDF = window.jspdf.jsPDF;
+            var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            var now = new Date();
+            var dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            var timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+            // Header
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(16, 185, 129);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(20);
+            doc.text("IKXARI", 14, 14);
+            doc.setTextColor(167, 139, 250);
+            doc.setFontSize(11);
+            doc.text("Re-Order Purchase List", 14, 22);
+            doc.setTextColor(150, 160, 175);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text("Generated: " + dateStr + " at " + timeStr, 196, 14, { align: 'right' });
+            doc.text("Total items: " + imsReorderCache.length, 196, 20, { align: 'right' });
+
+            // Table data
+            var body = imsReorderCache.map(function(it, idx) {
+                return [
+                    (idx + 1).toString(),
+                    it.name,
+                    it.vendor,
+                    it.currentStock.toString(),
+                    it.maxLevel.toString(),
+                    "+" + it.reorderQty,
+                    it.status
+                ];
+            });
+
+            doc.autoTable({
+                startY: 36,
+                head: [['#', 'Item', 'Order From (Distributor)', 'Stock', 'Max', 'Re-Order', 'Status']],
+                body: body,
+                theme: 'grid',
+                headStyles: { fillColor: [139, 92, 246], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                bodyStyles: { fontSize: 8.5, textColor: [40, 40, 50] },
+                alternateRowStyles: { fillColor: [245, 243, 252] },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                    1: { cellWidth: 50 },
+                    2: { cellWidth: 50 },
+                    3: { cellWidth: 18, halign: 'center' },
+                    4: { cellWidth: 16, halign: 'center' },
+                    5: { cellWidth: 22, halign: 'center', fontStyle: 'bold', textColor: [16, 185, 129] },
+                    6: { cellWidth: 24, halign: 'center' }
+                },
+                margin: { left: 14, right: 14 }
+            });
+
+            // Footer
+            var finalY = doc.lastAutoTable.finalY || 36;
+            doc.setFontSize(8);
+            doc.setTextColor(150, 160, 175);
+            doc.text("Ikxari ERP — Beyond Ordinary · Crafted by SOMNATH", 14, finalY + 12);
+            doc.text("This list shows Critical & Stock-Out items needing replenishment.", 14, finalY + 17);
+
+            // Save with date in filename
+            var fileDate = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,'0') + "-" + String(now.getDate()).padStart(2,'0');
+            doc.save("Ikxari_Reorder_" + fileDate + ".pdf");
+        }
+
+        function renderInventory() {
+            // Read controls
+            var periodDays = parseInt(document.getElementById('ims-period').value) || 30;
+            var safetyFactor = parseFloat(document.getElementById('ims-safety').value) || 1.2;
+            var leadTime = parseInt(document.getElementById('ims-leadtime').value) || 10;
+
+            // Build sales-period avg per item (from Summarize_Data, last X days)
+            var cutoffTime = Date.now() - (periodDays * 24 * 60 * 60 * 1000);
+            var salesPeriodQty = {};
+            for (var i = 0; i < rawSalesDataset.length; i++) {
+                var s = rawSalesDataset[i];
+                if (s.dateObj >= cutoffTime) {
+                    salesPeriodQty[s.item] = (salesPeriodQty[s.item] || 0) + s.qty;
+                }
+            }
+
+            // PRIMARY SOURCE = As_EOM_Data items (real closing stock, distributor, landing cost)
+            var itemArr = [];
+            var useEom = rawEomItems.length > 0;
+
+            if (useEom) {
+                for (var e = 0; e < rawEomItems.length; e++) {
+                    var d = rawEomItems[e];
+                    if (d.landingCost <= 0) continue;
+
+                    // Avg daily: prefer sales-period qty; fallback to EOM out qty over period
+                    var periodSold = (salesPeriodQty[d.itemName] !== undefined) ? salesPeriodQty[d.itemName] : d.outQty;
+                    var avgDaily = periodSold / periodDays;
+                    var maxLevel = Math.ceil(avgDaily * leadTime * safetyFactor);
+                    if (maxLevel < 1) maxLevel = 1;
+
+                    var currentStock = d.closingStock;          // REAL closing stock
+                    if (currentStock < 0) currentStock = 0;
+
+                    var stockPct = maxLevel > 0 ? (currentStock / maxLevel) * 100 : 0;
+
+                    var status, statusClass, statusOrder;
+                    if (currentStock === 0 || stockPct < 10) { status = 'Stock-Out'; statusClass = 'status-black'; statusOrder = 0; }
+                    else if (stockPct < 33) { status = 'Critical'; statusClass = 'status-red'; statusOrder = 1; }
+                    else if (stockPct < 66) { status = 'Watch'; statusClass = 'status-yellow'; statusOrder = 2; }
+                    else if (stockPct < 100) { status = 'Healthy'; statusClass = 'status-green'; statusOrder = 3; }
+                    else { status = 'Overstock'; statusClass = 'status-purple'; statusOrder = 4; }
+
+                    var reorderQty = (stockPct < 66) ? Math.max(0, maxLevel - currentStock) : 0;
+
+                    itemArr.push({
+                        name: d.itemName,
+                        landingCost: d.landingCost,
+                        avgDaily: avgDaily,
+                        currentStock: currentStock,
+                        maxLevel: maxLevel,
+                        stockPct: stockPct,
+                        status: status, statusClass: statusClass, statusOrder: statusOrder,
+                        reorderQty: reorderQty,
+                        capitalLocked: currentStock * d.landingCost,
+                        vendor: d.distributor || 'NA',
+                        received: d.receivedQty, soldEom: d.outQty
+                    });
+                }
+            } else {
+                // Fallback: sales-only mock (if EOM sheet missing)
+                var agg = {};
+                for (var j = 0; j < rawSalesDataset.length; j++) {
+                    var sx = rawSalesDataset[j];
+                    if (!agg[sx.item]) agg[sx.item] = { name: sx.item, period: 0, lc: 0, vendor: sx.vendor };
+                    if (sx.dateObj >= cutoffTime) agg[sx.item].period += sx.qty;
+                    if (sx.cogsPerUnit > 0) agg[sx.item].lc = sx.cogsPerUnit;
+                    agg[sx.item].vendor = sx.vendor;
+                }
+                var ks = Object.keys(agg);
+                for (var m = 0; m < ks.length; m++) {
+                    var a = agg[ks[m]];
+                    if (a.lc <= 0) continue;
+                    var ad = a.period / periodDays;
+                    var ml = Math.ceil(ad * leadTime * safetyFactor); if (ml < 1) ml = 1;
+                    var seed = 0; for (var c = 0; c < a.name.length; c++) seed += a.name.charCodeAt(c);
+                    var cs = Math.floor((((seed * 9301 + 49297) % 233280) / 233280) * ml * 1.3);
+                    var pct = ml > 0 ? (cs / ml) * 100 : 0;
+                    var st, sc, so;
+                    if (cs === 0 || pct < 10) { st='Stock-Out'; sc='status-black'; so=0; }
+                    else if (pct < 33) { st='Critical'; sc='status-red'; so=1; }
+                    else if (pct < 66) { st='Watch'; sc='status-yellow'; so=2; }
+                    else if (pct < 100) { st='Healthy'; sc='status-green'; so=3; }
+                    else { st='Overstock'; sc='status-purple'; so=4; }
+                    itemArr.push({ name: a.name, landingCost: a.lc, avgDaily: ad, currentStock: cs, maxLevel: ml, stockPct: pct, status: st, statusClass: sc, statusOrder: so, reorderQty: (pct<66?Math.max(0,ml-cs):0), capitalLocked: cs*a.lc, vendor: a.vendor, received: 0, soldEom: 0 });
+                }
+            }
+
+            // Sort by landing cost descending, take top 50
+            itemArr.sort(function(a, b) { return b.landingCost - a.landingCost; });
+            var top50 = itemArr.slice(0, 50);
+            for (var rk = 0; rk < top50.length; rk++) { top50[rk].rank = rk + 1; }
+            imsTop50Cache = top50;
+
+            // Status counts + capital locked
+            var counts = { purple: 0, green: 0, yellow: 0, red: 0, black: 0 };
+            var capitalLocked = 0;
+            for (var p = 0; p < top50.length; p++) {
+                if (top50[p].statusOrder === 4) counts.purple++;
+                else if (top50[p].statusOrder === 3) counts.green++;
+                else if (top50[p].statusOrder === 2) counts.yellow++;
+                else if (top50[p].statusOrder === 1) counts.red++;
+                else counts.black++;
+                capitalLocked += top50[p].capitalLocked;
+            }
+            document.getElementById('ims-count-purple').innerText = counts.purple;
+            document.getElementById('ims-count-green').innerText = counts.green;
+            document.getElementById('ims-count-yellow').innerText = counts.yellow;
+            document.getElementById('ims-count-red').innerText = counts.red;
+            document.getElementById('ims-count-black').innerText = counts.black;
+            document.getElementById('ims-capital-locked').innerText = formatShortCurrency(capitalLocked);
+
+            // Data source badge
+            var srcBadge = document.getElementById('ims-data-source');
+            if (useEom) {
+                srcBadge.className = 'data-source-badge live';
+                srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · As_EOM_Data';
+            } else {
+                srcBadge.className = 'data-source-badge mock';
+                srcBadge.innerHTML = '<i class="fa-solid fa-flask"></i> Mock · As_EOM_Data not found';
+            }
+
+            // Reorder priority (critical + stock-out)
+            var reorderItems = top50.filter(function(it) { return it.statusOrder <= 1; });
+            reorderItems.sort(function(a, b) { 
+                if (a.statusOrder !== b.statusOrder) return a.statusOrder - b.statusOrder; 
+                return b.landingCost - a.landingCost; 
+            });
+            imsReorderCache = reorderItems;   // full list cached for PDF
+            var reorderShow = reorderItems.slice(0, 12);
+
+            var reorderHtml = '';
+            if (reorderShow.length === 0) {
+                reorderHtml = "<div class='empty-state'><i class='fa-solid fa-check-circle'></i><h4>All items healthy</h4><p>No critical reorders needed right now.</p></div>";
+            } else {
+                for (var r = 0; r < reorderShow.length; r++) {
+                    var it = reorderShow[r];
+                    var accent = it.statusOrder === 0 ? AURORA.black : AURORA.red;
+                    reorderHtml += "<li class='reorder-priority-item' style='--accent: " + accent + ";'>" +
+                                   "<div class='rank'>" + (r+1) + "</div>" +
+                                   "<div class='info'>" +
+                                     "<div class='name'>" + it.name + "</div>" +
+                                     "<div class='meta'>Stock <b style='color:#fff;'>" + it.currentStock + "</b>/" + it.maxLevel + 
+                                     " · From: <b style='color:var(--aurora-teal);'>" + it.vendor + "</b>" +
+                                     " · " + formatShortCurrency(it.landingCost) + "/unit</div>" +
+                                   "</div>" +
+                                   "<div class='action'>" +
+                                     "<div class='qty'>+" + it.reorderQty + "</div>" +
+                                     "<div class='label-small'>Order</div>" +
+                                   "</div>" +
+                                   "</li>";
+                }
+            }
+            document.getElementById('ims-reorder-list').innerHTML = reorderHtml;
+
+            // Step 5: Donut chart — Expense-rose (nightingale) style, responsive
+            initEChart('echart-ims-donut', {
+                tooltip: auroraTooltip({ trigger: 'item', formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + p.value + ' items (' + p.percent + '%)'; } }),
+                legend: { orient: 'vertical', right: 12, top: 'middle', textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600, fontSize: 12 }, itemWidth: 12, itemHeight: 12, itemGap: 11 },
+                series: [{
+                    type: 'pie', radius: [22, '78%'], center: ['36%', '50%'], roseType: 'area',
+                    itemStyle: { borderRadius: 6, borderColor: 'rgba(2, 6, 23, 0.6)', borderWidth: 2 },
+                    label: { show: false },
+                    labelLine: { show: false },
+                    emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 },
+                    data: [
+                        { name: 'Stock-Out', value: counts.black, itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,1,[{offset:0,color:AURORA.black},{offset:1,color:AURORA.black+'70'}]), shadowBlur: 12, shadowColor: AURORA.black + '50' } },
+                        { name: 'Critical', value: counts.red, itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,1,[{offset:0,color:AURORA.red},{offset:1,color:AURORA.red+'70'}]), shadowBlur: 12, shadowColor: AURORA.red + '50' } },
+                        { name: 'Watch', value: counts.yellow, itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,1,[{offset:0,color:AURORA.amber},{offset:1,color:AURORA.amber+'70'}]), shadowBlur: 12, shadowColor: AURORA.amber + '50' } },
+                        { name: 'Healthy', value: counts.green, itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,1,[{offset:0,color:AURORA.emerald},{offset:1,color:AURORA.emerald+'70'}]), shadowBlur: 12, shadowColor: AURORA.emerald + '50' } },
+                        { name: 'Overstock', value: counts.purple, itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,1,[{offset:0,color:AURORA.purple},{offset:1,color:AURORA.purple+'70'}]), shadowBlur: 12, shadowColor: AURORA.purple + '50' } }
+                    ]
+                }],
+                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+            });
+
+            // Step 6: Render table (respects active filter)
+            renderImsTable();
+        }
+
         function renderOverview(kpis, trendMap, catMap) {
             document.getElementById('kpi-netsales').innerText = formatFullCurrencyINR(kpis.netSales);
             document.getElementById('kpi-gp').innerText = formatFullCurrencyINR(kpis.gp);
             document.getElementById('kpi-cogs').innerText = formatFullCurrencyINR(kpis.cogs);
             document.getElementById('kpi-exp').innerText = formatFullCurrencyINR(kpis.exp);
-
             var dates = Object.keys(trendMap).sort();
             var salesData = [], profitData = [];
             for(var x=0; x<dates.length; x++) {
                 salesData.push(Math.round(trendMap[dates[x]].s));
                 profitData.push(Math.round(trendMap[dates[x]].p));
             }
-
             if(dates.length > 0) {
                 var maxRev = 0, bestDate = "-";
                 for(var y=0; y<dates.length; y++) {
@@ -1202,80 +1737,34 @@
                 document.getElementById('insight-high-rev').innerText = formatShortCurrency(maxRev) + " (" + bestDate + ")";
                 document.getElementById('insight-best-margin').innerText = formatFullCurrencyINR(kpis.gp > 0 ? kpis.gp : 0);
             }
-
             initEChart('echart-trend', {
-                tooltip: auroraTooltip({ 
-                    trigger: 'axis',
-                    formatter: function(p) { 
-                        return '<div style="font-weight:700; margin-bottom:6px;">' + p[0].axisValue + '</div>' +
-                               p[0].marker + ' Net Sales: <b style="color:' + AURORA.emerald + '">' + formatFullCurrencyINR(p[0].value) + '</b><br/>' + 
-                               p[1].marker + ' Gross Profit: <b style="color:' + AURORA.violet + '">' + formatFullCurrencyINR(p[1].value) + '</b>'; 
-                    }
-                }),
+                tooltip: auroraTooltip({ trigger: 'axis', formatter: function(p) { return '<div style="font-weight:700; margin-bottom:6px;">' + p[0].axisValue + '</div>' + p[0].marker + ' Net Sales: <b style="color:' + AURORA.emerald + '">' + formatFullCurrencyINR(p[0].value) + '</b><br/>' + p[1].marker + ' Gross Profit: <b style="color:' + AURORA.violet + '">' + formatFullCurrencyINR(p[1].value) + '</b>'; } }),
                 legend: { data: ['Net Sales', 'Gross Profit'], textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600 }, bottom: 0, itemWidth: 14, itemHeight: 8, itemGap: 24 },
-                grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
+                grid: { left: '3%', right: '4%', bottom: '12%', top: '8%', containLabel: true },
                 xAxis: { type: 'category', boundaryGap: false, data: dates, axisLine: { lineStyle: { color: AURORA.grid } }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11 } },
-                yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v) { return formatShortCurrency(v); } } },
+                yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v) { return formatShortCurrency(v); } } },
                 series: [
-                    { 
-                        name: 'Net Sales', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, showSymbol: false,
-                        lineStyle: { color: AURORA.emerald, width: 3, shadowBlur: 14, shadowColor: 'rgba(52, 211, 153, 0.55)', shadowOffsetY: 2 }, 
-                        itemStyle: { color: AURORA.emerald, borderColor: '#fff', borderWidth: 2 },
-                        emphasis: { focus: 'series', scale: 1.4 },
-                        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(52, 211, 153, 0.45)'}, {offset: 0.7, color: 'rgba(52, 211, 153, 0.08)'}, {offset: 1, color: 'rgba(52, 211, 153, 0)'}]) }, 
-                        data: salesData 
-                    },
-                    { 
-                        name: 'Gross Profit', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, showSymbol: false,
-                        lineStyle: { color: AURORA.violet, width: 3, shadowBlur: 14, shadowColor: 'rgba(167, 139, 250, 0.55)', shadowOffsetY: 2 }, 
-                        itemStyle: { color: AURORA.violet, borderColor: '#fff', borderWidth: 2 },
-                        emphasis: { focus: 'series', scale: 1.4 },
-                        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(167, 139, 250, 0.4)'}, {offset: 0.7, color: 'rgba(167, 139, 250, 0.06)'}, {offset: 1, color: 'rgba(167, 139, 250, 0)'}]) }, 
-                        data: profitData 
-                    }
+                    { name: 'Net Sales', type: 'line', smooth: 0.4, symbol: 'none', lineStyle: { color: AURORA.emerald, width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(52, 211, 153, 0.22)'}, {offset: 1, color: 'rgba(52, 211, 153, 0)'}]) }, data: salesData },
+                    { name: 'Gross Profit', type: 'line', smooth: 0.4, symbol: 'none', lineStyle: { color: AURORA.violet, width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(167, 139, 250, 0.18)'}, {offset: 1, color: 'rgba(167, 139, 250, 0)'}]) }, data: profitData }
                 ],
-                animation: true, animationDuration: 1200, animationEasing: 'cubicOut'
+                animation: true, animationDuration: 900, animationEasing: 'cubicOut'
             });
-
             var catArr = sortMap(catMap, 6);
             var catNames = catArr.map(function(item) { return item.k; });
             var catValues = catArr.map(function(item) { return Math.round(item.v); });
             var auroraColors = [AURORA.green, AURORA.violet, AURORA.teal, AURORA.pink, AURORA.blue, AURORA.amber];
-
             initEChart('echart-category', {
-                tooltip: auroraTooltip({ 
-                    trigger: 'item',
-                    formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value); }
-                }),
+                tooltip: auroraTooltip({ trigger: 'item', formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value); } }),
                 polar: { radius: ['18%', '88%'], center: ['50%', '54%'] },
                 angleAxis: { max: catValues.length > 0 ? Math.max.apply(null, catValues) * 1.05 : 100, startAngle: 90, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { show: false }, splitLine: { show: false } },
                 radiusAxis: { type: 'category', data: catNames, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontFamily: 'Jost', fontWeight: 600, fontSize: 11 }, z: 10 },
-                series: [{ 
-                    type: 'bar', coordinateSystem: 'polar', 
-                    data: catValues.map(function(v, idx) {
-                        return {
-                            value: v,
-                            itemStyle: {
-                                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                                    { offset: 0, color: auroraColors[idx % auroraColors.length] + '40' },
-                                    { offset: 1, color: auroraColors[idx % auroraColors.length] }
-                                ]),
-                                borderRadius: [0, 100, 100, 0], shadowBlur: 10, shadowColor: auroraColors[0] + '40'
-                            }
-                        };
-                    }),
-                    label: { show: true, position: 'middle', color: '#fff', fontFamily: 'Jost', fontWeight: 700, fontSize: 10, formatter: function(p) { return formatShortCurrency(p.value); } },
-                    emphasis: { itemStyle: { shadowBlur: 18 } }
-                }],
+                series: [{ type: 'bar', coordinateSystem: 'polar', data: catValues.map(function(v, idx) { return { value: v, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: auroraColors[idx % auroraColors.length] + '40' }, { offset: 1, color: auroraColors[idx % auroraColors.length] }]), borderRadius: [0, 100, 100, 0], shadowBlur: 10, shadowColor: auroraColors[0] + '40' } }; }), label: { show: true, position: 'middle', color: '#fff', fontFamily: 'Jost', fontWeight: 700, fontSize: 10, formatter: function(p) { return formatShortCurrency(p.value); } }, emphasis: { itemStyle: { shadowBlur: 18 } } }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
-
             var marginPct = kpis.netSales > 0 ? Math.round((kpis.gp / kpis.netSales) * 100) : 0;
             var expensePct = kpis.netSales > 0 ? Math.round((kpis.exp / kpis.netSales) * 100) : 0;
-
             initEChart('gauge-margin', buildGauge(marginPct, AURORA.emerald, AURORA.green));
             initEChart('gauge-expense', buildGauge(Math.min(expensePct, 100), AURORA.pink, AURORA.violet));
-
             document.getElementById('gauge-margin-sub').innerText = "GP " + formatShortCurrency(kpis.gp) + " of " + formatShortCurrency(kpis.netSales) + " Net Sales";
             document.getElementById('gauge-expense-sub').innerText = "Expenses " + formatShortCurrency(kpis.exp) + " of " + formatShortCurrency(kpis.netSales) + " Net Sales";
         }
@@ -1284,13 +1773,7 @@
             return {
                 series: [{
                     type: 'gauge', startAngle: 200, endAngle: -20, min: 0, max: 100, radius: '92%', center: ['50%', '62%'],
-                    progress: {
-                        show: true, width: 16, roundCap: true,
-                        itemStyle: {
-                            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: colorSecondary }, { offset: 1, color: colorMain }]),
-                            shadowBlur: 14, shadowColor: colorMain + '80'
-                        }
-                    },
+                    progress: { show: true, width: 16, roundCap: true, itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: colorSecondary }, { offset: 1, color: colorMain }]), shadowBlur: 14, shadowColor: colorMain + '80' } },
                     axisLine: { lineStyle: { width: 16, color: [[1, 'rgba(255, 255, 255, 0.05)']] } },
                     pointer: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { show: false }, title: { show: false },
                     detail: { valueAnimation: true, color: '#fff', fontSize: 36, fontWeight: 800, fontFamily: 'Jost', formatter: '{value}%', offsetCenter: [0, '5%'] },
@@ -1314,33 +1797,13 @@
             document.getElementById('kpi-total-exp-page').innerText = formatFullCurrencyINR(total);
             var eArr = sortMap(expMap, 10);
             var auroraColors = [AURORA.pink, AURORA.violet, AURORA.teal, AURORA.amber, AURORA.green, AURORA.blue, AURORA.emerald, AURORA.purple];
-            var pieData = eArr.map(function(item, idx) { 
-                return { 
-                    name: item.k, value: Math.round(item.v),
-                    itemStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: auroraColors[idx % auroraColors.length] }, { offset: 1, color: auroraColors[idx % auroraColors.length] + '70' }]),
-                        shadowBlur: 12, shadowColor: auroraColors[idx % auroraColors.length] + '50'
-                    }
-                }; 
-            });
-            
+            var pieData = eArr.map(function(item, idx) { return { name: item.k, value: Math.round(item.v), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: auroraColors[idx % auroraColors.length] }, { offset: 1, color: auroraColors[idx % auroraColors.length] + '70' }]), shadowBlur: 12, shadowColor: auroraColors[idx % auroraColors.length] + '50' } }; });
             initEChart('echart-expense', {
-                tooltip: auroraTooltip({ 
-                    trigger: 'item',
-                    formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value) + ' (' + p.percent + '%)'; }
-                }),
+                tooltip: auroraTooltip({ trigger: 'item', formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value) + ' (' + p.percent + '%)'; } }),
                 legend: { orient: 'vertical', right: 16, top: 'middle', textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600, fontSize: 12 }, itemWidth: 12, itemHeight: 12, itemGap: 10 }, 
-                series: [{ 
-                    type: 'pie', radius: [25, '80%'], center: ['38%', '50%'], roseType: 'area',
-                    itemStyle: { borderRadius: 6, borderColor: 'rgba(2, 6, 23, 0.6)', borderWidth: 2 }, 
-                    label: { color: AURORA.text, fontFamily: 'Jost', fontSize: 11, fontWeight: 600, formatter: '{b}' }, 
-                    labelLine: { lineStyle: { color: AURORA.muted } },
-                    emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 },
-                    data: pieData 
-                }],
+                series: [{ type: 'pie', radius: [25, '80%'], center: ['38%', '50%'], roseType: 'area', itemStyle: { borderRadius: 6, borderColor: 'rgba(2, 6, 23, 0.6)', borderWidth: 2 }, label: { color: AURORA.text, fontFamily: 'Jost', fontSize: 11, fontWeight: 600, formatter: '{b}' }, labelLine: { lineStyle: { color: AURORA.muted } }, emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 }, data: pieData }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
-
             var tbody = document.querySelector('#table-expenses tbody');
             var rHtml = [];
             for(var i=0; i<rows.length; i++) {
@@ -1354,30 +1817,13 @@
             vArr.reverse(); 
             var names = vArr.map(function(v) { return v.k; });
             var values = vArr.map(function(v) { return Math.round(v.v); });
-
             if(vArr.length > 0) { document.getElementById('insight-top-vendor').innerText = vArr[vArr.length-1].k; }
-
             initEChart('echart-vendors', {
-                tooltip: auroraTooltip({ 
-                    trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } },
-                    formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Net Sales: ' + formatFullCurrencyINR(p[0].value); }
-                }),
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Net Sales: ' + formatFullCurrencyINR(p[0].value); } }),
                 grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
                 xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
                 yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12 } },
-                series: [{ 
-                    type: 'bar', data: values, barWidth: '55%', 
-                    itemStyle: { 
-                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                            { offset: 0, color: 'rgba(16, 185, 129, 0.15)' },
-                            { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' },
-                            { offset: 1, color: AURORA.emerald }
-                        ]), 
-                        borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)'
-                    }, 
-                    label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} },
-                    emphasis: { itemStyle: { shadowBlur: 20 } }
-                }],
+                series: [{ type: 'bar', data: values, barWidth: '55%', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' }, { offset: 1, color: AURORA.emerald }]), borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)' }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }, emphasis: { itemStyle: { shadowBlur: 20 } } }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
         }
@@ -1386,12 +1832,8 @@
             document.getElementById('kpi-gst-out').innerText = formatFullCurrencyINR(outT);
             document.getElementById('kpi-gst-in').innerText = formatFullCurrencyINR(inT);
             document.getElementById('kpi-gst-net').innerText = formatFullCurrencyINR(net);
-
             initEChart('echart-gst', {
-                tooltip: auroraTooltip({ 
-                    trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } },
-                    formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' ' + formatFullCurrencyINR(p[0].value); }
-                }),
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' ' + formatFullCurrencyINR(p[0].value); } }),
                 grid: { left: '3%', right: '4%', bottom: '8%', top: '12%', containLabel: true },
                 xAxis: { type: 'category', data: ['Output GST', 'Input GST (ITC)', 'Net Payable'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12 } },
                 yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
@@ -1406,7 +1848,6 @@
                 }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
-
             var taxBurdenPct = outT > 0 ? Math.min(Math.round((net / outT) * 100), 100) : 0;
             initEChart('gauge-tax', buildGauge(taxBurdenPct, AURORA.amber, AURORA.pink));
             document.getElementById('gauge-tax-sub').innerText = "Net Payable: " + formatShortCurrency(net) + " | Output: " + formatShortCurrency(outT);
@@ -1415,37 +1856,20 @@
         function renderItems(itemMap) {
             var iArr = Object.keys(itemMap).map(function(k) { return { k: k, v: itemMap[k] }; }).filter(function(i) { return i.v > 0; });
             iArr.sort(function(a, b) { return b.v - a.v; });
-            
             var fast = iArr.slice(0, 15).reverse();
             var slow = iArr.slice().reverse().slice(0, 15);
-
             var commonOpts = function(gradient, dataArr, shadowCol) {
                 return {
                     tooltip: auroraTooltip({ trigger: 'axis', formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Qty: ' + p[0].value + ' units'; } }),
                     grid: { left: '2%', right: '12%', bottom: '2%', top: '2%', containLabel: true },
                     xAxis: { type: 'value', splitLine: { show: false }, axisLabel: { show: false }, axisLine: {show: false}, axisTick: {show: false} },
                     yAxis: { type: 'category', data: dataArr.map(function(d){return d.k;}), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, width: 130, overflow: 'truncate', fontFamily: 'Jost', fontSize: 12, fontWeight: 600 } },
-                    series: [{ 
-                        type: 'bar', data: dataArr.map(function(d){return Math.round(d.v);}), barWidth: '65%', 
-                        itemStyle: { color: gradient, borderRadius: [0, 6, 6, 0], shadowBlur: 10, shadowColor: shadowCol }, 
-                        label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return p.value + " U";} },
-                        emphasis: { itemStyle: { shadowBlur: 18 } }
-                    }],
+                    series: [{ type: 'bar', data: dataArr.map(function(d){return Math.round(d.v);}), barWidth: '65%', itemStyle: { color: gradient, borderRadius: [0, 6, 6, 0], shadowBlur: 10, shadowColor: shadowCol }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return p.value + " U";} }, emphasis: { itemStyle: { shadowBlur: 18 } } }],
                     animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
                 };
             };
-
-            var gradFast = new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: 'rgba(16, 185, 129, 0.15)' },
-                { offset: 0.5, color: 'rgba(52, 211, 153, 0.8)' },
-                { offset: 1, color: AURORA.emerald }
-            ]);
-            var gradSlow = new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: 'rgba(167, 139, 250, 0.15)' },
-                { offset: 0.5, color: 'rgba(244, 114, 182, 0.8)' },
-                { offset: 1, color: AURORA.pink }
-            ]);
-
+            var gradFast = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.8)' }, { offset: 1, color: AURORA.emerald }]);
+            var gradSlow = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(167, 139, 250, 0.15)' }, { offset: 0.5, color: 'rgba(244, 114, 182, 0.8)' }, { offset: 1, color: AURORA.pink }]);
             initEChart('echart-fast-items', commonOpts(gradFast, fast, 'rgba(16, 185, 129, 0.35)'));
             initEChart('echart-slow-items', commonOpts(gradSlow, slow, 'rgba(244, 114, 182, 0.35)'));
         }
@@ -1453,12 +1877,9 @@
         function renderCustomers(custMap) {
             var cArr = [];
             var keys = Object.keys(custMap);
-            for(var i=0; i<keys.length; i++) {
-                cArr.push({ k: keys[i], v: custMap[keys[i]] });
-            }
+            for(var i=0; i<keys.length; i++) { cArr.push({ k: keys[i], v: custMap[keys[i]] }); }
             cArr.sort(function(a, b) { return b.v.spend - a.v.spend; });
             cArr = cArr.slice(0, 20);
-
             var tbody = document.querySelector('#table-customers tbody');
             var rHtml = [];
             for(var j=0; j<cArr.length; j++) {
@@ -1473,7 +1894,6 @@
             document.getElementById('daily-gp').innerText = formatFullCurrencyINR(kpis.gp); 
             document.getElementById('daily-cust').innerText = Object.keys(custMap).length; 
             document.getElementById('daily-items').innerText = fSales.reduce(function(s, r) { return s + r.qty; }, 0);
-            
             var tbody = document.querySelector('#table-daily tbody');
             var rHtml = [];
             for(var i=0; i<fSales.length; i++) {
