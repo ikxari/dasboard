@@ -873,8 +873,9 @@
 
                     <!-- Total Stock + Total Sold summary strip -->
                     <div class="row g-3 mb-4">
-                        <div class="col-6"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(45, 212, 191, 0.12); color: var(--aurora-teal); width:46px; height:46px;"><i class="fa-solid fa-warehouse"></i></div><div><div class="kpi-title">Total Stock In</div><div class="kpi-value" id="ims-total-stock" style="font-size: 26px; margin:0;">0 units</div></div></div></div>
-                        <div class="col-6"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(244, 114, 182, 0.12); color: var(--aurora-pink); width:46px; height:46px;"><i class="fa-solid fa-cart-shopping"></i></div><div><div class="kpi-title">Total Units Sold</div><div class="kpi-value" id="ims-total-sold" style="font-size: 26px; margin:0;">0 units</div><div id="ims-total-sold-value" style="font-size: 13px; color: var(--aurora-emerald); font-weight: 700; margin-top: 2px;">₹0</div></div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(45, 212, 191, 0.12); color: var(--aurora-teal); width:46px; height:46px;"><i class="fa-solid fa-warehouse"></i></div><div><div class="kpi-title">Total Stock In Hand</div><div class="kpi-value" id="ims-total-stock" style="font-size: 26px; margin:0;">0 units</div></div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(96, 165, 250, 0.12); color: var(--aurora-blue); width:46px; height:46px;"><i class="fa-solid fa-tags"></i></div><div><div class="kpi-title">Total Items (SKUs)</div><div class="kpi-value" id="ims-total-items" style="font-size: 26px; margin:0;">0 items</div></div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(244, 114, 182, 0.12); color: var(--aurora-pink); width:46px; height:46px;"><i class="fa-solid fa-cart-shopping"></i></div><div><div class="kpi-title">Total Sold</div><div class="kpi-value" id="ims-total-sold" style="font-size: 26px; margin:0;">0 units</div><div id="ims-total-sold-value" style="font-size: 12.5px; color: var(--aurora-emerald); font-weight: 700; margin-top: 2px;">0 items · ₹0</div></div></div></div>
                     </div>
 
                     <!-- Filter active banner -->
@@ -1704,15 +1705,19 @@
             document.getElementById('ims-count-red').innerText = counts.red;
             document.getElementById('ims-count-black').innerText = counts.black;
             document.getElementById('ims-capital-locked').innerText = formatShortCurrency(capitalLocked);
-            document.getElementById('ims-total-stock').innerText = totalStockInUnits + " units";
-            // Total sold units + rupee value (all-time, from Summarize_Data)
+            document.getElementById('ims-total-stock').innerText = totalStockUnits + " units";
+            document.getElementById('ims-total-items').innerText = rawStockItems.length + " items";
+            // Total sold: units + distinct items + rupee value (all-time, Summarize_Data)
             var soldUnitsAll = 0, soldValueAll = 0;
+            var soldItemSet = {};
             for (var sv = 0; sv < rawSalesDataset.length; sv++) {
                 soldUnitsAll += rawSalesDataset[sv].qty;
                 soldValueAll += rawSalesDataset[sv].netSales;
+                soldItemSet[rawSalesDataset[sv].item] = true;
             }
+            var soldDistinct = Object.keys(soldItemSet).length;
             document.getElementById('ims-total-sold').innerText = Math.round(soldUnitsAll) + " units";
-            document.getElementById('ims-total-sold-value').innerText = formatFullCurrencyINR(soldValueAll);
+            document.getElementById('ims-total-sold-value').innerText = soldDistinct + " items · " + formatFullCurrencyINR(soldValueAll);
 
             // Data source badge
             var srcBadge = document.getElementById('ims-data-source');
