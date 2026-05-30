@@ -871,6 +871,12 @@
                         <div class="col-12 col-md-4"><div class="ims-status-card" data-status="0" style="--accent: #475569;" onclick="filterImsByStatus(0, this)"><div class="label"><span class="dot"></span> Stock-Out · Capital Locked</div><div class="count" id="ims-count-black">0</div><div class="sub">0% · Total Locked: <span id="ims-capital-locked" style="color: var(--aurora-emerald); font-weight: 800;">₹0</span></div></div></div>
                     </div>
 
+                    <!-- Total Stock + Total Sold summary strip -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(45, 212, 191, 0.12); color: var(--aurora-teal); width:46px; height:46px;"><i class="fa-solid fa-warehouse"></i></div><div><div class="kpi-title">Total Stock In Hand</div><div class="kpi-value" id="ims-total-stock" style="font-size: 26px; margin:0;">0 units</div></div></div></div>
+                        <div class="col-6"><div class="glass-card" style="flex-direction: row; align-items: center; gap: 16px; padding: 18px 22px;"><div class="kpi-icon" style="background: rgba(244, 114, 182, 0.12); color: var(--aurora-pink); width:46px; height:46px;"><i class="fa-solid fa-cart-shopping"></i></div><div><div class="kpi-title">Total Units Sold</div><div class="kpi-value" id="ims-total-sold" style="font-size: 26px; margin:0;">0 units</div></div></div></div>
+                    </div>
+
                     <!-- Filter active banner -->
                     <div id="ims-filter-banner" class="ims-filter-banner" style="display:none;">
                         <span><i class="fa-solid fa-filter me-2"></i>Showing: <b id="ims-filter-label">All</b></span>
@@ -949,12 +955,20 @@
                 </div>
 
                 <div id="view-purchase" class="view-section">
+                    <!-- Purchase Summary Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-title">Total Received</div><div class="kpi-value" id="pur-total-recv" style="font-size: 28px;">0</div><div class="kpi-trend positive"><i class="fa-solid fa-box"></i> <span>units in</span></div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-amber);"><div class="kpi-title">Purchase Value</div><div class="kpi-value" id="pur-total-value" style="font-size: 28px;">₹0</div><div class="kpi-trend"><i class="fa-solid fa-indian-rupee-sign"></i> <span class="text-muted">at landing cost</span></div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-pink);"><div class="kpi-title">Total Sold</div><div class="kpi-value" id="pur-total-sold" style="font-size: 28px;">0</div><div class="kpi-trend negative"><i class="fa-solid fa-arrow-trend-down"></i> <span>units out</span></div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-title">Unique Items</div><div class="kpi-value" id="pur-unique" style="font-size: 28px;">0</div><div class="kpi-trend"><i class="fa-solid fa-tags"></i> <span class="text-muted">distinct SKUs</span></div></div></div>
+                    </div>
+
                     <div class="glass-card">
                         <div class="chart-title">
-                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From As_EOM_Data</span></span>
+                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Current_Stock</span></span>
                             <span id="purchase-count" style="font-size: 12px; color: var(--text-muted); font-weight: 600;"></span>
                         </div>
-                        <div class="table-wrapper" style="max-height: 680px;">
+                        <div class="table-wrapper" style="max-height: 620px;">
                             <table class="erp-table" id="table-purchase">
                                 <thead><tr>
                                     <th>Date</th><th>Item</th><th>Distributor</th>
@@ -980,9 +994,12 @@
 
         var rawSalesDataset = [];
         var rawExpensesDataset = [];
-        var rawEomItems = [];
+        var rawStockItems = [];
         var rawPurchaseLog = [];
-        var eomFound = false;
+        var stockFound = false;
+        var stockSource = 'none';
+        var totalStockUnits = 0;
+        var totalSoldUnits = 0;
         var globalCurrentActiveView = 'view-overview';
         var echartsInstances = {};
         var autoRefreshTimer = null;
@@ -1161,9 +1178,12 @@
                     lastSalesCount = res.sales.length;
                     rawSalesDataset = res.sales; 
                     rawExpensesDataset = res.expenses;
-                    rawEomItems = res.eomItems || [];
+                    rawStockItems = res.stockItems || [];
                     rawPurchaseLog = res.purchaseLog || [];
-                    eomFound = res.eomFound || false;
+                    stockFound = res.stockFound || false;
+                    stockSource = res.stockSource || 'none';
+                    totalStockUnits = res.totalStock || 0;
+                    totalSoldUnits = res.totalSoldUnits || 0;
                     buildNotifications(res);
                     lastSyncTimestamp = Date.now();
                     if (isAutoRefresh) {
@@ -1433,21 +1453,41 @@
 
         function renderPurchase() {
             var tbody = document.querySelector('#table-purchase tbody');
-            var rows = rawPurchaseLog.slice();
-            // Sort by date descending (newest first)
-            rows.sort(function(a, b) { return b.date - a.date; });
-            document.getElementById('purchase-count').innerText = rows.length + " purchase entries";
+
+            // Build rows from stockItems (per-item aggregate) so purchase qty is clearly visible
+            var rows = [];
+            var totalRecv = 0, totalValue = 0, totalSold = 0;
+            for (var k = 0; k < rawStockItems.length; k++) {
+                var d = rawStockItems[k];
+                totalRecv += (d.stockIn || 0);
+                totalValue += (d.stockIn || 0) * (d.landingCost || 0);
+                totalSold += (d.salesQty || 0);
+                rows.push({
+                    item: d.itemName, distributor: d.distributor || d.brand || 'NA',
+                    purchasePrice: d.purchasePrice || 0, receivedQty: d.stockIn || 0,
+                    soldQty: d.salesQty || 0, landingCost: d.landingCost || 0,
+                    selling: d.selling || 0, mrp: d.mrp || 0, closingStock: d.closingStock || 0
+                });
+            }
+            // Sort: highest received first
+            rows.sort(function(a, b) { return b.receivedQty - a.receivedQty; });
+
+            document.getElementById('pur-total-recv').innerText = Math.round(totalRecv);
+            document.getElementById('pur-total-value').innerText = formatShortCurrency(totalValue);
+            document.getElementById('pur-total-sold').innerText = Math.round(totalSold);
+            document.getElementById('pur-unique').innerText = rawStockItems.length;
+            document.getElementById('purchase-count').innerText = rows.length + " items";
+
             var rHtml = [];
             for (var i = 0; i < rows.length; i++) {
                 var p = rows[i];
-                var dateStr = p.date > 0 ? formatDate(p.date) : '—';
                 rHtml.push("<tr>" +
-                    "<td>" + dateStr + "</td>" +
+                    "<td style='color:var(--text-muted);'>—</td>" +
                     "<td style='color:#fff; font-weight:600;'>" + p.item + "</td>" +
                     "<td style='color:var(--aurora-teal);'>" + p.distributor + "</td>" +
                     "<td>" + formatFullCurrencyINR(p.purchasePrice) + "</td>" +
-                    "<td style='font-weight:700; color:var(--aurora-emerald);'>" + p.receivedQty + "</td>" +
-                    "<td style='color:var(--aurora-pink);'>" + p.soldQty + "</td>" +
+                    "<td style='font-weight:700; color:var(--aurora-emerald);'>" + Math.round(p.receivedQty) + "</td>" +
+                    "<td style='color:var(--aurora-pink);'>" + Math.round(p.soldQty) + "</td>" +
                     "<td style='color:var(--aurora-amber);'>" + formatFullCurrencyINR(p.landingCost) + "</td>" +
                     "<td>" + formatFullCurrencyINR(p.selling) + "</td>" +
                     "<td style='color:var(--text-muted);'>" + formatFullCurrencyINR(p.mrp) + "</td>" +
@@ -1455,7 +1495,7 @@
                 "</tr>");
             }
             if (rHtml.length === 0) {
-                rHtml.push("<tr><td colspan='10' style='text-align:center; padding:40px; color:var(--text-muted);'>No purchase data found in As_EOM_Data.</td></tr>");
+                rHtml.push("<tr><td colspan='10' style='text-align:center; padding:40px; color:var(--text-muted);'>No purchase data found in Current_Stock.</td></tr>");
             }
             tbody.innerHTML = rHtml.join('');
         }
@@ -1554,22 +1594,35 @@
                 }
             }
 
-            // PRIMARY SOURCE = As_EOM_Data items (real closing stock, distributor, landing cost)
+            // PRIMARY SOURCE = Current_Stock items (closing stock in units, meter=1)
             var itemArr = [];
-            var useEom = rawEomItems.length > 0;
+            var useStock = rawStockItems.length > 0;
 
-            if (useEom) {
-                for (var e = 0; e < rawEomItems.length; e++) {
-                    var d = rawEomItems[e];
+            // Total sales per item across ALL sales (to deduct from closing → fresh closing)
+            var totalSalesPerItem = {};
+            for (var ti = 0; ti < rawSalesDataset.length; ti++) {
+                var ts = rawSalesDataset[ti];
+                totalSalesPerItem[ts.item] = (totalSalesPerItem[ts.item] || 0) + ts.qty;
+            }
+
+            if (useStock) {
+                for (var e = 0; e < rawStockItems.length; e++) {
+                    var d = rawStockItems[e];
                     if (d.landingCost <= 0) continue;
 
-                    // Avg daily: prefer sales-period qty; fallback to EOM out qty over period
-                    var periodSold = (salesPeriodQty[d.itemName] !== undefined) ? salesPeriodQty[d.itemName] : d.outQty;
+                    // Avg daily: sales in period; fallback to item's salesQty over period
+                    var periodSold = (salesPeriodQty[d.itemName] !== undefined) ? salesPeriodQty[d.itemName] : (d.salesQty || 0);
                     var avgDaily = periodSold / periodDays;
                     var maxLevel = Math.ceil(avgDaily * leadTime * safetyFactor);
                     if (maxLevel < 1) maxLevel = 1;
 
-                    var currentStock = d.closingStock;          // REAL closing stock
+                    // FRESH CLOSING = stock-sheet closing (units) − sales recorded in Summarize_Data
+                    // (Current_Stock closing already reflects Gofrugal; we further deduct dashboard sales
+                    //  so reorder reacts to latest bills even before next stock export.)
+                    var baseClosing = d.closingStock;            // units (meter=1)
+                    var dashSales = totalSalesPerItem[d.itemName] || 0;
+                    var currentStock = baseClosing - dashSales;
+                    // Note: if Current_Stock already includes these sales, deduction may go negative — clamp to 0.
                     if (currentStock < 0) currentStock = 0;
 
                     var stockPct = maxLevel > 0 ? (currentStock / maxLevel) * 100 : 0;
@@ -1588,13 +1641,13 @@
                         landingCost: d.landingCost,
                         avgDaily: avgDaily,
                         currentStock: currentStock,
+                        baseClosing: baseClosing,
                         maxLevel: maxLevel,
                         stockPct: stockPct,
                         status: status, statusClass: statusClass, statusOrder: statusOrder,
                         reorderQty: reorderQty,
                         capitalLocked: currentStock * d.landingCost,
-                        vendor: d.distributor || 'NA',
-                        received: d.receivedQty, soldEom: d.outQty
+                        vendor: d.distributor || d.brand || 'NA'
                     });
                 }
             } else {
@@ -1649,15 +1702,20 @@
             document.getElementById('ims-count-red').innerText = counts.red;
             document.getElementById('ims-count-black').innerText = counts.black;
             document.getElementById('ims-capital-locked').innerText = formatShortCurrency(capitalLocked);
+            document.getElementById('ims-total-stock').innerText = totalStockUnits + " units";
+            document.getElementById('ims-total-sold').innerText = Math.round(totalSoldUnits) + " units";
 
             // Data source badge
             var srcBadge = document.getElementById('ims-data-source');
-            if (useEom) {
+            if (useStock && stockSource === 'Current_Stock') {
                 srcBadge.className = 'data-source-badge live';
-                srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · As_EOM_Data';
+                srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · Current_Stock';
+            } else if (useStock) {
+                srcBadge.className = 'data-source-badge live';
+                srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · ' + stockSource;
             } else {
                 srcBadge.className = 'data-source-badge mock';
-                srcBadge.innerHTML = '<i class="fa-solid fa-flask"></i> Mock · As_EOM_Data not found';
+                srcBadge.innerHTML = '<i class="fa-solid fa-flask"></i> Mock · Current_Stock not found';
             }
 
             // Reorder priority (critical + stock-out)
