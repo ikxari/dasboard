@@ -677,6 +677,7 @@
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-customers', this)"><i class="fa-solid fa-users"></i> Customer CRM</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-daily', this)"><i class="fa-solid fa-calendar-day"></i> Daily Report</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-purchase', this)"><i class="fa-solid fa-cart-shopping"></i> Purchase Log</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-gpanalysis', this)"><i class="fa-solid fa-chart-line"></i> GP Analysis</a></li>
             </ul>
 
             <div class="sidebar-footer">
@@ -811,9 +812,9 @@
 
                 <div id="view-vendor" class="view-section">
                     <div class="glass-card">
-                        <div class="chart-title">Top Vendors Rank (Net Sales Contribution)</div>
+                        <div class="chart-title">Top Distributors by Sales (kis supplier ka maal zyada bika)</div>
                         <div id="echart-vendors" class="echart-container" style="min-height: 560px;"></div>
-                        <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Most Profitable Vendor</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Vendor Dependency</div><div class="insight-data" style="color: var(--aurora-amber);">Active Monitoring Required</div></div></div>
+                        <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Top Distributor (by sales)</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Best Selling Source</div><div class="insight-data" style="color: var(--aurora-emerald);">Stock Up More</div></div></div>
                     </div>
                 </div>
 
@@ -914,8 +915,8 @@
                         <div class="table-wrapper" style="max-height: 700px;">
                             <table class="erp-table" id="table-ims">
                                 <thead><tr>
-                                    <th>#</th><th>Item</th><th>MRP</th><th>Landing Cost</th><th>Avg Daily Sale</th>
-                                    <th>Current Stock</th><th>Max Level</th><th>Stock %</th><th>Status</th><th>Reorder Qty</th>
+                                    <th>#</th><th>Item</th><th>Type of Wear</th><th>MRP</th><th>Selling</th><th>Avg Daily Sale</th>
+                                    <th>Current Stock</th><th>Max Level</th><th>Status</th><th>Reorder Qty</th>
                                 </tr></thead>
                                 <tbody></tbody>
                             </table>
@@ -966,7 +967,7 @@
 
                     <div class="glass-card">
                         <div class="chart-title">
-                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Current_Stock</span></span>
+                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Purchase + Sales</span></span>
                             <span id="purchase-count" style="font-size: 12px; color: var(--text-muted); font-weight: 600;"></span>
                         </div>
                         <div class="table-wrapper" style="max-height: 620px;">
@@ -982,13 +983,42 @@
                     </div>
                 </div>
 
+                <!-- ============================================================
+                     GP ANALYSIS VIEW
+                     ============================================================ -->
+                <div id="view-gpanalysis" class="view-section">
+                    <!-- Real number cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-emerald);"><div class="kpi-title">Total Gross Profit</div><div class="kpi-value" id="gp-total" style="font-size:26px;">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-violet);"><div class="kpi-title">Avg G.P. %</div><div class="kpi-value" id="gp-pct" style="font-size:26px;">0%</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-teal);"><div class="kpi-title">Inventory Turns</div><div class="kpi-value" id="gp-turns" style="font-size:26px;">0x</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-amber);"><div class="kpi-title">Top GP Item</div><div class="kpi-value" id="gp-topitem" style="font-size:18px;">-</div></div></div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-xl-7"><div class="glass-card"><div class="chart-title">Gross Profit by Item (Top 15, Descending)</div><div id="echart-gp-items" class="echart-container" style="min-height:420px;"></div></div></div>
+                        <div class="col-12 col-xl-5"><div class="glass-card"><div class="chart-title">Client Type Split</div><div id="echart-gp-client" class="echart-container" style="min-height:420px;"></div></div></div>
+                    </div>
+
+                    <!-- GP contribution table -->
+                    <div class="glass-card mb-4">
+                        <div class="chart-title">G.P. Contribution Breakdown</div>
+                        <div class="table-wrapper" style="max-height:420px;">
+                            <table class="erp-table" id="table-gp">
+                                <thead><tr><th>#</th><th>Item</th><th>Gross Profit (₹)</th><th>% of Total G.P.</th><th>G.P. %</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbwy20KDehFTN7OIay4Ezh23OOBLF2x09adAd_eiTWkEfwClgWxHdmpTlzxgHUnSxEypoA/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbzgM-jDdRNplT-xcnxbJ-zFIL25N99eNb7diOI8VtNUaHJBBreHYosybX-VjLhyb9vqxQ/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -996,6 +1026,8 @@
         var rawSalesDataset = [];
         var rawExpensesDataset = [];
         var rawStockItems = [];
+        var rawDistributors = [];
+        var rawItemDistrib = {};
         var rawPurchaseLog = [];
         var stockFound = false;
         var stockSource = 'none';
@@ -1181,6 +1213,8 @@
                     rawSalesDataset = res.sales; 
                     rawExpensesDataset = res.expenses;
                     rawStockItems = res.stockItems || [];
+                    rawDistributors = res.distributors || [];
+                    rawItemDistrib = res.itemDistrib || {};
                     rawPurchaseLog = res.purchaseLog || [];
                     stockFound = res.stockFound || false;
                     stockSource = res.stockSource || 'none';
@@ -1269,6 +1303,9 @@
                 subtitle.innerText = 'Single-day deep dive — bills and margins';
             } else if (targetId === 'view-purchase') {
                 subtitle.innerText = 'Purchase log · received, sold & closing stock per item';
+            } else if (targetId === 'view-gpanalysis') {
+                rangeP.style.display = 'flex';
+                subtitle.innerText = 'Gross profit, inventory turns, client & vendor analysis';
             } else if (targetId === 'view-inventory') {
                 subtitle.innerText = 'Smart stock management · Max-level engine · Reorder priority';
                 // Show IMS controls only if unlocked
@@ -1351,11 +1388,12 @@
             if (globalCurrentActiveView === 'view-overview') renderOverview(kpis, trendMap, catMap);
             if (globalCurrentActiveView === 'view-summarize') renderSummarize(fSales);
             if (globalCurrentActiveView === 'view-expense') renderExpense(kpis.exp, expCatMap, fExp);
-            if (globalCurrentActiveView === 'view-vendor') renderVendor(vendorMap);
+            if (globalCurrentActiveView === 'view-vendor') renderVendor(fSales);
             if (globalCurrentActiveView === 'view-gst') renderGST(kpis.outGst, inGst, netGst);
             if (globalCurrentActiveView === 'view-items') renderItems(itemMap);
             if (globalCurrentActiveView === 'view-customers') renderCustomers(custMap);
             if (globalCurrentActiveView === 'view-daily') renderDaily(kpis, fSales, custMap);
+            if (globalCurrentActiveView === 'view-gpanalysis') renderGPAnalysis(fSales, kpis);
             resetGlobalSearch();
         }
 
@@ -1441,12 +1479,12 @@
                     rHtml.push("<tr>" +
                         "<td style='font-weight:800; color:var(--text-muted);'>" + (it2.rank) + "</td>" +
                         "<td style='color:#fff; font-weight:600;'>" + it2.name + "</td>" +
+                        "<td style='color:var(--aurora-teal);'>" + (it2.wear || 'NA') + "</td>" +
                         "<td style='color:" + AURORA.blue + "; font-weight:700;'>" + formatFullCurrencyINR(it2.mrp || 0) + "</td>" +
-                        "<td style='color:" + AURORA.amber + "; font-weight:700;'>" + formatFullCurrencyINR(it2.landingCost) + "</td>" +
+                        "<td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(it2.selling || 0) + "</td>" +
                         "<td>" + it2.avgDaily.toFixed(2) + " U/day</td>" +
                         "<td style='font-weight:700; color:#fff;'>" + it2.currentStock + "</td>" +
                         "<td style='color:var(--text-muted);'>" + it2.maxLevel + "</td>" +
-                        "<td style='font-weight:700;'>" + Math.round(it2.stockPct) + "%</td>" +
                         "<td><span class='status-pill-ims " + it2.statusClass + "'><span class='dot'></span>" + it2.status + "</span></td>" +
                         "<td style='color:" + (it2.reorderQty > 0 ? AURORA.emerald : 'var(--text-muted)') + "; font-weight:700;'>" + (it2.reorderQty > 0 ? '+' + it2.reorderQty : '—') + "</td>" +
                     "</tr>");
@@ -1582,6 +1620,76 @@
             doc.save("Ikxari_Reorder_" + fileDate + ".pdf");
         }
 
+        function renderGPAnalysis(fSales, kpis) {
+            // Aggregate GP, sales per item + client type
+            var gpItem = {}, netItem = {};
+            var clientTypeMap = {};
+            var totalGP = 0, totalNet = 0, totalCOGS = 0;
+            for (var i = 0; i < fSales.length; i++) {
+                var s = fSales[i];
+                gpItem[s.item] = (gpItem[s.item] || 0) + s.grossProfit;
+                netItem[s.item] = (netItem[s.item] || 0) + s.netSales;
+                totalGP += s.grossProfit;
+                totalNet += s.netSales;
+                totalCOGS += s.cogsPerUnit * s.qty;
+                // client type: heuristic — known name vs walk-in/NA
+                var ct = (!s.customer || s.customer === 'Unknown' || s.customer === 'NA' || s.customer.toUpperCase() === 'CASH') ? 'Walk-in / Cash' : 'Named Customer';
+                clientTypeMap[ct] = (clientTypeMap[ct] || 0) + s.netSales;
+            }
+
+            // Cards
+            document.getElementById('gp-total').innerText = formatFullCurrencyINR(totalGP);
+            var gpPct = totalNet > 0 ? Math.round((totalGP / totalNet) * 100) : 0;
+            document.getElementById('gp-pct').innerText = gpPct + "%";
+
+            // Inventory Turns = Revenue / Average Inventory (at landing/RM cost)
+            // Average inventory value = current stock value (capital locked) from Current_Stock
+            var invValue = 0;
+            for (var k = 0; k < rawStockItems.length; k++) {
+                invValue += (rawStockItems[k].closingStock || 0) * (rawStockItems[k].landingCost || 0);
+            }
+            var turns = invValue > 0 ? (totalNet / invValue) : 0;
+            document.getElementById('gp-turns').innerText = turns.toFixed(2) + "x";
+
+            // GP descending array
+            var gpArr = Object.keys(gpItem).map(function(k){ return { name: k, gp: gpItem[k], net: netItem[k] || 0 }; });
+            gpArr.sort(function(a,b){ return b.gp - a.gp; });
+            document.getElementById('gp-topitem').innerText = gpArr.length > 0 ? gpArr[0].name : '-';
+
+            // Chart: top 15 GP
+            var top15 = gpArr.slice(0, 15).reverse();
+            initEChart('echart-gp-items', {
+                tooltip: auroraTooltip({ trigger: 'axis', formatter: function(p){ return '<b>'+p[0].name+'</b><br/>'+p[0].marker+' GP: '+formatFullCurrencyINR(p[0].value); } }),
+                grid: { left: '2%', right: '12%', bottom: '2%', top: '2%', containLabel: true },
+                xAxis: { type: 'value', splitLine: { show:false }, axisLabel: { show:false }, axisLine:{show:false}, axisTick:{show:false} },
+                yAxis: { type: 'category', data: top15.map(function(d){return d.name;}), axisLine:{show:false}, axisTick:{show:false}, axisLabel: { color: AURORA.text, width:130, overflow:'truncate', fontFamily:'Jost', fontSize:12, fontWeight:600 } },
+                series: [{ type:'bar', data: top15.map(function(d){return Math.round(d.gp);}), barWidth:'65%', itemStyle:{ color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(16,185,129,0.15)'},{offset:1,color:AURORA.emerald}]), borderRadius:[0,6,6,0] }, label:{ show:true, position:'right', color:'#fff', fontWeight:800, fontFamily:'Jost', fontSize:11, formatter:function(p){return formatShortCurrency(p.value);} } }],
+                animation:true, animationDuration:1200
+            });
+
+            // Client type donut
+            var ctKeys = Object.keys(clientTypeMap);
+            var ctColors = [AURORA.violet, AURORA.teal, AURORA.amber, AURORA.pink];
+            initEChart('echart-gp-client', {
+                tooltip: auroraTooltip({ trigger:'item', formatter:function(p){ return '<b>'+p.name+'</b><br/>'+p.marker+' '+formatFullCurrencyINR(p.value)+' ('+p.percent+'%)'; } }),
+                legend: { bottom: 0, textStyle:{ color: AURORA.muted, fontFamily:'Jost', fontWeight:600 } },
+                series: [{ type:'pie', radius:['45%','72%'], center:['50%','45%'], itemStyle:{ borderRadius:8, borderColor:'rgba(2,6,23,0.6)', borderWidth:3 }, label:{show:false}, data: ctKeys.map(function(k,idx){ return { name:k, value:Math.round(clientTypeMap[k]), itemStyle:{ color: ctColors[idx % ctColors.length] } }; }) }],
+                animation:true, animationDuration:1200
+            });
+
+            // GP table
+            var tbody = document.querySelector('#table-gp tbody');
+            var rows = [];
+            for (var t = 0; t < gpArr.length; t++) {
+                var g = gpArr[t];
+                var pctOfTotal = totalGP > 0 ? ((g.gp / totalGP) * 100).toFixed(1) : 0;
+                var ownPct = g.net > 0 ? ((g.gp / g.net) * 100).toFixed(1) : 0;
+                rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t+1)+"</td><td style='color:#fff;font-weight:600;'>"+g.name+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g.gp)+"</td><td>"+pctOfTotal+"%</td><td style='color:"+AURORA.violet+";'>"+ownPct+"%</td></tr>");
+            }
+            if (rows.length === 0) rows.push("<tr><td colspan='5' style='text-align:center;padding:30px;color:var(--text-muted);'>No data in selected dates.</td></tr>");
+            tbody.innerHTML = rows.join('');
+        }
+
         function renderInventory() {
             // Read controls
             var periodDays = parseInt(document.getElementById('ims-period').value) || 30;
@@ -1620,13 +1728,9 @@
                     var maxLevel = Math.ceil(avgDaily * leadTime * safetyFactor);
                     if (maxLevel < 1) maxLevel = 1;
 
-                    // FRESH CLOSING = stock-sheet closing (units) − sales recorded in Summarize_Data
-                    // (Current_Stock closing already reflects Gofrugal; we further deduct dashboard sales
-                    //  so reorder reacts to latest bills even before next stock export.)
-                    var baseClosing = d.closingStock;            // units (meter=1)
-                    var dashSales = totalSalesPerItem[d.itemName] || 0;
-                    var currentStock = baseClosing - dashSales;
-                    // Note: if Current_Stock already includes these sales, deduction may go negative — clamp to 0.
+                    // CLOSING already computed in backend = received − sold (per item).
+                    var baseClosing = d.closingStock;
+                    var currentStock = Math.round(baseClosing);
                     if (currentStock < 0) currentStock = 0;
 
                     var stockPct = maxLevel > 0 ? (currentStock / maxLevel) * 100 : 0;
@@ -1642,7 +1746,9 @@
 
                     itemArr.push({
                         name: d.itemName,
+                        wear: d.wear || 'NA',
                         landingCost: d.landingCost,
+                        selling: d.selling || 0,
                         mrp: d.mrp || 0,
                         avgDaily: avgDaily,
                         currentStock: currentStock,
@@ -1723,15 +1829,15 @@
 
             // Data source badge
             var srcBadge = document.getElementById('ims-data-source');
-            if (useStock && stockSource === 'Current_Stock') {
+            if (useStock && stockSource === '3133_Purchase') {
                 srcBadge.className = 'data-source-badge live';
-                srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · Current_Stock';
+                srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · Purchase + Sales';
             } else if (useStock) {
                 srcBadge.className = 'data-source-badge live';
                 srcBadge.innerHTML = '<i class="fa-solid fa-database"></i> Live · ' + stockSource;
             } else {
                 srcBadge.className = 'data-source-badge mock';
-                srcBadge.innerHTML = '<i class="fa-solid fa-flask"></i> Mock · Current_Stock not found';
+                srcBadge.innerHTML = '<i class="fa-solid fa-flask"></i> Mock · Purchase tab not found';
             }
 
             // Reorder priority (critical + stock-out)
@@ -1886,7 +1992,34 @@
             tbody.innerHTML = rHtml.join('');
         }
 
-        function renderVendor(vendorMap) {
+        function renderVendor(fSales) {
+            // Distributor-wise NET SALES: take each sale, find item's distributor from Current_Stock
+            var distSales = {};
+            for (var i = 0; i < fSales.length; i++) {
+                var s = fSales[i];
+                var dist = rawItemDistrib[s.item] || s.vendor || 'Unknown';
+                if (!distSales[dist]) distSales[dist] = { value: 0, qty: 0 };
+                distSales[dist].value += s.netSales;
+                distSales[dist].qty += s.qty;
+            }
+            var dArr = Object.keys(distSales).map(function(k){ return { name: k, value: distSales[k].value, qty: distSales[k].qty }; });
+            dArr.sort(function(a,b){ return b.value - a.value; });
+            dArr = dArr.slice(0, 15);
+            dArr.reverse();
+            var names = dArr.map(function(v){ return v.name; });
+            var values = dArr.map(function(v){ return Math.round(v.value); });
+            if (dArr.length > 0) { document.getElementById('insight-top-vendor').innerText = dArr[dArr.length-1].name; }
+            initEChart('echart-vendors', {
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } }, formatter: function(p) { var d = dArr[p[0].dataIndex]; return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value) + '<br/>Qty sold: ' + (d ? d.qty : 0); } }),
+                grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
+                xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
+                yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12, width: 160, overflow: 'truncate' } },
+                series: [{ type: 'bar', data: values, barWidth: '55%', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' }, { offset: 1, color: AURORA.emerald }]), borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)' }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }, emphasis: { itemStyle: { shadowBlur: 20 } } }],
+                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
+            });
+        }
+
+        function renderVendor_OLD(vendorMap) {
             var vArr = sortMap(vendorMap, 15); 
             vArr.reverse(); 
             var names = vArr.map(function(v) { return v.k; });
