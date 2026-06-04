@@ -1090,7 +1090,7 @@
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbzy71SMENBTTIyc4KDYjBzt2JNY2LTXQvocm_Z4Zm-gocqJp2pueNvRbcNukpTht9yHUA/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbx0rcqxnzjC9decRtqST6QVWokLmpGeDIgovVUazyfWBhlFHPwF6mfPYSpvFaCA2FolRw/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1276,6 +1276,7 @@
         function formatFullCurrencyINR(v) { var n = parseFloat(v) || 0; return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n); }
         function formatShortCurrency(val) {
             var num = parseFloat(val) || 0;
+            if (Math.abs(num) >= 10000000) return "₹" + (num / 10000000).toFixed(2) + "Cr";
             if (Math.abs(num) >= 100000) return "₹" + (num / 100000).toFixed(2) + "L";
             if (Math.abs(num) >= 1000) return "₹" + (num / 1000).toFixed(1) + "K";
             return "₹" + Math.round(num);
@@ -1771,7 +1772,7 @@
             document.getElementById('avg-gppct').innerText = gpPct.toFixed(1) + "%";
 
             // Daily trend from Daily_Operations (accurate, ready Day Gross)
-            var ops = (rawDailyOps || []).slice().filter(function(d){ return d.date > 0; });
+            var ops = (rawDailyOps || []).slice().filter(function(d){ return d.date > 0 && Math.abs(d.selling) < 1e9 && Math.abs(d.gross) < 1e9; });
             ops.sort(function(a,b){ return a.date - b.date; });
             var labels = ops.map(function(d){ return new Date(d.date).toISOString().split('T')[0]; });
             var sell = ops.map(function(d){ return Math.round(d.selling); });
