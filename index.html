@@ -20,31 +20,31 @@
 
     <style>
         :root {
-            --bg-base: #020617;
-            --bg-mid: #0B1228;
-            --bg-soft: #0F172A;
+            --bg-base: #14080E;
+            --bg-mid: #1F0D16;
+            --bg-soft: #2A121E;
 
-            --aurora-green: #10B981;
-            --aurora-emerald: #34D399;
-            --aurora-violet: #A78BFA;
-            --aurora-purple: #8B5CF6;
-            --aurora-teal: #2DD4BF;
-            --aurora-pink: #F472B6;
-            --aurora-blue: #60A5FA;
-            --aurora-amber: #FBBF24;
-            --aurora-red: #EF4444;
-            --aurora-black-status: #475569;
+            --aurora-green: #E0457B;
+            --aurora-emerald: #F06595;
+            --aurora-violet: #C9A227;
+            --aurora-purple: #B8860B;
+            --aurora-teal: #D4A5B8;
+            --aurora-pink: #E0457B;
+            --aurora-blue: #9B6A8F;
+            --aurora-amber: #E8B339;
+            --aurora-red: #E5484D;
+            --aurora-black-status: #6B4A57;
 
-            --glass-bg: rgba(15, 23, 42, 0.45);
-            --glass-bg-strong: rgba(15, 23, 42, 0.7);
-            --glass-border: rgba(167, 139, 250, 0.12);
-            --glass-border-hover: rgba(167, 139, 250, 0.28);
-            --glass-highlight: rgba(255, 255, 255, 0.06);
+            --glass-bg: rgba(42, 18, 30, 0.5);
+            --glass-bg-strong: rgba(42, 18, 30, 0.78);
+            --glass-border: rgba(224, 69, 123, 0.16);
+            --glass-border-hover: rgba(201, 162, 39, 0.4);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
 
-            --text-main: #F8FAFC; 
-            --text-muted: #94A3B8;
-            --text-highlight: #E2E8F0;
-            --text-soft: #CBD5E1;
+            --text-main: #FDF6F0; 
+            --text-muted: #B89AA5;
+            --text-highlight: #F3E9E2;
+            --text-soft: #E5D3CC;
         }
 
         * { box-sizing: border-box; }
@@ -65,7 +65,8 @@
 
         body { 
             font-family: 'Jost', sans-serif; 
-            background: var(--bg-base); 
+            background: linear-gradient(160deg, #14080E 0%, #1F0D16 55%, #0E0509 100%);
+            background-attachment: fixed;
             color: var(--text-main); 
             overflow-x: hidden; 
             margin: 0; padding: 0; min-height: 100vh; position: relative;
@@ -702,6 +703,8 @@
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-daily', this)"><i class="fa-solid fa-calendar-day"></i> Daily Report</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-purchase', this)"><i class="fa-solid fa-cart-shopping"></i> Purchase Log</a></li>
                 <li class="nav-item"><a class="nav-link" onclick="switchView('view-gpanalysis', this)"><i class="fa-solid fa-chart-line"></i> GP Analysis</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-avganalysis', this)"><i class="fa-solid fa-chart-pie"></i> Average Analysis</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="switchView('view-unrecorded', this)"><i class="fa-solid fa-cash-register"></i> Unrecorded Sale</a></li>
             </ul>
 
             <div class="sidebar-footer">
@@ -783,17 +786,10 @@
 
                 <div id="view-overview" class="view-section active">
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Net Sales (Ex GST)</span><div class="kpi-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--aurora-green);"><i class="fa-solid fa-indian-rupee-sign"></i></div></div><div class="kpi-value" id="kpi-netsales">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>Revenue Active</span></div></div></div>
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-header"><span class="kpi-title">Gross Profit</span><div class="kpi-icon" style="background: rgba(167, 139, 250, 0.12); color: var(--aurora-violet);"><i class="fa-solid fa-wallet"></i></div></div><div class="kpi-value" id="kpi-gp">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>Margin Active</span></div></div></div>
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-teal);"><div class="kpi-header"><span class="kpi-title">Total COGS</span><div class="kpi-icon" style="background: rgba(45, 212, 191, 0.12); color: var(--aurora-teal);"><i class="fa-solid fa-boxes-stacked"></i></div></div><div class="kpi-value" id="kpi-cogs">₹0</div><div class="kpi-trend"><i class="fa-solid fa-minus"></i> <span class="text-muted">Cost Base</span></div></div></div>
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-pink);"><div class="kpi-header"><span class="kpi-title">Total Expenses</span><div class="kpi-icon" style="background: rgba(244, 114, 182, 0.12); color: var(--aurora-pink);"><i class="fa-solid fa-receipt"></i></div></div><div class="kpi-value" id="kpi-exp">₹0</div><div class="kpi-trend negative"><i class="fa-solid fa-arrow-trend-down"></i> <span>Outflow</span></div></div></div>
-                    </div>
-
-                    <div class="row g-4 mb-4">
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-blue);"><div class="kpi-header"><span class="kpi-title">Total Selling Value</span><div class="kpi-icon" style="background: rgba(96, 165, 250, 0.12); color: var(--aurora-blue);"><i class="fa-solid fa-tags"></i></div></div><div class="kpi-value" id="kpi-selling">₹0</div><div class="kpi-trend"><i class="fa-solid fa-tag"></i> <span class="text-muted">Selling × Qty</span></div></div></div>
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-header"><span class="kpi-title">Net Profit</span><div class="kpi-icon" style="background: rgba(52, 211, 153, 0.12); color: var(--aurora-emerald);"><i class="fa-solid fa-sack-dollar"></i></div></div><div class="kpi-value" id="kpi-np">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>GP − Expense</span></div></div></div>
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-amber);"><div class="kpi-header"><span class="kpi-title">Avg Net Profit %</span><div class="kpi-icon" style="background: rgba(251, 191, 36, 0.12); color: var(--aurora-amber);"><i class="fa-solid fa-percent"></i></div></div><div class="kpi-value" id="kpi-nppct">0%</div><div class="kpi-trend"><i class="fa-solid fa-chart-line"></i> <span class="text-muted">NP ÷ Net Sales</span></div></div></div>
-                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-purple);"><div class="kpi-header"><span class="kpi-title">Avg Day Net Sale</span><div class="kpi-icon" style="background: rgba(139, 92, 246, 0.12); color: var(--aurora-purple);"><i class="fa-solid fa-calendar-day"></i></div></div><div class="kpi-value" id="kpi-avgday">₹0</div><div class="kpi-trend"><i class="fa-solid fa-divide"></i> <span class="text-muted">Net ÷ Days</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Total Sale (Ex GST)</span><div class="kpi-icon" style="background: rgba(224, 69, 123, 0.14); color: var(--aurora-green);"><i class="fa-solid fa-indian-rupee-sign"></i></div></div><div class="kpi-value" id="kpi-netsales">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>Before tax</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-header"><span class="kpi-title">Gross Profit</span><div class="kpi-icon" style="background: rgba(201, 162, 39, 0.14); color: var(--aurora-violet);"><i class="fa-solid fa-wallet"></i></div></div><div class="kpi-value" id="kpi-gp">₹0</div><div class="kpi-trend"><i class="fa-solid fa-circle-info"></i> <span class="text-muted">Sale − Landing (incl. tax)</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-pink);"><div class="kpi-header"><span class="kpi-title">Total Expenses</span><div class="kpi-icon" style="background: rgba(224, 69, 123, 0.14); color: var(--aurora-pink);"><i class="fa-solid fa-receipt"></i></div></div><div class="kpi-value" id="kpi-exp">₹0</div><div class="kpi-trend negative"><i class="fa-solid fa-arrow-trend-down"></i> <span>Outflow</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-header"><span class="kpi-title">Net Profit</span><div class="kpi-icon" style="background: rgba(240, 101, 149, 0.14); color: var(--aurora-emerald);"><i class="fa-solid fa-sack-dollar"></i></div></div><div class="kpi-value" id="kpi-np">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>GP − Expenses</span></div></div></div>
                     </div>
 
                     <div class="row g-4 mb-4">
@@ -821,10 +817,10 @@
 
                 <div id="view-summarize" class="view-section">
                     <div class="glass-card">
-                        <div class="chart-title">Detailed Sales Ledger <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Unlimited Scroll</span></div>
+                        <div class="chart-title">Summarize Sales Data <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Summarize_Sales_Data</span></div>
                         <div class="table-wrapper">
                             <table class="erp-table" id="table-summarize">
-                                <thead><tr><th>Date</th><th>Invoice ID</th><th>Product Line</th><th>Qty</th><th>Client</th><th>Net Revenue</th><th>Tax (GST)</th></tr></thead>
+                                <thead><tr><th>#</th><th>Item</th><th>Distributor</th><th>Type of Wear</th><th>Selling</th><th>Sold Qty</th><th>GST</th><th>Gross Profit</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
@@ -1053,13 +1049,48 @@
                     </div>
                 </div>
 
+                <!-- ===== AVERAGE ANALYSIS VIEW ===== -->
+                <div id="view-avganalysis" class="view-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Avg Day Sale</span><div class="kpi-icon" style="background: rgba(224, 69, 123, 0.14); color: var(--aurora-green);"><i class="fa-solid fa-calendar-day"></i></div></div><div class="kpi-value" id="avg-daysale">₹0</div><div class="kpi-trend"><i class="fa-solid fa-divide"></i> <span class="text-muted">Total Sale ÷ Days</span></div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-header"><span class="kpi-title">Net Profit</span><div class="kpi-icon" style="background: rgba(240, 101, 149, 0.14); color: var(--aurora-emerald);"><i class="fa-solid fa-sack-dollar"></i></div></div><div class="kpi-value" id="avg-np">₹0</div><div class="kpi-trend"><i class="fa-solid fa-circle-info"></i> <span class="text-muted">GP − Expenses</span></div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-header"><span class="kpi-title">Total Selling Value</span><div class="kpi-icon" style="background: rgba(201, 162, 39, 0.14); color: var(--aurora-violet);"><i class="fa-solid fa-tags"></i></div></div><div class="kpi-value" id="avg-selling">₹0</div><div class="kpi-trend"><i class="fa-solid fa-tag"></i> <span class="text-muted">Selling × Qty (Ex GST)</span></div></div></div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6"><div class="glass-card" style="border-left: 3px solid var(--aurora-amber);"><div class="kpi-header"><span class="kpi-title">Avg Net Profit %</span><div class="kpi-icon" style="background: rgba(232, 179, 57, 0.14); color: var(--aurora-amber);"><i class="fa-solid fa-percent"></i></div></div><div class="kpi-value" id="avg-nppct">0%</div><div class="kpi-trend"><i class="fa-solid fa-chart-line"></i> <span class="text-muted">NP ÷ Total Sale</span></div></div></div>
+                        <div class="col-12 col-md-6"><div class="glass-card" style="border-left: 3px solid var(--aurora-blue);"><div class="kpi-header"><span class="kpi-title">Avg GP %</span><div class="kpi-icon" style="background: rgba(155, 106, 143, 0.14); color: var(--aurora-blue);"><i class="fa-solid fa-percent"></i></div></div><div class="kpi-value" id="avg-gppct">0%</div><div class="kpi-trend"><i class="fa-solid fa-chart-line"></i> <span class="text-muted">GP ÷ Total Sale</span></div></div></div>
+                    </div>
+                    <div class="glass-card mt-4">
+                        <div class="chart-title">Daily Sale vs Gross (from Daily_Operations)</div>
+                        <div id="echart-avgtrend" class="echart-container" style="min-height: 400px;"></div>
+                    </div>
+                </div>
+
+                <!-- ===== UNRECORDED SALE VIEW ===== -->
+                <div id="view-unrecorded" class="view-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Total Unrecorded Value</span><div class="kpi-icon" style="background: rgba(224, 69, 123, 0.14); color: var(--aurora-green);"><i class="fa-solid fa-cash-register"></i></div></div><div class="kpi-value" id="unrec-total">₹0</div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-header"><span class="kpi-title">Total Qty</span><div class="kpi-icon" style="background: rgba(201, 162, 39, 0.14); color: var(--aurora-violet);"><i class="fa-solid fa-boxes-stacked"></i></div></div><div class="kpi-value" id="unrec-qty">0</div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-header"><span class="kpi-title">Entries</span><div class="kpi-icon" style="background: rgba(240, 101, 149, 0.14); color: var(--aurora-emerald);"><i class="fa-solid fa-list"></i></div></div><div class="kpi-value" id="unrec-count">0</div></div></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="chart-title">Unrecorded / Cash Sales <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Unrecorded_sale_Sheet</span></div>
+                        <div class="table-wrapper" style="max-height: 560px;">
+                            <table class="erp-table" id="table-unrecorded">
+                                <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Price</th><th>Total Value</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbwd0jLPAf032SPlO2S5P2qus_ZY1SRCYutqkxGTktxwUhW_zeVwjWJzbJpNzbWoG0SptQ/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbzy71SMENBTTIyc4KDYjBzt2JNY2LTXQvocm_Z4Zm-gocqJp2pueNvRbcNukpTht9yHUA/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1069,6 +1100,10 @@
         var rawStockItems = [];
         var rawDistributors = [];
         var rawItemDistrib = {};
+        var rawDailyOps = [];
+        var rawGpAnalysis = [];
+        var rawSummarizeSales = [];
+        var rawUnrecorded = [];
         var rawPurchaseLog = [];
         var stockFound = false;
         var stockSource = 'none';
@@ -1087,12 +1122,12 @@
         var clockTickerTimer = null;
 
         var AURORA = {
-            green: '#10B981', emerald: '#34D399', violet: '#A78BFA', purple: '#8B5CF6',
-            teal: '#2DD4BF', pink: '#F472B6', blue: '#60A5FA', amber: '#FBBF24',
-            red: '#EF4444', black: '#475569',
-            text: '#CBD5E1', muted: '#94A3B8',
-            grid: 'rgba(167, 139, 250, 0.06)',
-            tooltipBg: 'rgba(15, 23, 42, 0.95)',
+            green: '#E0457B', emerald: '#F06595', violet: '#C9A227', purple: '#B8860B',
+            teal: '#D4A5B8', pink: '#E0457B', blue: '#9B6A8F', amber: '#E8B339',
+            red: '#E5484D', black: '#6B4A57',
+            text: '#E5D3CC', muted: '#B89AA5',
+            grid: 'rgba(224, 69, 123, 0.07)',
+            tooltipBg: 'rgba(42, 18, 30, 0.96)',
             tooltipBorder: 'rgba(167, 139, 250, 0.2)'
         };
 
@@ -1303,6 +1338,10 @@
                     rawStockItems = res.stockItems || [];
                     rawDistributors = res.distributors || [];
                     rawItemDistrib = res.itemDistrib || {};
+                    rawDailyOps = res.dailyOps || [];
+                    rawGpAnalysis = res.gpAnalysis || [];
+                    rawSummarizeSales = res.summarizeSales || [];
+                    rawUnrecorded = res.unrecorded || [];
                     rawPurchaseLog = res.purchaseLog || [];
                     stockFound = res.stockFound || false;
                     stockSource = res.stockSource || 'none';
@@ -1395,6 +1434,11 @@
             } else if (targetId === 'view-gpanalysis') {
                 rangeP.style.display = 'flex';
                 subtitle.innerText = 'Gross profit, inventory turns, client & vendor analysis';
+            } else if (targetId === 'view-avganalysis') {
+                rangeP.style.display = 'flex';
+                subtitle.innerText = 'Average day sale, net profit & total selling value';
+            } else if (targetId === 'view-unrecorded') {
+                subtitle.innerText = 'Cash / unbilled sales — Unrecorded_sale_Sheet';
             } else if (targetId === 'view-inventory') {
                 subtitle.innerText = 'Smart stock management · Max-level engine · Reorder priority';
                 // Show IMS controls only if unlocked
@@ -1487,6 +1531,8 @@
             if (globalCurrentActiveView === 'view-customers') renderCustomers(custMap);
             if (globalCurrentActiveView === 'view-daily') renderDaily(kpis, fSales, custMap);
             if (globalCurrentActiveView === 'view-gpanalysis') renderGPAnalysis(fSales, kpis);
+            if (globalCurrentActiveView === 'view-avganalysis') renderAvgAnalysis(fSales, kpis);
+            if (globalCurrentActiveView === 'view-unrecorded') renderUnrecorded();
             resetGlobalSearch();
         }
 
@@ -1713,6 +1759,61 @@
             doc.save("Ikxari_Reorder_" + fileDate + ".pdf");
         }
 
+        function renderAvgAnalysis(fSales, kpis) {
+            var np = kpis.gp - kpis.exp;
+            var avgDay = kpis.days > 0 ? (kpis.netSales / kpis.days) : 0;
+            var npPct = kpis.netSales > 0 ? ((np / kpis.netSales) * 100) : 0;
+            var gpPct = kpis.netSales > 0 ? ((kpis.gp / kpis.netSales) * 100) : 0;
+            document.getElementById('avg-daysale').innerText = formatFullCurrencyINR(avgDay);
+            document.getElementById('avg-np').innerText = formatFullCurrencyINR(np);
+            document.getElementById('avg-selling').innerText = formatFullCurrencyINR(kpis.selling);
+            document.getElementById('avg-nppct').innerText = npPct.toFixed(1) + "%";
+            document.getElementById('avg-gppct').innerText = gpPct.toFixed(1) + "%";
+
+            // Daily trend from Daily_Operations (accurate, ready Day Gross)
+            var ops = (rawDailyOps || []).slice().filter(function(d){ return d.date > 0; });
+            ops.sort(function(a,b){ return a.date - b.date; });
+            var labels = ops.map(function(d){ return new Date(d.date).toISOString().split('T')[0]; });
+            var sell = ops.map(function(d){ return Math.round(d.selling); });
+            var gross = ops.map(function(d){ return Math.round(d.gross); });
+            initEChart('echart-avgtrend', {
+                tooltip: auroraTooltip({ trigger: 'axis', formatter: function(p){ var s=''; for(var i=0;i<p.length;i++){ s+=p[i].marker+' '+p[i].seriesName+': '+formatFullCurrencyINR(p[i].value)+'<br/>'; } return '<b>'+p[0].axisValue+'</b><br/>'+s; } }),
+                legend: { data: ['Day Selling', 'Day Gross'], textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600 }, bottom: 0 },
+                grid: { left: '3%', right: '4%', bottom: '12%', top: '6%', containLabel: true },
+                xAxis: { type: 'category', boundaryGap: true, data: labels, axisLine: { lineStyle: { color: AURORA.grid } }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 10 } },
+                yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
+                series: [
+                    { name: 'Day Selling', type: 'bar', barWidth: '48%', itemStyle: { borderRadius: [5,5,0,0], color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:AURORA.green},{offset:1,color:'rgba(224,69,123,0.12)'}]) }, data: sell },
+                    { name: 'Day Gross', type: 'line', smooth: 0.5, symbol: 'none', lineStyle: { color: AURORA.violet, width: 3 }, data: gross }
+                ],
+                animation: true, animationDuration: 1000
+            });
+        }
+
+        function renderUnrecorded() {
+            var list = (rawUnrecorded || []).slice();
+            var total = 0, qty = 0;
+            for (var i = 0; i < list.length; i++) { total += list[i].total || 0; qty += list[i].qty || 0; }
+            document.getElementById('unrec-total').innerText = formatFullCurrencyINR(total);
+            document.getElementById('unrec-qty').innerText = Math.round(qty);
+            document.getElementById('unrec-count').innerText = list.length;
+            var tb = document.querySelector('#table-unrecorded tbody');
+            var rows = [];
+            for (var j = 0; j < list.length; j++) {
+                var u = list[j];
+                var dt = u.date > 0 ? new Date(u.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+                rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(j+1)+"</td>"+
+                    "<td>"+dt+"</td>"+
+                    "<td style='color:var(--aurora-teal);'>"+u.customer+"</td>"+
+                    "<td style='color:#fff;font-weight:600;'>"+u.item+"</td>"+
+                    "<td style='font-weight:700;'>"+Math.round(u.qty)+"</td>"+
+                    "<td>"+formatFullCurrencyINR(u.price)+"</td>"+
+                    "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(u.total)+"</td></tr>");
+            }
+            if (rows.length === 0) rows.push("<tr><td colspan='7' style='text-align:center;padding:40px;color:var(--text-muted);'>Koi unrecorded sale nahi (ya IMPORTRANGE load ho raha).</td></tr>");
+            tb.innerHTML = rows.join('');
+        }
+
         function renderGPAnalysis(fSales, kpis) {
             // Aggregate GP, sales per item + client type
             var gpItem = {}, netItem = {};
@@ -1773,11 +1874,22 @@
             // GP table
             var tbody = document.querySelector('#table-gp tbody');
             var rows = [];
-            for (var t = 0; t < gpArr.length; t++) {
-                var g = gpArr[t];
-                var pctOfTotal = totalGP > 0 ? ((g.gp / totalGP) * 100).toFixed(1) : 0;
-                var ownPct = g.net > 0 ? ((g.gp / g.net) * 100).toFixed(1) : 0;
-                rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t+1)+"</td><td style='color:#fff;font-weight:600;'>"+g.name+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g.gp)+"</td><td>"+pctOfTotal+"%</td><td style='color:"+AURORA.violet+";'>"+ownPct+"%</td></tr>");
+            // Prefer ready 8020 GP analysis (accurate, user's own calc)
+            if (rawGpAnalysis && rawGpAnalysis.length > 0) {
+                var ga = rawGpAnalysis.slice().sort(function(a,b){ return b.gp - a.gp; });
+                for (var t = 0; t < ga.length; t++) {
+                    var g8 = ga[t];
+                    var pTot = g8.pctOfTotal <= 1 ? (g8.pctOfTotal*100) : g8.pctOfTotal;
+                    var pGp = g8.gpPct <= 1 ? (g8.gpPct*100) : g8.gpPct;
+                    rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t+1)+"</td><td style='color:#fff;font-weight:600;'>"+g8.item+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g8.gp)+"</td><td>"+pTot.toFixed(1)+"%</td><td style='color:"+AURORA.violet+";'>"+pGp.toFixed(1)+"%</td></tr>");
+                }
+            } else {
+                for (var t2 = 0; t2 < gpArr.length; t2++) {
+                    var g = gpArr[t2];
+                    var pctOfTotal = totalGP > 0 ? ((g.gp / totalGP) * 100).toFixed(1) : 0;
+                    var ownPct = g.net > 0 ? ((g.gp / g.net) * 100).toFixed(1) : 0;
+                    rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t2+1)+"</td><td style='color:#fff;font-weight:600;'>"+g.name+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g.gp)+"</td><td>"+pctOfTotal+"%</td><td style='color:"+AURORA.violet+";'>"+ownPct+"%</td></tr>");
+                }
             }
             if (rows.length === 0) rows.push("<tr><td colspan='5' style='text-align:center;padding:30px;color:var(--text-muted);'>No data in selected dates.</td></tr>");
             tbody.innerHTML = rows.join('');
@@ -1994,16 +2106,9 @@
         function renderOverview(kpis, trendMap, catMap) {
             document.getElementById('kpi-netsales').innerText = formatFullCurrencyINR(kpis.netSales);
             document.getElementById('kpi-gp').innerText = formatFullCurrencyINR(kpis.gp);
-            document.getElementById('kpi-cogs').innerText = formatFullCurrencyINR(kpis.cogs);
             document.getElementById('kpi-exp').innerText = formatFullCurrencyINR(kpis.exp);
-            // New KPIs
             var np = kpis.gp - kpis.exp;
-            var npPct = kpis.netSales > 0 ? ((np / kpis.netSales) * 100) : 0;
-            var avgDay = kpis.days > 0 ? (kpis.netSales / kpis.days) : 0;
-            document.getElementById('kpi-selling').innerText = formatFullCurrencyINR(kpis.selling);
             document.getElementById('kpi-np').innerText = formatFullCurrencyINR(np);
-            document.getElementById('kpi-nppct').innerText = npPct.toFixed(1) + "%";
-            document.getElementById('kpi-avgday').innerText = formatFullCurrencyINR(avgDay);
             var dates = Object.keys(trendMap).sort();
             var salesData = [], profitData = [];
             for(var x=0; x<dates.length; x++) {
@@ -2022,13 +2127,13 @@
                 tooltip: auroraTooltip({ trigger: 'axis', formatter: function(p) { return '<div style="font-weight:700; margin-bottom:6px;">' + p[0].axisValue + '</div>' + p[0].marker + ' Net Sales: <b style="color:' + AURORA.emerald + '">' + formatFullCurrencyINR(p[0].value) + '</b><br/>' + p[1].marker + ' Gross Profit: <b style="color:' + AURORA.violet + '">' + formatFullCurrencyINR(p[1].value) + '</b>'; } }),
                 legend: { data: ['Net Sales', 'Gross Profit'], textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600 }, bottom: 0, itemWidth: 14, itemHeight: 8, itemGap: 24 },
                 grid: { left: '3%', right: '4%', bottom: '12%', top: '8%', containLabel: true },
-                xAxis: { type: 'category', boundaryGap: false, data: dates, axisLine: { lineStyle: { color: AURORA.grid } }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11 } },
+                xAxis: { type: 'category', boundaryGap: true, data: dates, axisLine: { lineStyle: { color: AURORA.grid } }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11 } },
                 yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v) { return formatShortCurrency(v); } } },
                 series: [
-                    { name: 'Net Sales', type: 'line', smooth: 0.5, symbol: 'none', lineStyle: { color: AURORA.emerald, width: 3 }, areaStyle: { opacity: 1, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(52, 211, 153, 0.55)'}, {offset: 0.5, color: 'rgba(52, 211, 153, 0.18)'}, {offset: 1, color: 'rgba(52, 211, 153, 0)'}]) }, data: salesData },
-                    { name: 'Gross Profit', type: 'line', smooth: 0.5, symbol: 'none', lineStyle: { color: AURORA.violet, width: 3 }, areaStyle: { opacity: 1, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(167, 139, 250, 0.5)'}, {offset: 0.5, color: 'rgba(167, 139, 250, 0.15)'}, {offset: 1, color: 'rgba(167, 139, 250, 0)'}]) }, data: profitData }
+                    { name: 'Net Sales', type: 'bar', barWidth: '52%', itemStyle: { borderRadius: [6, 6, 0, 0], color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: AURORA.green}, {offset: 1, color: 'rgba(224, 69, 123, 0.12)'}]), shadowBlur: 10, shadowColor: 'rgba(224, 69, 123, 0.35)' }, data: salesData },
+                    { name: 'Gross Profit', type: 'line', smooth: 0.5, symbol: 'circle', symbolSize: 6, showSymbol: false, lineStyle: { color: AURORA.violet, width: 3, shadowBlur: 8, shadowColor: 'rgba(201, 162, 39, 0.5)' }, itemStyle: { color: AURORA.violet }, areaStyle: { opacity: 1, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(201, 162, 39, 0.22)'}, {offset: 1, color: 'rgba(201, 162, 39, 0)'}]) }, data: profitData }
                 ],
-                animation: true, animationDuration: 900, animationEasing: 'cubicOut'
+                animation: true, animationDuration: 1100, animationEasing: 'cubicOut'
             });
             var catArr = sortMap(catMap, 6);
             var catNames = catArr.map(function(item) { return item.k; });
@@ -2066,11 +2171,21 @@
 
         function renderSummarize(fSales) {
             var tbody = document.querySelector('#table-summarize tbody');
+            var list = (rawSummarizeSales || []).slice();
+            list.sort(function(a,b){ return b.gp - a.gp; });
             var rHtml = [];
-            for(var i=0; i<fSales.length; i++) {
-                var r = fSales[i];
-                rHtml.push("<tr><td>" + formatDate(r.dateObj) + "</td><td>" + r.billNo + "</td><td>" + r.item + "</td><td>" + r.qty + "</td><td>" + r.customer + "</td><td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(r.netSales) + "</td><td style='color:" + AURORA.pink + ";'>" + formatFullCurrencyINR(r.gstAmount) + "</td></tr>");
+            for(var i=0; i<list.length; i++) {
+                var r = list[i];
+                rHtml.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(i+1)+"</td>"+
+                    "<td style='color:#fff;font-weight:600;'>"+r.item+"</td>"+
+                    "<td style='color:var(--aurora-teal);'>"+r.distributor+"</td>"+
+                    "<td>"+r.wear+"</td>"+
+                    "<td style='color:"+AURORA.blue+";'>"+formatFullCurrencyINR(r.selling)+"</td>"+
+                    "<td style='font-weight:700;'>"+Math.round(r.soldQty)+"</td>"+
+                    "<td style='color:"+AURORA.pink+";'>"+formatFullCurrencyINR(r.gst)+"</td>"+
+                    "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(r.gp)+"</td></tr>");
             }
+            if (rHtml.length === 0) rHtml.push("<tr><td colspan='8' style='text-align:center;padding:40px;color:var(--text-muted);'>No data.</td></tr>");
             tbody.innerHTML = rHtml.join('');
         }
 
