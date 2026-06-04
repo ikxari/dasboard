@@ -255,6 +255,19 @@
 
         .navbar-left { display: flex; align-items: center; }
 
+        .hamburger-btn {
+            background: rgba(2,6,23,0.45); border: 1px solid var(--glass-border);
+            color: var(--text-soft); width: 40px; height: 40px; border-radius: 10px;
+            cursor: pointer; margin-right: 14px; font-size: 16px; transition: 0.25s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hamburger-btn:hover { color: #fff; border-color: var(--aurora-green); background: rgba(16,185,129,0.1); }
+
+        /* Collapsed sidebar */
+        body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
+        body.sidebar-collapsed .main-wrapper { margin-left: 0; width: 100%; }
+        .sidebar, .main-wrapper { transition: transform 0.3s ease, margin-left 0.3s ease, width 0.3s ease; }
+
         .navbar-search { 
             display: flex; align-items: center; background: rgba(2,6,23,0.45); 
             border: 1px solid var(--glass-border); border-radius: 10px; 
@@ -629,23 +642,34 @@
             <button class="btn btn-link text-muted mt-2" onclick="closeAdmin()">Cancel</button>
         </div>
         
-        <div class="admin-modal" id="admin-controls-box" style="display:none; width: 460px;">
+        <div class="admin-modal" id="admin-controls-box" style="display:none; width: 480px;">
             <h4 class="text-white fw-bold mb-4" style="background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Ikxari Control Center</h4>
-            
-            <div style="text-align: left; margin-bottom: 15px;">
-                <label class="text-muted" style="font-size: 12px; font-weight: 700;">Custom Notification Banner (Bell Icon)</label>
-                <input type="text" id="admin-notif-input" class="admin-input" placeholder="E.g., New API version deployed today.">
-            </div>
-            
-            <div style="text-align: left; margin-bottom: 20px;">
-                <label class="text-muted" style="font-size: 12px; font-weight: 700;">Maintenance Mode Message</label>
-                <input type="text" id="admin-maint-input" class="admin-input" placeholder="E.g., Database sync in progress...">
-                <div class="form-check form-switch mt-2">
-                    <input class="form-check-input" type="checkbox" id="admin-maint-toggle">
-                    <label class="form-check-label" for="admin-maint-toggle">Enable Global Maintenance Mode Alert</label>
+
+            <div style="text-align: left; margin-bottom: 16px; padding: 14px; background: rgba(2,6,23,0.4); border-radius: 10px; border: 1px solid var(--glass-border);">
+                <div class="form-check form-switch" style="margin-bottom: 10px;">
+                    <input class="form-check-input" type="checkbox" id="admin-bell-toggle" checked>
+                    <label class="form-check-label" for="admin-bell-toggle">🔔 Bell Notifications ON</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="admin-autopush-toggle" checked>
+                    <label class="form-check-label" for="admin-autopush-toggle">⚡ Auto-push (naye sales/stock alerts apne aap)</label>
                 </div>
             </div>
-            
+
+            <div style="text-align: left; margin-bottom: 16px;">
+                <label class="text-muted" style="font-size: 12px; font-weight: 700;">📢 Manual Announcement (bell me dikhega)</label>
+                <input type="text" id="admin-notif-input" class="admin-input" placeholder="E.g., Kal stock aane wala hai">
+            </div>
+
+            <div style="text-align: left; margin-bottom: 20px; padding: 14px; background: rgba(239,68,68,0.06); border-radius: 10px; border: 1px solid rgba(239,68,68,0.2);">
+                <label class="text-muted" style="font-size: 12px; font-weight: 700;">🛠️ Maintenance Message</label>
+                <input type="text" id="admin-maint-input" class="admin-input" placeholder="E.g., Data sync ho raha hai...">
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="admin-maint-toggle">
+                    <label class="form-check-label" for="admin-maint-toggle">Maintenance Banner ON (sabko dikhega)</label>
+                </div>
+            </div>
+
             <button class="admin-btn" onclick="saveAdminSettings()">Save All Changes</button>
             <button class="btn btn-link text-muted mt-2" onclick="closeAdmin()">Close Control Center</button>
         </div>
@@ -690,6 +714,7 @@
             
             <header class="top-navbar">
                 <div class="navbar-left">
+                    <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu"><i class="fa-solid fa-bars"></i></button>
                     <div class="navbar-search">
                         <i class="fa-solid fa-search"></i>
                         <input type="text" id="global-search" placeholder="Search actively in current table..." onkeyup="performGlobalSearch()">
@@ -765,6 +790,13 @@
                     </div>
 
                     <div class="row g-4 mb-4">
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-blue);"><div class="kpi-header"><span class="kpi-title">Total Selling Value</span><div class="kpi-icon" style="background: rgba(96, 165, 250, 0.12); color: var(--aurora-blue);"><i class="fa-solid fa-tags"></i></div></div><div class="kpi-value" id="kpi-selling">₹0</div><div class="kpi-trend"><i class="fa-solid fa-tag"></i> <span class="text-muted">Selling × Qty</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-header"><span class="kpi-title">Net Profit</span><div class="kpi-icon" style="background: rgba(52, 211, 153, 0.12); color: var(--aurora-emerald);"><i class="fa-solid fa-sack-dollar"></i></div></div><div class="kpi-value" id="kpi-np">₹0</div><div class="kpi-trend positive"><i class="fa-solid fa-arrow-trend-up"></i> <span>GP − Expense</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-amber);"><div class="kpi-header"><span class="kpi-title">Avg Net Profit %</span><div class="kpi-icon" style="background: rgba(251, 191, 36, 0.12); color: var(--aurora-amber);"><i class="fa-solid fa-percent"></i></div></div><div class="kpi-value" id="kpi-nppct">0%</div><div class="kpi-trend"><i class="fa-solid fa-chart-line"></i> <span class="text-muted">NP ÷ Net Sales</span></div></div></div>
+                        <div class="col-12 col-md-6 col-xl-3"><div class="glass-card" style="border-left: 3px solid var(--aurora-purple);"><div class="kpi-header"><span class="kpi-title">Avg Day Net Sale</span><div class="kpi-icon" style="background: rgba(139, 92, 246, 0.12); color: var(--aurora-purple);"><i class="fa-solid fa-calendar-day"></i></div></div><div class="kpi-value" id="kpi-avgday">₹0</div><div class="kpi-trend"><i class="fa-solid fa-divide"></i> <span class="text-muted">Net ÷ Days</span></div></div></div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
                         <div class="col-12 col-xl-8"><div class="glass-card"><div class="chart-title">Revenue & Margin Financial Timeline <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Aurora Trend</span></div><div id="echart-trend" class="echart-container"></div><div class="insights-panel"><div class="insight-item"><div class="insight-label">Highest Revenue Day</div><div class="insight-data" id="insight-high-rev">-</div></div><div class="insight-item"><div class="insight-label">Best Margin Period</div><div class="insight-data" id="insight-best-margin">-</div></div></div></div></div>
                         <div class="col-12 col-xl-4"><div class="glass-card"><div class="chart-title">Sales Category Radial</div><div id="echart-category" class="echart-container"></div></div></div>
                     </div>
@@ -811,10 +843,19 @@
                 </div>
 
                 <div id="view-vendor" class="view-section">
-                    <div class="glass-card">
+                    <div class="glass-card mb-4">
                         <div class="chart-title">Top Distributors by Sales (kis supplier ka maal zyada bika)</div>
-                        <div id="echart-vendors" class="echart-container" style="min-height: 560px;"></div>
+                        <div id="echart-vendors" class="echart-container" style="min-height: 520px;"></div>
                         <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Top Distributor (by sales)</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Best Selling Source</div><div class="insight-data" style="color: var(--aurora-emerald);">Stock Up More</div></div></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="chart-title">Item-wise Sales <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Selling rate & qty</span></div>
+                        <div class="table-wrapper" style="max-height: 500px;">
+                            <table class="erp-table" id="table-vendor">
+                                <thead><tr><th>#</th><th>Item</th><th>Distributor</th><th>Selling Rate</th><th>Qty Sold</th><th>Net Sales</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -1018,7 +1059,7 @@
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbzgM-jDdRNplT-xcnxbJ-zFIL25N99eNb7diOI8VtNUaHJBBreHYosybX-VjLhyb9vqxQ/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbwd0jLPAf032SPlO2S5P2qus_ZY1SRCYutqkxGTktxwUhW_zeVwjWJzbJpNzbWoG0SptQ/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1055,6 +1096,11 @@
             tooltipBorder: 'rgba(167, 139, 250, 0.2)'
         };
 
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            setTimeout(function(){ for (var k in echartsInstances) { if (echartsInstances[k]) echartsInstances[k].resize(); } }, 320);
+        }
+
         function openAdminModal() {
             document.getElementById('admin-modal-overlay').classList.add('show');
             document.getElementById('admin-login-box').style.display = 'block';
@@ -1069,6 +1115,9 @@
             if(pass === "ikxariadmin") {
                 document.getElementById('admin-login-box').style.display = 'none';
                 document.getElementById('admin-controls-box').style.display = 'block';
+                // reflect current saved prefs
+                document.getElementById('admin-bell-toggle').checked = bellIsOn();
+                document.getElementById('admin-autopush-toggle').checked = autoPushOn();
             } else { alert("Incorrect Password!"); }
         }
         function saveAdminSettings() {
@@ -1076,13 +1125,31 @@
             var notif = document.getElementById('admin-notif-input').value;
             var maintMsg = document.getElementById('admin-maint-input').value;
             var maintActive = document.getElementById('admin-maint-toggle').checked;
+            // Local prefs (bell on/off + auto-push) — instant, no server needed
+            var bellOn = document.getElementById('admin-bell-toggle').checked;
+            var autoPush = document.getElementById('admin-autopush-toggle').checked;
+            try {
+                localStorage.setItem('ikxari_bell_on', bellOn ? '1' : '0');
+                localStorage.setItem('ikxari_autopush', autoPush ? '1' : '0');
+            } catch(e){}
+            applyBellPrefs();
             fetch(IKXARI_CONFIG.API_URL, {
                 method: 'POST', mode: 'cors', redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ token: IKXARI_CONFIG.API_TOKEN, action: 'saveAdmin', pass: pass, notifMsg: notif, maintMsg: maintMsg, maintStatus: maintActive })
             }).then(function(r) { return r.json(); }).then(function(res) {
-                if(res.success) { alert(res.msg + "\nPlease reload."); closeAdmin(); } else { alert(res.msg || "Save failed"); }
-            }).catch(function(err) { alert("Network error: " + err); });
+                if(res.success) { alert(res.msg + "\nSettings saved!"); closeAdmin(); } else { alert(res.msg || "Save failed"); }
+            }).catch(function(err) { 
+                // even if server fails, local bell prefs applied
+                alert("Bell settings saved locally. (Server: " + err + ")"); closeAdmin();
+            });
+        }
+
+        function bellIsOn() { try { return localStorage.getItem('ikxari_bell_on') !== '0'; } catch(e){ return true; } }
+        function autoPushOn() { try { return localStorage.getItem('ikxari_autopush') !== '0'; } catch(e){ return true; } }
+        function applyBellPrefs() {
+            var icon = document.getElementById('bell-icon');
+            if (icon) icon.style.display = bellIsOn() ? 'block' : 'none';
         }
 
         function toggleNotifications(event) {
@@ -1102,24 +1169,45 @@
         function buildNotifications(res) {
             var notifList = document.getElementById('notif-list');
             var notifDot = document.getElementById('notif-dot');
+
+            // Bell OFF -> hide dot + show disabled message, skip everything
+            if (!bellIsOn()) {
+                notifDot.style.display = 'none';
+                notifList.innerHTML = "<li><div class='notif-icon' style='color: " + AURORA.muted + ";'><i class='fa-solid fa-bell-slash'></i></div><div class='notif-text-container'><div class='notif-title'>Notifications Off</div><div class='notif-time'>Admin panel se ON kar sakte ho.</div></div></li>";
+                return;
+            }
+
             var storedSales = localStorage.getItem('ikxari_sales_count');
             var storedCols = localStorage.getItem('ikxari_col_count');
             var currentSales = res.sales.length;
             var currentCols = res.totalCols || 0;
             var latestSale = res.latestSale || {};
             var newNotifs = [];
+
+            // MANUAL announcement — always shows (even if auto-push off)
             if (res.adminNotif && res.adminNotif.trim() !== "") {
-                newNotifs.push({ title: "Admin Announcement", desc: res.adminNotif, icon: "fa-bullhorn", color: AURORA.pink, time: "Now" });
+                newNotifs.push({ title: "📢 Announcement", desc: res.adminNotif, icon: "fa-bullhorn", color: AURORA.pink, time: "Now" });
             }
-            if (storedCols && currentCols > parseInt(storedCols)) {
-                newNotifs.push({ title: "Database Structure Updated", desc: "New column detected.", icon: "fa-table-columns", color: AURORA.teal, time: "System" });
+
+            // AUTO-PUSH alerts — only if enabled
+            if (autoPushOn()) {
+                if (storedCols && currentCols > parseInt(storedCols)) {
+                    newNotifs.push({ title: "Database Updated", desc: "New column detected.", icon: "fa-table-columns", color: AURORA.teal, time: "System" });
+                }
+                if (storedSales && currentSales > parseInt(storedSales)) {
+                    var diff = currentSales - parseInt(storedSales);
+                    newNotifs.push({ title: diff + " New Sale(s)", desc: "Latest: " + (latestSale.customer || "Unknown") + " (" + (latestSale.billNo || "N/A") + ")", icon: "fa-cart-plus", color: AURORA.violet, time: "Just now" });
+                }
+                // Reorder / stock-out auto alert (from cached IMS reorder list)
+                var reorderCount = (typeof imsReorderCache !== 'undefined' && imsReorderCache) ? imsReorderCache.length : 0;
+                if (reorderCount > 0) {
+                    newNotifs.push({ title: reorderCount + " Item(s) Need Reorder", desc: "Stock kam — Inventory (IMS) check karo.", icon: "fa-triangle-exclamation", color: AURORA.amber, time: "Stock alert" });
+                }
             }
-            if (storedSales && currentSales > parseInt(storedSales)) {
-                var diff = currentSales - parseInt(storedSales);
-                newNotifs.push({ title: diff + " New Row(s) Added", desc: "Latest: " + (latestSale.customer || "Unknown") + " (" + (latestSale.billNo || "N/A") + ")", icon: "fa-plus", color: AURORA.violet, time: "System" });
-            }
+
             localStorage.setItem('ikxari_sales_count', currentSales);
             localStorage.setItem('ikxari_col_count', currentCols);
+
             if (newNotifs.length > 0) {
                 notifDot.style.display = 'block';
                 var htmlStr = '';
@@ -1130,7 +1218,7 @@
                 notifList.innerHTML = htmlStr;
             } else {
                 notifDot.style.display = 'none';
-                notifList.innerHTML = "<li><div class='notif-icon' style='color: " + AURORA.green + ";'><i class='fa-solid fa-check'></i></div><div class='notif-text-container'><div class='notif-title'>System Up to Date</div><div class='notif-time'>No new database changes detected.</div></div></li>";
+                notifList.innerHTML = "<li><div class='notif-icon' style='color: " + AURORA.green + ";'><i class='fa-solid fa-check'></i></div><div class='notif-text-container'><div class='notif-title'>System Up to Date</div><div class='notif-time'>Sab theek hai, koi naya alert nahi.</div></div></li>";
             }
         }
 
@@ -1272,6 +1360,7 @@
             document.getElementById('date-start').value = lookbackDate.toISOString().split('T')[0];
             document.getElementById('date-end').value = currentDate.toISOString().split('T')[0];
             document.getElementById('date-single').value = currentDate.toISOString().split('T')[0];
+            applyBellPrefs();
             fetchDashboardData(false);
         };
 
@@ -1356,8 +1445,9 @@
                 if(rawExpensesDataset[b].dateObj >= startTime && rawExpensesDataset[b].dateObj <= endTime) { fExp.push(rawExpensesDataset[b]); }
             }
 
-            var kpis = { netSales: 0, cogs: 0, gp: 0, exp: 0, outGst: 0 };
+            var kpis = { netSales: 0, cogs: 0, gp: 0, exp: 0, outGst: 0, selling: 0 };
             var trendMap = {}, catMap = {}, vendorMap = {}, itemMap = {}, custMap = {};
+            var dayCount = {};
 
             for(var c=0; c<fSales.length; c++) {
                 var item = fSales[c];
@@ -1365,7 +1455,9 @@
                 var cost = item.cogsPerUnit * item.qty; 
                 var profit = item.grossProfit;
                 kpis.netSales += net; kpis.cogs += cost; kpis.gp += profit; kpis.outGst += item.gstAmount;
+                kpis.selling += (item.selling || 0) * item.qty;
                 var dStr = new Date(item.dateObj).toISOString().split('T')[0];
+                dayCount[dStr] = true;
                 if (!trendMap[dStr]) trendMap[dStr] = { s: 0, p: 0 };
                 trendMap[dStr].s += net; trendMap[dStr].p += profit;
                 catMap[item.category] = (catMap[item.category] || 0) + net;
@@ -1374,6 +1466,7 @@
                 if (!custMap[item.customer]) custMap[item.customer] = { spend: 0, bills: new Set(), qty: 0 };
                 custMap[item.customer].spend += net; custMap[item.customer].bills.add(item.billNo); custMap[item.customer].qty += item.qty;
             }
+            kpis.days = Object.keys(dayCount).length || 1;
 
             var expCatMap = {};
             for(var d=0; d<fExp.length; d++) {
@@ -1903,6 +1996,14 @@
             document.getElementById('kpi-gp').innerText = formatFullCurrencyINR(kpis.gp);
             document.getElementById('kpi-cogs').innerText = formatFullCurrencyINR(kpis.cogs);
             document.getElementById('kpi-exp').innerText = formatFullCurrencyINR(kpis.exp);
+            // New KPIs
+            var np = kpis.gp - kpis.exp;
+            var npPct = kpis.netSales > 0 ? ((np / kpis.netSales) * 100) : 0;
+            var avgDay = kpis.days > 0 ? (kpis.netSales / kpis.days) : 0;
+            document.getElementById('kpi-selling').innerText = formatFullCurrencyINR(kpis.selling);
+            document.getElementById('kpi-np').innerText = formatFullCurrencyINR(np);
+            document.getElementById('kpi-nppct').innerText = npPct.toFixed(1) + "%";
+            document.getElementById('kpi-avgday').innerText = formatFullCurrencyINR(avgDay);
             var dates = Object.keys(trendMap).sort();
             var salesData = [], profitData = [];
             for(var x=0; x<dates.length; x++) {
@@ -1924,8 +2025,8 @@
                 xAxis: { type: 'category', boundaryGap: false, data: dates, axisLine: { lineStyle: { color: AURORA.grid } }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11 } },
                 yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v) { return formatShortCurrency(v); } } },
                 series: [
-                    { name: 'Net Sales', type: 'line', smooth: 0.4, symbol: 'none', lineStyle: { color: AURORA.emerald, width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(52, 211, 153, 0.22)'}, {offset: 1, color: 'rgba(52, 211, 153, 0)'}]) }, data: salesData },
-                    { name: 'Gross Profit', type: 'line', smooth: 0.4, symbol: 'none', lineStyle: { color: AURORA.violet, width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(167, 139, 250, 0.18)'}, {offset: 1, color: 'rgba(167, 139, 250, 0)'}]) }, data: profitData }
+                    { name: 'Net Sales', type: 'line', smooth: 0.5, symbol: 'none', lineStyle: { color: AURORA.emerald, width: 3 }, areaStyle: { opacity: 1, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(52, 211, 153, 0.55)'}, {offset: 0.5, color: 'rgba(52, 211, 153, 0.18)'}, {offset: 1, color: 'rgba(52, 211, 153, 0)'}]) }, data: salesData },
+                    { name: 'Gross Profit', type: 'line', smooth: 0.5, symbol: 'none', lineStyle: { color: AURORA.violet, width: 3 }, areaStyle: { opacity: 1, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(167, 139, 250, 0.5)'}, {offset: 0.5, color: 'rgba(167, 139, 250, 0.15)'}, {offset: 1, color: 'rgba(167, 139, 250, 0)'}]) }, data: profitData }
                 ],
                 animation: true, animationDuration: 900, animationEasing: 'cubicOut'
             });
@@ -2017,22 +2118,31 @@
                 series: [{ type: 'bar', data: values, barWidth: '55%', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' }, { offset: 1, color: AURORA.emerald }]), borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)' }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }, emphasis: { itemStyle: { shadowBlur: 20 } } }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
-        }
 
-        function renderVendor_OLD(vendorMap) {
-            var vArr = sortMap(vendorMap, 15); 
-            vArr.reverse(); 
-            var names = vArr.map(function(v) { return v.k; });
-            var values = vArr.map(function(v) { return Math.round(v.v); });
-            if(vArr.length > 0) { document.getElementById('insight-top-vendor').innerText = vArr[vArr.length-1].k; }
-            initEChart('echart-vendors', {
-                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Net Sales: ' + formatFullCurrencyINR(p[0].value); } }),
-                grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
-                xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
-                yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12 } },
-                series: [{ type: 'bar', data: values, barWidth: '55%', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' }, { offset: 1, color: AURORA.emerald }]), borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)' }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }, emphasis: { itemStyle: { shadowBlur: 20 } } }],
-                animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
-            });
+            // Item-wise sales table (item + distributor + selling + qty + net)
+            var itemAgg = {};
+            for (var ii = 0; ii < fSales.length; ii++) {
+                var s2 = fSales[ii];
+                var k = s2.item + "||" + (s2.selling || 0);
+                if (!itemAgg[k]) itemAgg[k] = { item: s2.item, distributor: rawItemDistrib[s2.item] || s2.vendor || 'NA', selling: s2.selling || 0, qty: 0, net: 0 };
+                itemAgg[k].qty += s2.qty;
+                itemAgg[k].net += s2.netSales;
+            }
+            var iArr = Object.keys(itemAgg).map(function(k){ return itemAgg[k]; });
+            iArr.sort(function(a,b){ return b.net - a.net; });
+            var vtbody = document.querySelector('#table-vendor tbody');
+            var vrows = [];
+            for (var v2 = 0; v2 < iArr.length; v2++) {
+                var it = iArr[v2];
+                vrows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(v2+1)+"</td>"+
+                    "<td style='color:#fff;font-weight:600;'>"+it.item+"</td>"+
+                    "<td style='color:var(--aurora-teal);'>"+it.distributor+"</td>"+
+                    "<td style='color:"+AURORA.blue+";'>"+formatFullCurrencyINR(it.selling)+"</td>"+
+                    "<td style='font-weight:700;'>"+Math.round(it.qty)+"</td>"+
+                    "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(it.net)+"</td></tr>");
+            }
+            if (vrows.length === 0) vrows.push("<tr><td colspan='6' style='text-align:center;padding:30px;color:var(--text-muted);'>No sales in selected dates.</td></tr>");
+            vtbody.innerHTML = vrows.join('');
         }
 
         function renderGST(outT, inT, net) {
