@@ -868,9 +868,10 @@
 
                 <div id="view-gst" class="view-section">
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-md-4"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-green)">Output GST (Collected)</div><div class="kpi-value" id="kpi-gst-out">₹0</div></div></div>
-                        <div class="col-12 col-md-4"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-teal)">Input GST (ITC Credit)</div><div class="kpi-value" id="kpi-gst-in">₹0</div></div></div>
-                        <div class="col-12 col-md-4"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-pink)">Net Liability Payable</div><div class="kpi-value" id="kpi-gst-net">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-green)">Output GST (Collected)</div><div class="kpi-value" id="kpi-gst-out">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-teal)">Input GST (ITC Credit)</div><div class="kpi-value" id="kpi-gst-in">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-pink)">Net Liability Payable</div><div class="kpi-value" id="kpi-gst-net">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-amber)">Avg GST %</div><div class="kpi-value" id="gst-avg-pct">0%</div></div></div>
                     </div>
                     <div class="row g-4">
                         <div class="col-12 col-xl-8"><div class="glass-card"><div class="chart-title">Tax Balancing Graph</div><div id="echart-gst" class="echart-container" style="min-height: 360px;"></div></div></div>
@@ -2230,16 +2231,17 @@
         }
 
         function renderVendor(fSales) {
-            // Distributor-wise NET SALES: take each sale, find item's distributor from Current_Stock
+            // From Summarize_Sales_Data: distributor (C short) -wise net sales (Selling K)
+            var ss = rawSummarizeSales || [];
             var distSales = {};
-            for (var i = 0; i < fSales.length; i++) {
-                var s = fSales[i];
-                var dist = rawItemDistrib[s.item] || s.vendor || 'Unknown';
+            for (var i = 0; i < ss.length; i++) {
+                var s = ss[i];
+                var dist = s.distributor || 'Unknown';
                 if (!distSales[dist]) distSales[dist] = { value: 0, qty: 0 };
-                distSales[dist].value += s.netSales;
-                distSales[dist].qty += s.qty;
+                distSales[dist].value += s.selling;
+                distSales[dist].qty += s.soldQty;
             }
-            var dArr = Object.keys(distSales).map(function(k){ return { name: k, value: distSales[k].value, qty: distSales[k].qty }; });
+            var dArr = Object.keys(distSales).filter(function(k){ return k !== 'NA' && k !== 'Unknown'; }).map(function(k){ return { name: k, value: distSales[k].value, qty: distSales[k].qty }; });
             dArr.sort(function(a,b){ return b.value - a.value; });
             dArr = dArr.slice(0, 15);
             dArr.reverse();
@@ -2247,22 +2249,22 @@
             var values = dArr.map(function(v){ return Math.round(v.value); });
             if (dArr.length > 0) { document.getElementById('insight-top-vendor').innerText = dArr[dArr.length-1].name; }
             initEChart('echart-vendors', {
-                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } }, formatter: function(p) { var d = dArr[p[0].dataIndex]; return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value) + '<br/>Qty sold: ' + (d ? d.qty : 0); } }),
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(224, 69, 123, 0.05)' } }, formatter: function(p) { var d = dArr[p[0].dataIndex]; return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value) + '<br/>Qty sold: ' + (d ? Math.round(d.qty) : 0); } }),
                 grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
                 xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
                 yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12, width: 160, overflow: 'truncate' } },
-                series: [{ type: 'bar', data: values, barWidth: '55%', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.85)' }, { offset: 1, color: AURORA.emerald }]), borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(16, 185, 129, 0.3)' }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }, emphasis: { itemStyle: { shadowBlur: 20 } } }],
+                series: [{ type: 'bar', data: values, barWidth: '55%', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(224, 69, 123, 0.15)' }, { offset: 0.5, color: 'rgba(240, 101, 149, 0.85)' }, { offset: 1, color: AURORA.emerald }]), borderRadius: [0, 8, 8, 0], shadowBlur: 12, shadowColor: 'rgba(224, 69, 123, 0.3)' }, label: { show: true, position: 'right', color: '#fff', fontWeight: 800, fontFamily: 'Jost', fontSize: 12, formatter: function(p){return formatShortCurrency(p.value);} }, emphasis: { itemStyle: { shadowBlur: 20 } } }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
 
-            // Item-wise sales table (item + distributor + selling + qty + net)
+            // Item-wise sales table from Summarize_Sales_Data
             var itemAgg = {};
-            for (var ii = 0; ii < fSales.length; ii++) {
-                var s2 = fSales[ii];
+            for (var ii = 0; ii < ss.length; ii++) {
+                var s2 = ss[ii];
                 var k = s2.item + "||" + (s2.selling || 0);
-                if (!itemAgg[k]) itemAgg[k] = { item: s2.item, distributor: rawItemDistrib[s2.item] || s2.vendor || 'NA', selling: s2.selling || 0, qty: 0, net: 0 };
-                itemAgg[k].qty += s2.qty;
-                itemAgg[k].net += s2.netSales;
+                if (!itemAgg[k]) itemAgg[k] = { item: s2.item, distributor: s2.distributor || 'NA', selling: s2.selling || 0, qty: 0, net: 0 };
+                itemAgg[k].qty += s2.soldQty;
+                itemAgg[k].net += s2.selling;
             }
             var iArr = Object.keys(itemAgg).map(function(k){ return itemAgg[k]; });
             iArr.sort(function(a,b){ return b.net - a.net; });
@@ -2277,11 +2279,25 @@
                     "<td style='font-weight:700;'>"+Math.round(it.qty)+"</td>"+
                     "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(it.net)+"</td></tr>");
             }
-            if (vrows.length === 0) vrows.push("<tr><td colspan='6' style='text-align:center;padding:30px;color:var(--text-muted);'>No sales in selected dates.</td></tr>");
+            if (vrows.length === 0) vrows.push("<tr><td colspan='6' style='text-align:center;padding:30px;color:var(--text-muted);'>No data.</td></tr>");
             vtbody.innerHTML = vrows.join('');
         }
 
         function renderGST(outT, inT, net) {
+            // Output GST from Summarize_Sales_Data (GST amount N); avg GST% from M
+            var ss = rawSummarizeSales || [];
+            if (ss.length > 0) {
+                var gstSum = 0, pctSum = 0, pctCount = 0;
+                for (var i = 0; i < ss.length; i++) {
+                    gstSum += ss[i].gst || 0;
+                    if (ss[i].gstPct > 0) { pctSum += ss[i].gstPct; pctCount++; }
+                }
+                outT = gstSum;
+                net = gstSum - inT;
+                var avgPct = pctCount > 0 ? (pctSum / pctCount) : 0;
+                var subEl = document.getElementById('gst-avg-pct');
+                if (subEl) subEl.innerText = avgPct.toFixed(1) + "%";
+            }
             document.getElementById('kpi-gst-out').innerText = formatFullCurrencyINR(outT);
             document.getElementById('kpi-gst-in').innerText = formatFullCurrencyINR(inT);
             document.getElementById('kpi-gst-net').innerText = formatFullCurrencyINR(net);
