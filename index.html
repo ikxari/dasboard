@@ -264,6 +264,17 @@
         }
         .hamburger-btn:hover { color: #fff; border-color: var(--aurora-green); background: rgba(16,185,129,0.1); }
 
+        .unrec-tab-btn {
+            background: rgba(42, 18, 30, 0.5); border: 1px solid var(--glass-border);
+            color: var(--text-muted); padding: 10px 22px; border-radius: 12px;
+            font-family: 'Jost', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.25s;
+        }
+        .unrec-tab-btn:hover { color: #fff; border-color: var(--glass-border-hover); }
+        .unrec-tab-btn.active {
+            background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet));
+            color: #fff; border-color: transparent; box-shadow: 0 6px 18px rgba(224, 69, 123, 0.35);
+        }
+
         /* Collapsed sidebar */
         body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
         body.sidebar-collapsed .main-wrapper { margin-left: 0; width: 100%; }
@@ -1024,6 +1035,7 @@
                      GP ANALYSIS VIEW
                      ============================================================ -->
                 <div id="view-gpanalysis" class="view-section">
+                    <div style="background: rgba(201,162,39,0.08); border:1px solid rgba(201,162,39,0.25); border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:12.5px; color:var(--text-soft);"><i class="fa-solid fa-circle-info" style="color:var(--aurora-violet);"></i> GP source: <b>Summarize_Sales_Data</b> · GP = Selling − Purchase Value (tax/charges as per sheet)</div>
                     <!-- Real number cards -->
                     <div class="row g-3 mb-4">
                         <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-emerald);"><div class="kpi-title">Total Gross Profit</div><div class="kpi-value" id="gp-total" style="font-size:26px;">₹0</div></div></div>
@@ -1068,14 +1080,18 @@
 
                 <!-- ===== UNRECORDED SALE VIEW ===== -->
                 <div id="view-unrecorded" class="view-section">
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                        <button class="unrec-tab-btn active" id="unrec-btn-cash" onclick="switchUnrec('cash')"><i class="fa-solid fa-money-bill-wave"></i> Cash Sale</button>
+                        <button class="unrec-tab-btn" id="unrec-btn-cust" onclick="switchUnrec('cust')"><i class="fa-solid fa-scissors"></i> Customized</button>
+                    </div>
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Total Unrecorded Value</span><div class="kpi-icon" style="background: rgba(224, 69, 123, 0.14); color: var(--aurora-green);"><i class="fa-solid fa-cash-register"></i></div></div><div class="kpi-value" id="unrec-total">₹0</div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-header"><span class="kpi-title">Total Value</span><div class="kpi-icon" style="background: rgba(224, 69, 123, 0.14); color: var(--aurora-green);"><i class="fa-solid fa-cash-register"></i></div></div><div class="kpi-value" id="unrec-total">₹0</div></div></div>
                         <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-violet);"><div class="kpi-header"><span class="kpi-title">Total Qty</span><div class="kpi-icon" style="background: rgba(201, 162, 39, 0.14); color: var(--aurora-violet);"><i class="fa-solid fa-boxes-stacked"></i></div></div><div class="kpi-value" id="unrec-qty">0</div></div></div>
                         <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-emerald);"><div class="kpi-header"><span class="kpi-title">Entries</span><div class="kpi-icon" style="background: rgba(240, 101, 149, 0.14); color: var(--aurora-emerald);"><i class="fa-solid fa-list"></i></div></div><div class="kpi-value" id="unrec-count">0</div></div></div>
                     </div>
                     <div class="glass-card">
-                        <div class="chart-title">Unrecorded / Cash Sales <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Unrecorded_sale_Sheet</span></div>
-                        <div class="table-wrapper" style="max-height: 560px;">
+                        <div class="chart-title" id="unrec-title">Cash Sales <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Unrecorded_sale_Sheet</span></div>
+                        <div class="table-wrapper" style="max-height: 540px;">
                             <table class="erp-table" id="table-unrecorded">
                                 <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Price</th><th>Total Value</th></tr></thead>
                                 <tbody></tbody>
@@ -1090,7 +1106,7 @@
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbx0rcqxnzjC9decRtqST6QVWokLmpGeDIgovVUazyfWBhlFHPwF6mfPYSpvFaCA2FolRw/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbxTQOtvNqHROJUsXe6mPGlymTI3CekxE9_11qcxie0cqIB6pECgJjYG-AbBufdNxjixeA/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1103,7 +1119,8 @@
         var rawDailyOps = [];
         var rawGpAnalysis = [];
         var rawSummarizeSales = [];
-        var rawUnrecorded = [];
+        var rawUnrecorded = { cashSales: [], customized: [] };
+        var unrecActiveTab = 'cash';
         var rawPurchaseLog = [];
         var stockFound = false;
         var stockSource = 'none';
@@ -1342,7 +1359,7 @@
                     rawDailyOps = res.dailyOps || [];
                     rawGpAnalysis = res.gpAnalysis || [];
                     rawSummarizeSales = res.summarizeSales || [];
-                    rawUnrecorded = res.unrecorded || [];
+                    rawUnrecorded = res.unrecorded || { cashSales: [], customized: [] };
                     rawPurchaseLog = res.purchaseLog || [];
                     stockFound = res.stockFound || false;
                     stockSource = res.stockSource || 'none';
@@ -1791,8 +1808,17 @@
             });
         }
 
+        function switchUnrec(which) {
+            unrecActiveTab = which;
+            document.getElementById('unrec-btn-cash').classList.toggle('active', which === 'cash');
+            document.getElementById('unrec-btn-cust').classList.toggle('active', which === 'cust');
+            renderUnrecorded();
+        }
+
         function renderUnrecorded() {
-            var list = (rawUnrecorded || []).slice();
+            var data = rawUnrecorded || { cashSales: [], customized: [] };
+            var list = (unrecActiveTab === 'cust') ? (data.customized || []) : (data.cashSales || []);
+            document.getElementById('unrec-title').innerHTML = (unrecActiveTab === 'cust' ? 'Customized Orders' : 'Cash Sales') + " <span style='font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;'>From Unrecorded_sale_Sheet</span>";
             var total = 0, qty = 0;
             for (var i = 0; i < list.length; i++) { total += list[i].total || 0; qty += list[i].qty || 0; }
             document.getElementById('unrec-total').innerText = formatFullCurrencyINR(total);
@@ -1811,43 +1837,48 @@
                     "<td>"+formatFullCurrencyINR(u.price)+"</td>"+
                     "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(u.total)+"</td></tr>");
             }
-            if (rows.length === 0) rows.push("<tr><td colspan='7' style='text-align:center;padding:40px;color:var(--text-muted);'>Koi unrecorded sale nahi (ya IMPORTRANGE load ho raha).</td></tr>");
+            if (rows.length === 0) rows.push("<tr><td colspan='7' style='text-align:center;padding:40px;color:var(--text-muted);'>Is section me koi entry nahi.</td></tr>");
             tb.innerHTML = rows.join('');
         }
 
         function renderGPAnalysis(fSales, kpis) {
-            // Aggregate GP, sales per item + client type
-            var gpItem = {}, netItem = {};
+            // GP per item from Summarize_Sales_Data (ready GP column = accurate)
+            var ss = rawSummarizeSales || [];
+            var gpAgg = {};   // item -> {gp, selling, qty}
+            var totalGP = 0, totalSelling = 0;
+            for (var i = 0; i < ss.length; i++) {
+                var s = ss[i];
+                if (!gpAgg[s.item]) gpAgg[s.item] = { gp: 0, selling: 0, qty: 0 };
+                gpAgg[s.item].gp += s.gp;
+                gpAgg[s.item].selling += s.selling;
+                gpAgg[s.item].qty += s.soldQty;
+                totalGP += s.gp;
+                totalSelling += s.selling;
+            }
+
+            // Client type from live sales (bill-level has customer)
             var clientTypeMap = {};
-            var totalGP = 0, totalNet = 0, totalCOGS = 0;
-            for (var i = 0; i < fSales.length; i++) {
-                var s = fSales[i];
-                gpItem[s.item] = (gpItem[s.item] || 0) + s.grossProfit;
-                netItem[s.item] = (netItem[s.item] || 0) + s.netSales;
-                totalGP += s.grossProfit;
-                totalNet += s.netSales;
-                totalCOGS += s.cogsPerUnit * s.qty;
-                // client type: heuristic — known name vs walk-in/NA
-                var ct = (!s.customer || s.customer === 'Unknown' || s.customer === 'NA' || s.customer.toUpperCase() === 'CASH') ? 'Walk-in / Cash' : 'Named Customer';
-                clientTypeMap[ct] = (clientTypeMap[ct] || 0) + s.netSales;
+            for (var c2 = 0; c2 < fSales.length; c2++) {
+                var sc = fSales[c2];
+                var ct = (!sc.customer || sc.customer === 'Unknown' || sc.customer === 'NA' || sc.customer.toUpperCase() === 'CASH') ? 'Walk-in / Cash' : 'Named Customer';
+                clientTypeMap[ct] = (clientTypeMap[ct] || 0) + sc.netSales;
             }
 
             // Cards
             document.getElementById('gp-total').innerText = formatFullCurrencyINR(totalGP);
-            var gpPct = totalNet > 0 ? Math.round((totalGP / totalNet) * 100) : 0;
+            var gpPct = totalSelling > 0 ? Math.round((totalGP / totalSelling) * 100) : 0;
             document.getElementById('gp-pct').innerText = gpPct + "%";
 
-            // Inventory Turns = Revenue / Average Inventory (at landing/RM cost)
-            // Average inventory value = current stock value (capital locked) from Current_Stock
+            // Inventory Turns = Revenue / Avg Inventory (at cost)
             var invValue = 0;
             for (var k = 0; k < rawStockItems.length; k++) {
                 invValue += (rawStockItems[k].closingStock || 0) * (rawStockItems[k].landingCost || 0);
             }
-            var turns = invValue > 0 ? (totalNet / invValue) : 0;
+            var turns = invValue > 0 ? (totalSelling / invValue) : 0;
             document.getElementById('gp-turns').innerText = turns.toFixed(2) + "x";
 
-            // GP descending array
-            var gpArr = Object.keys(gpItem).map(function(k){ return { name: k, gp: gpItem[k], net: netItem[k] || 0 }; });
+            // GP descending
+            var gpArr = Object.keys(gpAgg).map(function(k){ return { name: k, gp: gpAgg[k].gp, selling: gpAgg[k].selling }; });
             gpArr.sort(function(a,b){ return b.gp - a.gp; });
             document.getElementById('gp-topitem').innerText = gpArr.length > 0 ? gpArr[0].name : '-';
 
@@ -1858,7 +1889,7 @@
                 grid: { left: '2%', right: '12%', bottom: '2%', top: '2%', containLabel: true },
                 xAxis: { type: 'value', splitLine: { show:false }, axisLabel: { show:false }, axisLine:{show:false}, axisTick:{show:false} },
                 yAxis: { type: 'category', data: top15.map(function(d){return d.name;}), axisLine:{show:false}, axisTick:{show:false}, axisLabel: { color: AURORA.text, width:130, overflow:'truncate', fontFamily:'Jost', fontSize:12, fontWeight:600 } },
-                series: [{ type:'bar', data: top15.map(function(d){return Math.round(d.gp);}), barWidth:'65%', itemStyle:{ color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(16,185,129,0.15)'},{offset:1,color:AURORA.emerald}]), borderRadius:[0,6,6,0] }, label:{ show:true, position:'right', color:'#fff', fontWeight:800, fontFamily:'Jost', fontSize:11, formatter:function(p){return formatShortCurrency(p.value);} } }],
+                series: [{ type:'bar', data: top15.map(function(d){return Math.round(d.gp);}), barWidth:'65%', itemStyle:{ color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(224,69,123,0.18)'},{offset:1,color:AURORA.emerald}]), borderRadius:[0,6,6,0] }, label:{ show:true, position:'right', color:'#fff', fontWeight:800, fontFamily:'Jost', fontSize:11, formatter:function(p){return formatShortCurrency(p.value);} } }],
                 animation:true, animationDuration:1200
             });
 
@@ -1868,31 +1899,20 @@
             initEChart('echart-gp-client', {
                 tooltip: auroraTooltip({ trigger:'item', formatter:function(p){ return '<b>'+p.name+'</b><br/>'+p.marker+' '+formatFullCurrencyINR(p.value)+' ('+p.percent+'%)'; } }),
                 legend: { bottom: 0, textStyle:{ color: AURORA.muted, fontFamily:'Jost', fontWeight:600 } },
-                series: [{ type:'pie', radius:['45%','72%'], center:['50%','45%'], itemStyle:{ borderRadius:8, borderColor:'rgba(2,6,23,0.6)', borderWidth:3 }, label:{show:false}, data: ctKeys.map(function(k,idx){ return { name:k, value:Math.round(clientTypeMap[k]), itemStyle:{ color: ctColors[idx % ctColors.length] } }; }) }],
+                series: [{ type:'pie', radius:['45%','72%'], center:['50%','45%'], itemStyle:{ borderRadius:8, borderColor:'rgba(20,8,14,0.6)', borderWidth:3 }, label:{show:false}, data: ctKeys.map(function(k,idx){ return { name:k, value:Math.round(clientTypeMap[k]), itemStyle:{ color: ctColors[idx % ctColors.length] } }; }) }],
                 animation:true, animationDuration:1200
             });
 
-            // GP table
+            // GP table (item, GP, % of total GP, GP% margin) — from Summarize_Sales_Data
             var tbody = document.querySelector('#table-gp tbody');
             var rows = [];
-            // Prefer ready 8020 GP analysis (accurate, user's own calc)
-            if (rawGpAnalysis && rawGpAnalysis.length > 0) {
-                var ga = rawGpAnalysis.slice().sort(function(a,b){ return b.gp - a.gp; });
-                for (var t = 0; t < ga.length; t++) {
-                    var g8 = ga[t];
-                    var pTot = g8.pctOfTotal <= 1 ? (g8.pctOfTotal*100) : g8.pctOfTotal;
-                    var pGp = g8.gpPct <= 1 ? (g8.gpPct*100) : g8.gpPct;
-                    rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t+1)+"</td><td style='color:#fff;font-weight:600;'>"+g8.item+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g8.gp)+"</td><td>"+pTot.toFixed(1)+"%</td><td style='color:"+AURORA.violet+";'>"+pGp.toFixed(1)+"%</td></tr>");
-                }
-            } else {
-                for (var t2 = 0; t2 < gpArr.length; t2++) {
-                    var g = gpArr[t2];
-                    var pctOfTotal = totalGP > 0 ? ((g.gp / totalGP) * 100).toFixed(1) : 0;
-                    var ownPct = g.net > 0 ? ((g.gp / g.net) * 100).toFixed(1) : 0;
-                    rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t2+1)+"</td><td style='color:#fff;font-weight:600;'>"+g.name+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g.gp)+"</td><td>"+pctOfTotal+"%</td><td style='color:"+AURORA.violet+";'>"+ownPct+"%</td></tr>");
-                }
+            for (var t = 0; t < gpArr.length; t++) {
+                var g = gpArr[t];
+                var pctOfTotal = totalGP > 0 ? ((g.gp / totalGP) * 100).toFixed(1) : 0;
+                var ownPct = g.selling > 0 ? ((g.gp / g.selling) * 100).toFixed(1) : 0;
+                rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(t+1)+"</td><td style='color:#fff;font-weight:600;'>"+g.name+"</td><td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(g.gp)+"</td><td>"+pctOfTotal+"%</td><td style='color:"+AURORA.violet+";'>"+ownPct+"%</td></tr>");
             }
-            if (rows.length === 0) rows.push("<tr><td colspan='5' style='text-align:center;padding:30px;color:var(--text-muted);'>No data in selected dates.</td></tr>");
+            if (rows.length === 0) rows.push("<tr><td colspan='5' style='text-align:center;padding:30px;color:var(--text-muted);'>No GP data found.</td></tr>");
             tbody.innerHTML = rows.join('');
         }
 
