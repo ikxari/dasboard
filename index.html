@@ -264,11 +264,27 @@
         .hamburger-btn {
             background: rgba(224, 69, 123, 0.06); border: 1px solid var(--glass-border);
             color: var(--text-muted); width: 42px; height: 42px; border-radius: 12px;
-            cursor: pointer; margin-right: 16px; font-size: 15px; transition: all 0.25s ease;
-            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; margin-left: 8px; font-size: 15px; transition: all 0.25s ease;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .hamburger-btn:hover { color: var(--aurora-violet); border-color: var(--glass-border-hover); background: rgba(201, 162, 39, 0.10); transform: translateY(-1px); }
         .hamburger-btn:active { transform: translateY(0); }
+
+        .global-search-dropdown {
+            display: none; position: absolute; top: calc(100% + 10px); left: 0; right: 0;
+            background: var(--glass-bg-strong); backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border-hover); border-radius: 14px;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.5); z-index: 10000;
+            max-height: 440px; overflow-y: auto; padding: 8px;
+        }
+        .global-search-dropdown.show { display: block; }
+        .gsd-group-title { font-size: 10.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--aurora-violet); padding: 10px 12px 5px; }
+        .gsd-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; cursor: pointer; transition: 0.15s; }
+        .gsd-item:hover { background: rgba(224, 69, 123, 0.10); }
+        .gsd-item .gsd-main { color: #fff; font-weight: 600; font-size: 13px; }
+        .gsd-item .gsd-sub { color: var(--text-muted); font-size: 11px; }
+        .gsd-item .gsd-val { color: var(--aurora-emerald); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+        .gsd-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 12.5px; }
 
         .unrec-tab-btn {
             background: rgba(42, 18, 30, 0.5); border: 1px solid var(--glass-border);
@@ -711,7 +727,7 @@
         
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-brand">
-                <i class="fa-solid fa-shapes"></i> <span class="ikxari-text">IKXARI</span>
+                <i class="fa-solid fa-shirt"></i> <span class="ikxari-text">IKXARI</span>
             </div>
             
             <ul class="nav-menu">
@@ -740,10 +756,10 @@
             
             <header class="top-navbar">
                 <div class="navbar-left">
-                    <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu"><i class="fa-solid fa-bars"></i></button>
                     <div class="navbar-search">
                         <i class="fa-solid fa-search"></i>
-                        <input type="text" id="global-search" placeholder="Search actively in current table..." onkeyup="performGlobalSearch()">
+                        <input type="text" id="global-search" placeholder="Search anything — item, bill no, customer, vendor..." onkeyup="performGlobalSearch()" autocomplete="off">
+                        <div class="global-search-dropdown" id="global-search-dropdown"></div>
                     </div>
                 </div>
                 
@@ -761,6 +777,7 @@
                             <ul class="notif-list" id="notif-list"></ul>
                         </div>
                     </div>
+                    <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle menu"><i class="fa-solid fa-bars"></i></button>
                 </div>
             </header>
 
@@ -1308,36 +1325,93 @@
             }
         }
 
+        function switchViewById(targetId) {
+            var link = document.querySelector('.nav-link[onclick*="' + targetId + '"]');
+            if (link) switchView(targetId, link);
+        }
+
         function performGlobalSearch() {
-            var searchInput = document.getElementById("global-search");
-            var filterString = searchInput.value.toLowerCase().trim();
-            var activeViewDiv = document.querySelector('.view-section.active');
-            if (!activeViewDiv) return;
-            var tables = activeViewDiv.querySelectorAll('.erp-table');
-            var totalMatches = 0, hasTable = false;
-            for (var t = 0; t < tables.length; t++) {
-                hasTable = true;
-                var rows = tables[t].querySelectorAll('tbody tr');
-                for (var i = 0; i < rows.length; i++) {
-                    // skip month/group header rows from matching, hide them by default during search
-                    var isHeader = rows[i].querySelector("td[colspan]") !== null;
-                    if (isHeader) { rows[i].style.display = filterString === "" ? "" : "none"; continue; }
-                    var txt = (rows[i].textContent || rows[i].innerText).toLowerCase();
-                    var match = txt.indexOf(filterString) > -1;
-                    rows[i].style.display = match ? "" : "none";
-                    if (filterString !== "" && match) totalMatches++;
+            var q = (document.getElementById("global-search").value || "").toLowerCase().trim();
+            var dd = document.getElementById('global-search-dropdown');
+            if (q === "" || q.length < 1) { dd.classList.remove('show'); dd.innerHTML = ""; return; }
+
+            var groups = [];
+            function add(title, view, items) { if (items.length) groups.push({ title: title, view: view, items: items.slice(0, 6) }); }
+
+            // Summarize Sales (item, distributor, customer)
+            add('Summarize Sales', 'view-summarize', (rawSummarizeSales || []).filter(function(s){
+                return (s.item + s.distributor + s.customer).toLowerCase().indexOf(q) > -1;
+            }).map(function(s){ return { main: s.item, sub: s.distributor + ' · ' + s.customer, val: formatFullCurrencyINR(s.selling) }; }));
+
+            // Bills / Sales ledger (bill no, item, customer)
+            add('Bills / Sales', 'view-summarize', (rawSalesDataset || []).filter(function(s){
+                return ((s.billNo||'') + (s.item||'') + (s.customer||'')).toLowerCase().indexOf(q) > -1;
+            }).map(function(s){ return { main: (s.billNo||'-') + ' · ' + s.item, sub: s.customer || 'Walk-in', val: formatFullCurrencyINR(s.netSales) }; }));
+
+            // Item Movements
+            add('Item Movements', 'view-items', (rawItemMovements || []).filter(function(m){
+                return m.item.toLowerCase().indexOf(q) > -1;
+            }).map(function(m){ return { main: m.item, sub: Math.round(m.soldQty) + ' sold', val: formatFullCurrencyINR(m.gp) + ' GP' }; }));
+
+            // Customers
+            add('Customer CRM', 'view-customers', (rawCustomerCRM || []).filter(function(c){
+                return c.customer.toLowerCase().indexOf(q) > -1;
+            }).map(function(c){ return { main: c.customer, sub: 'Customer', val: formatFullCurrencyINR(c.selling) }; }));
+
+            // Vendors
+            add('Vendor Performance', 'view-vendor', (rawVendorPerf || []).filter(function(v){
+                return v.name.toLowerCase().indexOf(q) > -1;
+            }).map(function(v){ return { main: v.name, sub: 'Vendor', val: formatFullCurrencyINR(v.value) }; }));
+
+            // Expenses
+            add('Expenses', 'view-expense', (rawExpensesDataset || []).filter(function(e){
+                return ((e.name||'') + (e.category||'')).toLowerCase().indexOf(q) > -1;
+            }).map(function(e){ return { main: e.name, sub: e.category + ' · ' + e.type, val: formatFullCurrencyINR(e.amount) }; }));
+
+            // Stock / Purchase Log
+            add('Inventory / Purchase', 'view-purchase', (rawStockItems || []).filter(function(s){
+                return ((s.item||'') + (s.distributor||'')).toLowerCase().indexOf(q) > -1;
+            }).map(function(s){ return { main: s.item, sub: (s.distributor||'NA'), val: Math.round(s.closingStock||0) + ' stock' }; }));
+
+            // Unrecorded
+            var unrecAll = ((rawUnrecorded && rawUnrecorded.cashSales) || []).concat((rawUnrecorded && rawUnrecorded.customized) || []);
+            add('Unrecorded Sale', 'view-unrecorded', unrecAll.filter(function(u){
+                return ((u.item||'') + (u.customer||'')).toLowerCase().indexOf(q) > -1;
+            }).map(function(u){ return { main: u.item, sub: u.customer, val: formatFullCurrencyINR(u.total) }; }));
+
+            var html = "";
+            var totalCount = 0;
+            for (var g = 0; g < groups.length; g++) {
+                html += "<div class='gsd-group-title'>" + groups[g].title + "</div>";
+                for (var i = 0; i < groups[g].items.length; i++) {
+                    var it = groups[g].items[i];
+                    totalCount++;
+                    html += "<div class='gsd-item' onclick=\"gsdGoto('" + groups[g].view + "')\">" +
+                        "<div><div class='gsd-main'>" + it.main + "</div><div class='gsd-sub'>" + it.sub + "</div></div>" +
+                        "<div class='gsd-val'>" + it.val + "</div></div>";
                 }
             }
-            // feedback in search placeholder area
-            var sb = document.querySelector('.navbar-search');
-            if (sb) {
-                if (filterString === "") { sb.removeAttribute('data-count'); sb.classList.remove('has-results'); }
-                else { sb.setAttribute('data-count', hasTable ? (totalMatches + ' found') : 'no table here'); sb.classList.add('has-results'); }
-            }
+            if (totalCount === 0) html = "<div class='gsd-empty'>'" + q + "' kahin nahi mila</div>";
+            dd.innerHTML = html;
+            dd.classList.add('show');
         }
+
+        function gsdGoto(view) {
+            document.getElementById('global-search-dropdown').classList.remove('show');
+            switchViewById(view);
+        }
+
+        // close dropdown on outside click
+        document.addEventListener('click', function(e){
+            var sb = document.querySelector('.navbar-search');
+            if (sb && !sb.contains(e.target)) { var dd = document.getElementById('global-search-dropdown'); if (dd) dd.classList.remove('show'); }
+        });
+
         function resetGlobalSearch() {
             var s = document.getElementById("global-search");
-            if(s) { s.value = ""; performGlobalSearch(); }
+            if(s) { s.value = ""; }
+            var dd = document.getElementById('global-search-dropdown');
+            if (dd) { dd.classList.remove('show'); dd.innerHTML = ""; }
         }
 
         function formatFullCurrencyINR(v) { var n = parseFloat(v) || 0; return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n); }
