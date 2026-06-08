@@ -2279,10 +2279,27 @@
             document.getElementById('kpi-exp-unrecorded').innerText = formatFullCurrencyINR(unrecTotal);
 
             function fillExpTable(sel, arr) {
-                arr.sort(function(a,b){ return b.amount - a.amount; });
+                // Group by month (latest first), each month has a header row + subtotal
+                var groups = {};
+                for (var g = 0; g < arr.length; g++) {
+                    var d = new Date(arr[g].dateObj);
+                    var key = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2);
+                    var label = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                    if (!groups[key]) groups[key] = { label: label, items: [], total: 0 };
+                    groups[key].items.push(arr[g]);
+                    groups[key].total += arr[g].amount;
+                }
+                var keys = Object.keys(groups).sort().reverse(); // latest month first
                 var h = [];
-                for (var i = 0; i < arr.length; i++) {
-                    h.push("<tr><td>"+formatDate(arr[i].dateObj)+"</td><td style='color:#fff;font-weight:600;'>"+arr[i].name+"</td><td style='color:var(--text-muted);'>"+arr[i].category+"</td><td style='color:"+AURORA.pink+";font-weight:700;'>"+formatFullCurrencyINR(arr[i].amount)+"</td></tr>");
+                for (var k = 0; k < keys.length; k++) {
+                    var grp = groups[keys[k]];
+                    grp.items.sort(function(a,b){ return b.amount - a.amount; });
+                    // Month header row
+                    h.push("<tr style='background:rgba(224,69,123,0.10);'><td colspan='3' style='font-weight:800;color:var(--aurora-violet);text-transform:uppercase;letter-spacing:0.5px;font-size:12px;'><i class='fa-solid fa-calendar-days me-2'></i>"+grp.label+"</td><td style='font-weight:800;color:#fff;'>"+formatFullCurrencyINR(grp.total)+"</td></tr>");
+                    for (var i = 0; i < grp.items.length; i++) {
+                        var it = grp.items[i];
+                        h.push("<tr><td style='color:var(--text-muted);'>"+formatDate(it.dateObj)+"</td><td style='color:#fff;font-weight:600;'>"+it.name+"</td><td style='color:var(--text-muted);'>"+it.category+"</td><td style='color:"+AURORA.pink+";font-weight:700;'>"+formatFullCurrencyINR(it.amount)+"</td></tr>");
+                    }
                 }
                 if (h.length === 0) h.push("<tr><td colspan='4' style='text-align:center;padding:30px;color:var(--text-muted);'>No entries.</td></tr>");
                 document.querySelector(sel).innerHTML = h.join('');
