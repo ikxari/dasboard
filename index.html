@@ -827,6 +827,12 @@
                 </div>
 
                 <div id="view-summarize" class="view-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-violet);"><div class="kpi-title">Gross Profit</div><div class="kpi-value" id="sum-gp" style="font-size:26px;">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-emerald);"><div class="kpi-title">Net Profit</div><div class="kpi-value" id="sum-np" style="font-size:26px;">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-amber);"><div class="kpi-title">Net Profit %</div><div class="kpi-value" id="sum-nppct" style="font-size:26px;">0%</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-blue);"><div class="kpi-title">Total COGS</div><div class="kpi-value" id="sum-cogs" style="font-size:26px;">₹0</div></div></div>
+                    </div>
                     <div class="glass-card">
                         <div class="chart-title">Summarize Sales Data <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Summarize_Sales_Data</span></div>
                         <div class="table-wrapper">
@@ -840,13 +846,15 @@
 
                 <div id="view-expense" class="view-section">
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-xl-4"><div class="glass-card" style="border-top: 3px solid var(--aurora-pink);"><div class="kpi-header"><span class="kpi-title">Total Outflow</span></div><div class="kpi-value aurora-gradient" id="kpi-total-exp-page" style="font-size: 42px;">₹0</div><p class="text-muted mt-2" style="font-size: 13px;">Aggregate operational expenditure for selected duration.</p></div></div>
-                        <div class="col-12 col-xl-8"><div class="glass-card"><div class="chart-title">Expense Rose — Nightingale Breakdown</div><div id="echart-expense" class="echart-container" style="min-height: 320px;"></div></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-pink);"><div class="kpi-title">Total Expenses</div><div class="kpi-value aurora-gradient" id="kpi-total-exp-page" style="font-size: 38px;">₹0</div><p class="text-muted mt-2" style="font-size: 12px;">Recorded + Unrecorded</p></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-green);"><div class="kpi-title">Recorded Expenses</div><div class="kpi-value" id="kpi-exp-recorded" style="font-size: 32px;">₹0</div><p class="text-muted mt-2" style="font-size: 12px;">Gofrugal Recorded</p></div></div>
+                        <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-amber);"><div class="kpi-title">Unrecorded Expenses</div><div class="kpi-value" id="kpi-exp-unrecorded" style="font-size: 32px;">₹0</div><p class="text-muted mt-2" style="font-size: 12px;">Gofrugal Un-Recorded</p></div></div>
                     </div>
-                    <div class="glass-card">
-                        <div class="chart-title">Dynamic Expense Log</div>
-                        <div class="table-wrapper"><table class="erp-table" id="table-expenses"><thead><tr><th>Record Date</th><th>Expense Name</th><th>Expense Node / Category</th><th>Settled Amount</th></tr></thead><tbody></tbody></table></div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title">Recorded Expenses <span style="font-size:11px;color:var(--text-muted);background:rgba(16,185,129,0.12);padding:4px 9px;border-radius:6px;margin-left:8px;">Recorded</span></div><div class="table-wrapper" style="max-height:420px;"><table class="erp-table" id="table-exp-recorded"><thead><tr><th>Date</th><th>Name</th><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table></div></div></div>
+                        <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title">Unrecorded Expenses <span style="font-size:11px;color:var(--text-muted);background:rgba(232,179,57,0.12);padding:4px 9px;border-radius:6px;margin-left:8px;">Unrecorded</span></div><div class="table-wrapper" style="max-height:420px;"><table class="erp-table" id="table-exp-unrecorded"><thead><tr><th>Date</th><th>Name</th><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table></div></div></div>
                     </div>
+                    <div class="glass-card"><div class="chart-title">Expense Category Breakdown (combined)</div><div id="echart-expense" class="echart-container" style="min-height: 320px;"></div></div>
                 </div>
 
                 <div id="view-vendor" class="view-section">
@@ -886,9 +894,18 @@
                 </div>
 
                 <div id="view-items" class="view-section">
-                    <div class="row g-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title"><span style="color: var(--aurora-emerald);">Fast-Moving</span> Inventory</div><div id="echart-fast-items" class="echart-container" style="min-height: 520px;"></div></div></div>
                         <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title"><span style="color: var(--aurora-pink);">Slow-Moving</span> Inventory</div><div id="echart-slow-items" class="echart-container" style="min-height: 520px;"></div></div></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="chart-title">Item Movements & Gross Profit <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Item_Movements And Gp</span></div>
+                        <div class="table-wrapper" style="max-height: 520px;">
+                            <table class="erp-table" id="table-itemmov">
+                                <thead><tr><th>#</th><th>Item</th><th>Sold Qty</th><th>Gross Profit</th><th>GP / Unit</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -977,10 +994,10 @@
 
                 <div id="view-customers" class="view-section">
                     <div class="glass-card">
-                        <div class="chart-title">Premium Customer Matrices</div>
+                        <div class="chart-title">Customer CRM <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Customer_CRM</span></div>
                         <div class="table-wrapper">
                             <table class="erp-table" id="table-customers">
-                                <thead><tr><th>Customer Identity</th><th>Visit Frequency</th><th>Total Units Volume</th><th>Net LTV (Spend)</th></tr></thead>
+                                <thead><tr><th>Customer Name</th><th>Total Selling (Spend)</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
@@ -989,16 +1006,16 @@
 
                 <div id="view-daily" class="view-section">
                     <div class="row g-4 mb-4">
-                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-green)">Day Net Sales</div><div class="kpi-value" id="daily-sales">₹0</div></div></div>
-                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-emerald)">Day Gross Profit</div><div class="kpi-value" id="daily-gp">₹0</div></div></div>
-                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-teal)">Unique Clients</div><div class="kpi-value" id="daily-cust">0</div></div></div>
-                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-violet)">Volume Sold</div><div class="kpi-value" id="daily-items">0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-green)">Total Selling</div><div class="kpi-value" id="daily-sales">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-emerald)">Total Day Gross</div><div class="kpi-value" id="daily-gp">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-teal)">Working Days</div><div class="kpi-value" id="daily-cust">0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card"><div class="kpi-title" style="color:var(--aurora-violet)">Avg Day Sale</div><div class="kpi-value" id="daily-items">₹0</div></div></div>
                     </div>
                     <div class="glass-card">
-                        <div class="chart-title">Daily Closing Transaction Ledger</div>
+                        <div class="chart-title">Day-wise Operations <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Daily_Operations</span></div>
                         <div class="table-wrapper">
                             <table class="erp-table" id="table-daily">
-                                <thead><tr><th>Invoice ID</th><th>Customer</th><th>Product Line</th><th>Qty</th><th>Gross Amt</th><th>Net Profit Margin</th></tr></thead>
+                                <thead><tr><th>#</th><th>Date</th><th>Selling</th><th>Purchase Value (WOT)</th><th>Day Gross</th><th>Margin %</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
@@ -1107,7 +1124,7 @@
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbzL6WZFMuLHPI646s3HThoq4bhe2K09l6nFKcR0NsEeKAIPmBAa7iOFPg0hEts2Vt-NZg/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbywYeGhDA-b11tfCSISaPlSeLgB6xni5-p5YByTjOJJCKFfHejGKSP8ASYY8hGAiEVraA/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1122,6 +1139,10 @@
         var rawSummarizeSales = [];
         var rawUnrecorded = { cashSales: [], customized: [] };
         var unrecActiveTab = 'cash';
+        var rawItemMovements = [];
+        var rawCustomerCRM = [];
+        var rawVendorPerf = [];
+        var rawDasboardCOGS = 0;
         var rawPurchaseLog = [];
         var stockFound = false;
         var stockSource = 'none';
@@ -1361,6 +1382,10 @@
                     rawGpAnalysis = res.gpAnalysis || [];
                     rawSummarizeSales = res.summarizeSales || [];
                     rawUnrecorded = res.unrecorded || { cashSales: [], customized: [] };
+                    rawItemMovements = res.itemMovements || [];
+                    rawCustomerCRM = res.customerCRM || [];
+                    rawVendorPerf = res.vendorPerf || [];
+                    rawDasboardCOGS = res.dasboardCOGS || 0;
                     rawPurchaseLog = res.purchaseLog || [];
                     stockFound = res.stockFound || false;
                     stockSource = res.stockSource || 'none';
@@ -2195,6 +2220,16 @@
             var tbody = document.querySelector('#table-summarize tbody');
             var list = (rawSummarizeSales || []).slice();
             list.sort(function(a,b){ return b.gp - a.gp; });
+            // KPI cards: GP (sum O), Net Profit = GP - total expenses, NP%, COGS (DasBoard)
+            var totalGP = 0, totalSelling = 0, totalExp = 0;
+            for (var g = 0; g < list.length; g++) { totalGP += list[g].gp; totalSelling += list[g].selling; }
+            for (var e = 0; e < rawExpenses.length; e++) { totalExp += rawExpenses[e].amount; }
+            var np = totalGP - totalExp;
+            var npPct = totalSelling > 0 ? ((np / totalSelling) * 100) : 0;
+            document.getElementById('sum-gp').innerText = formatFullCurrencyINR(totalGP);
+            document.getElementById('sum-np').innerText = formatFullCurrencyINR(np);
+            document.getElementById('sum-nppct').innerText = npPct.toFixed(1) + "%";
+            document.getElementById('sum-cogs').innerText = formatFullCurrencyINR(rawDasboardCOGS);
             var rHtml = [];
             for(var i=0; i<list.length; i++) {
                 var r = list[i];
@@ -2212,44 +2247,52 @@
         }
 
         function renderExpense(total, expMap, rows) {
-            document.getElementById('kpi-total-exp-page').innerText = formatFullCurrencyINR(total);
+            // split by type
+            var recTotal = 0, unrecTotal = 0, recRows = [], unrecRows = [];
+            for (var x = 0; x < rawExpenses.length; x++) {
+                var ex = rawExpenses[x];
+                if (ex.type === 'Unrecorded') { unrecTotal += ex.amount; unrecRows.push(ex); }
+                else { recTotal += ex.amount; recRows.push(ex); }
+            }
+            document.getElementById('kpi-total-exp-page').innerText = formatFullCurrencyINR(recTotal + unrecTotal);
+            document.getElementById('kpi-exp-recorded').innerText = formatFullCurrencyINR(recTotal);
+            document.getElementById('kpi-exp-unrecorded').innerText = formatFullCurrencyINR(unrecTotal);
+
+            function fillExpTable(sel, arr) {
+                arr.sort(function(a,b){ return b.amount - a.amount; });
+                var h = [];
+                for (var i = 0; i < arr.length; i++) {
+                    h.push("<tr><td>"+formatDate(arr[i].dateObj)+"</td><td style='color:#fff;font-weight:600;'>"+arr[i].name+"</td><td style='color:var(--text-muted);'>"+arr[i].category+"</td><td style='color:"+AURORA.pink+";font-weight:700;'>"+formatFullCurrencyINR(arr[i].amount)+"</td></tr>");
+                }
+                if (h.length === 0) h.push("<tr><td colspan='4' style='text-align:center;padding:30px;color:var(--text-muted);'>No entries.</td></tr>");
+                document.querySelector(sel).innerHTML = h.join('');
+            }
+            fillExpTable('#table-exp-recorded tbody', recRows);
+            fillExpTable('#table-exp-unrecorded tbody', unrecRows);
+
+            // combined category donut
             var eArr = sortMap(expMap, 10);
             var auroraColors = [AURORA.pink, AURORA.violet, AURORA.teal, AURORA.amber, AURORA.green, AURORA.blue, AURORA.emerald, AURORA.purple];
             var pieData = eArr.map(function(item, idx) { return { name: item.k, value: Math.round(item.v), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{ offset: 0, color: auroraColors[idx % auroraColors.length] }, { offset: 1, color: auroraColors[idx % auroraColors.length] + '70' }]), shadowBlur: 12, shadowColor: auroraColors[idx % auroraColors.length] + '50' } }; });
             initEChart('echart-expense', {
                 tooltip: auroraTooltip({ trigger: 'item', formatter: function(p) { return '<b>' + p.name + '</b><br/>' + p.marker + ' ' + formatFullCurrencyINR(p.value) + ' (' + p.percent + '%)'; } }),
                 legend: { orient: 'vertical', right: 16, top: 'middle', textStyle: { color: AURORA.muted, fontFamily: 'Jost', fontWeight: 600, fontSize: 12 }, itemWidth: 12, itemHeight: 12, itemGap: 10 }, 
-                series: [{ type: 'pie', radius: [25, '80%'], center: ['38%', '50%'], roseType: 'area', itemStyle: { borderRadius: 6, borderColor: 'rgba(2, 6, 23, 0.6)', borderWidth: 2 }, label: { color: AURORA.text, fontFamily: 'Jost', fontSize: 11, fontWeight: 600, formatter: '{b}' }, labelLine: { lineStyle: { color: AURORA.muted } }, emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 }, data: pieData }],
+                series: [{ type: 'pie', radius: [25, '80%'], center: ['38%', '50%'], roseType: 'area', itemStyle: { borderRadius: 6, borderColor: 'rgba(20, 8, 14, 0.6)', borderWidth: 2 }, label: { color: AURORA.text, fontFamily: 'Jost', fontSize: 11, fontWeight: 600, formatter: '{b}' }, labelLine: { lineStyle: { color: AURORA.muted } }, emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 }, data: pieData }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
-            var tbody = document.querySelector('#table-expenses tbody');
-            var rHtml = [];
-            for(var i=0; i<rows.length; i++) {
-                rHtml.push("<tr><td>" + formatDate(rows[i].dateObj) + "</td><td style='color:#fff; font-weight:600;'>" + rows[i].name + "</td><td>" + rows[i].category + "</td><td style='color:" + AURORA.pink + "; font-weight:700;'>" + formatFullCurrencyINR(rows[i].amount) + "</td></tr>");
-            }
-            tbody.innerHTML = rHtml.join('');
         }
 
         function renderVendor(fSales) {
-            // From Summarize_Sales_Data: distributor (C short) -wise net sales (Selling K)
+            // Vendor chart from Vendor_Performance (I distributor + J sum price)
+            var vp = (rawVendorPerf || []).slice();
+            vp.sort(function(a,b){ return b.value - a.value; });
+            vp = vp.slice(0, 15).reverse();
             var ss = rawSummarizeSales || [];
-            var distSales = {};
-            for (var i = 0; i < ss.length; i++) {
-                var s = ss[i];
-                var dist = s.distributor || 'Unknown';
-                if (!distSales[dist]) distSales[dist] = { value: 0, qty: 0 };
-                distSales[dist].value += s.selling;
-                distSales[dist].qty += s.soldQty;
-            }
-            var dArr = Object.keys(distSales).filter(function(k){ return k !== 'NA' && k !== 'Unknown'; }).map(function(k){ return { name: k, value: distSales[k].value, qty: distSales[k].qty }; });
-            dArr.sort(function(a,b){ return b.value - a.value; });
-            dArr = dArr.slice(0, 15);
-            dArr.reverse();
-            var names = dArr.map(function(v){ return v.name; });
-            var values = dArr.map(function(v){ return Math.round(v.value); });
-            if (dArr.length > 0) { document.getElementById('insight-top-vendor').innerText = dArr[dArr.length-1].name; }
+            var names = vp.map(function(v){ return v.name; });
+            var values = vp.map(function(v){ return Math.round(v.value); });
+            if (vp.length > 0) { document.getElementById('insight-top-vendor').innerText = vp[vp.length-1].name; }
             initEChart('echart-vendors', {
-                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(224, 69, 123, 0.05)' } }, formatter: function(p) { var d = dArr[p[0].dataIndex]; return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value) + '<br/>Qty sold: ' + (d ? Math.round(d.qty) : 0); } }),
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(224, 69, 123, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value); } }),
                 grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
                 xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
                 yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12, width: 160, overflow: 'truncate' } },
@@ -2323,7 +2366,9 @@
         }
 
         function renderItems(itemMap) {
-            var iArr = Object.keys(itemMap).map(function(k) { return { k: k, v: itemMap[k] }; }).filter(function(i) { return i.v > 0; });
+            // Use Item_Movements And Gp (item, soldQty, gp)
+            var mv = (rawItemMovements || []).slice();
+            var iArr = mv.map(function(m){ return { k: m.item, v: m.soldQty, gp: m.gp }; }).filter(function(i){ return i.v > 0; });
             iArr.sort(function(a, b) { return b.v - a.v; });
             var fast = iArr.slice(0, 15).reverse();
             var slow = iArr.slice().reverse().slice(0, 15);
@@ -2338,37 +2383,64 @@
                 };
             };
             var gradFast = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.8)' }, { offset: 1, color: AURORA.emerald }]);
-            var gradSlow = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(167, 139, 250, 0.15)' }, { offset: 0.5, color: 'rgba(244, 114, 182, 0.8)' }, { offset: 1, color: AURORA.pink }]);
+            var gradSlow = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(201, 162, 39, 0.15)' }, { offset: 0.5, color: 'rgba(224, 69, 123, 0.8)' }, { offset: 1, color: AURORA.pink }]);
             initEChart('echart-fast-items', commonOpts(gradFast, fast, 'rgba(16, 185, 129, 0.35)'));
-            initEChart('echart-slow-items', commonOpts(gradSlow, slow, 'rgba(244, 114, 182, 0.35)'));
+            initEChart('echart-slow-items', commonOpts(gradSlow, slow, 'rgba(224, 69, 123, 0.35)'));
+
+            // GP table
+            var gpSorted = mv.slice().sort(function(a,b){ return b.gp - a.gp; });
+            var rows = [];
+            for (var i = 0; i < gpSorted.length; i++) {
+                var m = gpSorted[i];
+                var perUnit = m.soldQty > 0 ? (m.gp / m.soldQty) : 0;
+                rows.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(i+1)+"</td>"+
+                    "<td style='color:#fff;font-weight:600;'>"+m.item+"</td>"+
+                    "<td style='font-weight:700;'>"+Math.round(m.soldQty)+"</td>"+
+                    "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(m.gp)+"</td>"+
+                    "<td style='color:"+AURORA.violet+";'>"+formatFullCurrencyINR(perUnit)+"</td></tr>");
+            }
+            if (rows.length === 0) rows.push("<tr><td colspan='5' style='text-align:center;padding:30px;color:var(--text-muted);'>No data.</td></tr>");
+            document.querySelector('#table-itemmov tbody').innerHTML = rows.join('');
         }
 
         function renderCustomers(custMap) {
-            var cArr = [];
-            var keys = Object.keys(custMap);
-            for(var i=0; i<keys.length; i++) { cArr.push({ k: keys[i], v: custMap[keys[i]] }); }
-            cArr.sort(function(a, b) { return b.v.spend - a.v.spend; });
-            cArr = cArr.slice(0, 20);
+            // From Customer_CRM (customer, selling)
+            var cc = (rawCustomerCRM || []).slice();
+            cc.sort(function(a, b) { return b.selling - a.selling; });
             var tbody = document.querySelector('#table-customers tbody');
             var rHtml = [];
-            for(var j=0; j<cArr.length; j++) {
-                var c = cArr[j];
-                rHtml.push("<tr><td style='font-weight:700; color:#fff;'><i class='fa-solid fa-user-circle me-2' style='color:" + AURORA.violet + ";'></i>" + c.k + "</td><td>" + c.v.bills.size + "</td><td>" + formatQty(c.v.qty) + "</td><td style='color:" + AURORA.emerald + "; font-weight:800;'>" + formatFullCurrencyINR(c.v.spend) + "</td></tr>");
+            for(var j=0; j<cc.length; j++) {
+                var c = cc[j];
+                rHtml.push("<tr><td style='font-weight:700; color:#fff;'><i class='fa-solid fa-user-circle me-2' style='color:" + AURORA.violet + ";'></i>" + c.customer + "</td><td style='color:" + AURORA.emerald + "; font-weight:800;'>" + formatFullCurrencyINR(c.selling) + "</td></tr>");
             }
+            if (rHtml.length === 0) rHtml.push("<tr><td colspan='2' style='text-align:center;padding:30px;color:var(--text-muted);'>No data.</td></tr>");
             tbody.innerHTML = rHtml.join('');
         }
 
         function renderDaily(kpis, fSales, custMap) {
-            document.getElementById('daily-sales').innerText = formatFullCurrencyINR(kpis.netSales); 
-            document.getElementById('daily-gp').innerText = formatFullCurrencyINR(kpis.gp); 
-            document.getElementById('daily-cust').innerText = Object.keys(custMap).length; 
-            document.getElementById('daily-items').innerText = fSales.reduce(function(s, r) { return s + r.qty; }, 0);
+            var ops = (rawDailyOps || []).slice().filter(function(d){ return d.date > 0 && Math.abs(d.selling) < 1e9; });
+            ops.sort(function(a,b){ return b.date - a.date; });
+            var totalSell = 0, totalGross = 0;
+            for (var i = 0; i < ops.length; i++) { totalSell += ops[i].selling; totalGross += ops[i].gross; }
+            var avgDay = ops.length > 0 ? (totalSell / ops.length) : 0;
+            document.getElementById('daily-sales').innerText = formatFullCurrencyINR(totalSell);
+            document.getElementById('daily-gp').innerText = formatFullCurrencyINR(totalGross);
+            document.getElementById('daily-cust').innerText = ops.length;
+            document.getElementById('daily-items').innerText = formatFullCurrencyINR(avgDay);
             var tbody = document.querySelector('#table-daily tbody');
             var rHtml = [];
-            for(var i=0; i<fSales.length; i++) {
-                var r = fSales[i];
-                rHtml.push("<tr><td>" + r.billNo + "</td><td>" + r.customer + "</td><td>" + r.item + "</td><td>" + r.qty + "</td><td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(r.netSales) + "</td><td style='color:" + AURORA.violet + "; font-weight:700;'>" + formatFullCurrencyINR(r.grossProfit) + "</td></tr>");
+            for(var j=0; j<ops.length; j++) {
+                var d = ops[j];
+                var dt = new Date(d.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+                var margin = d.selling > 0 ? ((d.gross / d.selling) * 100) : 0;
+                rHtml.push("<tr><td style='color:var(--text-muted);font-weight:800;'>"+(j+1)+"</td>"+
+                    "<td style='color:#fff;font-weight:600;'>"+dt+"</td>"+
+                    "<td style='color:"+AURORA.blue+";'>"+formatFullCurrencyINR(d.selling)+"</td>"+
+                    "<td style='color:var(--text-muted);'>"+formatFullCurrencyINR(d.purchaseValue || 0)+"</td>"+
+                    "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(d.gross)+"</td>"+
+                    "<td style='color:"+AURORA.violet+";'>"+margin.toFixed(1)+"%</td></tr>");
             }
+            if (rHtml.length === 0) rHtml.push("<tr><td colspan='6' style='text-align:center;padding:30px;color:var(--text-muted);'>No data.</td></tr>");
             tbody.innerHTML = rHtml.join('');
         }
     </script>
