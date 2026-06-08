@@ -259,15 +259,16 @@
             display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 999;
         }
 
-        .navbar-left { display: flex; align-items: center; }
+        .navbar-left { display: flex; align-items: center; gap: 4px; }
 
         .hamburger-btn {
-            background: rgba(2,6,23,0.45); border: 1px solid var(--glass-border);
-            color: var(--text-soft); width: 40px; height: 40px; border-radius: 10px;
-            cursor: pointer; margin-right: 14px; font-size: 16px; transition: 0.25s;
+            background: rgba(224, 69, 123, 0.06); border: 1px solid var(--glass-border);
+            color: var(--text-muted); width: 42px; height: 42px; border-radius: 12px;
+            cursor: pointer; margin-right: 16px; font-size: 15px; transition: all 0.25s ease;
             display: flex; align-items: center; justify-content: center;
         }
-        .hamburger-btn:hover { color: #fff; border-color: var(--aurora-green); background: rgba(16,185,129,0.1); }
+        .hamburger-btn:hover { color: var(--aurora-violet); border-color: var(--glass-border-hover); background: rgba(201, 162, 39, 0.10); transform: translateY(-1px); }
+        .hamburger-btn:active { transform: translateY(0); }
 
         .unrec-tab-btn {
             background: rgba(42, 18, 30, 0.5); border: 1px solid var(--glass-border);
@@ -286,14 +287,20 @@
         .sidebar, .main-wrapper { transition: transform 0.3s ease, margin-left 0.3s ease, width 0.3s ease; }
 
         .navbar-search { 
-            display: flex; align-items: center; background: rgba(2,6,23,0.45); 
-            border: 1px solid var(--glass-border); border-radius: 10px; 
-            padding: 9px 16px; width: 320px; transition: 0.3s;
+            display: flex; align-items: center; background: rgba(224, 69, 123, 0.05); 
+            border: 1px solid var(--glass-border); border-radius: 12px; 
+            padding: 10px 18px; width: 360px; transition: 0.3s;
         }
-        .navbar-search:focus-within { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12); }
-        .navbar-search i { color: var(--text-muted); font-size: 14px; }
-        .navbar-search input { background: transparent; border: none; color: #fff; padding-left: 12px; font-size: 14px; font-weight: 500; outline: none; width: 100%; }
-        .navbar-search input::placeholder { color: #64748b; }
+        .navbar-search:focus-within { border-color: var(--glass-border-hover); background: rgba(201, 162, 39, 0.06); box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.10); }
+        .navbar-search i { color: var(--text-muted); font-size: 13px; }
+        .navbar-search input { background: transparent; border: none; color: #fff; padding-left: 12px; font-size: 13.5px; font-weight: 500; outline: none; width: 100%; font-family: 'Jost', sans-serif; }
+        .navbar-search input::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .navbar-search { position: relative; }
+        .navbar-search.has-results::after {
+            content: attr(data-count); position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            font-size: 11px; font-weight: 700; color: var(--aurora-violet);
+            background: rgba(201,162,39,0.12); padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+        }
 
         .navbar-actions { display: flex; align-items: center; gap: 18px; }
         
@@ -1303,13 +1310,29 @@
 
         function performGlobalSearch() {
             var searchInput = document.getElementById("global-search");
-            var filterString = searchInput.value.toLowerCase();
+            var filterString = searchInput.value.toLowerCase().trim();
             var activeViewDiv = document.querySelector('.view-section.active');
             if (!activeViewDiv) return;
-            var targetTableRows = activeViewDiv.querySelectorAll('.erp-table tbody tr');
-            for (var i = 0; i < targetTableRows.length; i++) {
-                var rowDataText = targetTableRows[i].textContent || targetTableRows[i].innerText;
-                targetTableRows[i].style.display = (rowDataText.toLowerCase().indexOf(filterString) > -1) ? "" : "none";
+            var tables = activeViewDiv.querySelectorAll('.erp-table');
+            var totalMatches = 0, hasTable = false;
+            for (var t = 0; t < tables.length; t++) {
+                hasTable = true;
+                var rows = tables[t].querySelectorAll('tbody tr');
+                for (var i = 0; i < rows.length; i++) {
+                    // skip month/group header rows from matching, hide them by default during search
+                    var isHeader = rows[i].querySelector("td[colspan]") !== null;
+                    if (isHeader) { rows[i].style.display = filterString === "" ? "" : "none"; continue; }
+                    var txt = (rows[i].textContent || rows[i].innerText).toLowerCase();
+                    var match = txt.indexOf(filterString) > -1;
+                    rows[i].style.display = match ? "" : "none";
+                    if (filterString !== "" && match) totalMatches++;
+                }
+            }
+            // feedback in search placeholder area
+            var sb = document.querySelector('.navbar-search');
+            if (sb) {
+                if (filterString === "") { sb.removeAttribute('data-count'); sb.classList.remove('has-results'); }
+                else { sb.setAttribute('data-count', hasTable ? (totalMatches + ' found') : 'no table here'); sb.classList.add('has-results'); }
             }
         }
         function resetGlobalSearch() {
@@ -1575,9 +1598,10 @@
                 kpis.outGst   = ssGst;      // GST = ₹57,385
                 kpis.gp       = ssGp;       // Gross Profit = ₹3,60,815
                 kpis.soldQty  = ssSold;
+                var ssCogs = 0;
+                for (var sc = 0; sc < rawSummarizeSales.length; sc++) { ssCogs += rawSummarizeSales[sc].purchaseValue || 0; }
+                kpis.cogs = ssCogs;         // COGS of sold = ₹7,37,290
             }
-            // COGS from Summarize_DasBoard (Purchase Price × Sold Qty)
-            if (rawDasboardCOGS > 0) { kpis.cogs = rawDasboardCOGS; }
 
             var expCatMap = {};
             for(var d=0; d<rawExpensesDataset.length; d++) {
@@ -2246,15 +2270,15 @@
             var list = (rawSummarizeSales || []).slice();
             list.sort(function(a,b){ return b.gp - a.gp; });
             // KPI cards: GP (sum O), Net Profit = GP - total expenses, NP%, COGS (DasBoard)
-            var totalGP = 0, totalSelling = 0, totalExp = 0;
-            for (var g = 0; g < list.length; g++) { totalGP += list[g].gp; totalSelling += list[g].selling; }
+            var totalGP = 0, totalSelling = 0, totalExp = 0, totalCOGS = 0;
+            for (var g = 0; g < list.length; g++) { totalGP += list[g].gp; totalSelling += list[g].selling; totalCOGS += (list[g].purchaseValue || 0); }
             for (var e = 0; e < rawExpensesDataset.length; e++) { totalExp += rawExpensesDataset[e].amount; }
             var np = totalGP - totalExp;
             var npPct = totalSelling > 0 ? ((np / totalSelling) * 100) : 0;
             document.getElementById('sum-gp').innerText = formatFullCurrencyINR(totalGP);
             document.getElementById('sum-np').innerText = formatFullCurrencyINR(np);
             document.getElementById('sum-nppct').innerText = npPct.toFixed(1) + "%";
-            document.getElementById('sum-cogs').innerText = formatFullCurrencyINR(rawDasboardCOGS);
+            document.getElementById('sum-cogs').innerText = formatFullCurrencyINR(totalCOGS);
             var rHtml = [];
             for(var i=0; i<list.length; i++) {
                 var r = list[i];
