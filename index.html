@@ -1556,11 +1556,31 @@
             }
             kpis.days = Object.keys(dayCount).length || 1;
 
-            var expCatMap = {};
-            for(var d=0; d<fExp.length; d++) {
-                kpis.exp += fExp[d].amount; 
-                expCatMap[fExp[d].category] = (expCatMap[fExp[d].category] || 0) + fExp[d].amount; 
+            // ===== ACCURATE OVERRIDE: core totals from Summarize_Sales_Data (J selling, M gst, N sold, O gp) =====
+            if (rawSummarizeSales && rawSummarizeSales.length > 0) {
+                var ssSell = 0, ssGst = 0, ssGp = 0, ssSold = 0;
+                for (var sx = 0; sx < rawSummarizeSales.length; sx++) {
+                    ssSell += rawSummarizeSales[sx].selling || 0;
+                    ssGst  += rawSummarizeSales[sx].gst || 0;
+                    ssGp   += rawSummarizeSales[sx].gp || 0;
+                    ssSold += rawSummarizeSales[sx].soldQty || 0;
+                }
+                kpis.netSales = ssSell;     // Total Sale (Ex GST) = ₹10,98,104
+                kpis.selling  = ssSell;
+                kpis.outGst   = ssGst;      // GST = ₹57,385
+                kpis.gp       = ssGp;       // Gross Profit = ₹3,60,815
+                kpis.soldQty  = ssSold;
             }
+            // COGS from Summarize_DasBoard (Purchase Price × Sold Qty)
+            if (rawDasboardCOGS > 0) { kpis.cogs = rawDasboardCOGS; }
+
+            var expCatMap = {};
+            for(var d=0; d<rawExpensesDataset.length; d++) {
+                expCatMap[rawExpensesDataset[d].category] = (expCatMap[rawExpensesDataset[d].category] || 0) + rawExpensesDataset[d].amount; 
+            }
+            // Net Profit uses ALL expenses (Recorded + Unrecorded), not date-clipped
+            kpis.exp = 0;
+            for(var de=0; de<rawExpensesDataset.length; de++){ kpis.exp += rawExpensesDataset[de].amount; }
 
             var taxRatio = kpis.netSales > 0 ? (kpis.outGst / kpis.netSales) : 0;
             var inGst = kpis.cogs * taxRatio; 
@@ -2223,7 +2243,7 @@
             // KPI cards: GP (sum O), Net Profit = GP - total expenses, NP%, COGS (DasBoard)
             var totalGP = 0, totalSelling = 0, totalExp = 0;
             for (var g = 0; g < list.length; g++) { totalGP += list[g].gp; totalSelling += list[g].selling; }
-            for (var e = 0; e < rawExpenses.length; e++) { totalExp += rawExpenses[e].amount; }
+            for (var e = 0; e < rawExpensesDataset.length; e++) { totalExp += rawExpensesDataset[e].amount; }
             var np = totalGP - totalExp;
             var npPct = totalSelling > 0 ? ((np / totalSelling) * 100) : 0;
             document.getElementById('sum-gp').innerText = formatFullCurrencyINR(totalGP);
@@ -2249,8 +2269,8 @@
         function renderExpense(total, expMap, rows) {
             // split by type
             var recTotal = 0, unrecTotal = 0, recRows = [], unrecRows = [];
-            for (var x = 0; x < rawExpenses.length; x++) {
-                var ex = rawExpenses[x];
+            for (var x = 0; x < rawExpensesDataset.length; x++) {
+                var ex = rawExpensesDataset[x];
                 if (ex.type === 'Unrecorded') { unrecTotal += ex.amount; unrecRows.push(ex); }
                 else { recTotal += ex.amount; recRows.push(ex); }
             }
