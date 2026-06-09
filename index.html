@@ -1691,13 +1691,18 @@
 
             // ===== Filter Summarize_Sales by date range (Purchase Date) =====
             gStartTime = startTime; gEndTime = endTime;
-            filteredSummarize = (rawSummarizeSales || []).filter(function(s){
-                if (!s.date || s.date === 0) return true; // keep undated rows always
-                return s.date >= startTime && s.date <= endTime;
-            });
+            // Detect if summarizeSales actually has dates
+            var ssHasDates = false;
+            for (var hd = 0; hd < (rawSummarizeSales||[]).length; hd++) { if (rawSummarizeSales[hd].date && rawSummarizeSales[hd].date > 0) { ssHasDates = true; break; } }
+            if (ssHasDates) {
+                filteredSummarize = rawSummarizeSales.filter(function(s){ return s.date && s.date >= startTime && s.date <= endTime; });
+            } else {
+                // No dates in summarizeSales — renders use full data; date-aware totals come from fSales
+                filteredSummarize = rawSummarizeSales.slice();
+            }
 
-            // ===== ACCURATE OVERRIDE: core totals from FILTERED Summarize_Sales =====
-            if (filteredSummarize.length > 0 || rawSummarizeSales.length > 0) {
+            // ===== ACCURATE OVERRIDE: core totals from FILTERED Summarize_Sales (only if dates exist) =====
+            if (ssHasDates) {
                 var ssSell = 0, ssGst = 0, ssGp = 0, ssSold = 0, ssCogs = 0, ssDays = {};
                 for (var sx = 0; sx < filteredSummarize.length; sx++) {
                     var fs = filteredSummarize[sx];
@@ -1716,6 +1721,7 @@
                 kpis.cogs     = ssCogs;
                 kpis.days     = Object.keys(ssDays).length || 1;
             }
+            // else: kpis already computed from date-filtered fSales (3112) above — date filter still works
 
             var expCatMap = {};
             for(var d=0; d<fExp.length; d++) {
