@@ -903,6 +903,16 @@
 
                 <div id="view-vendor" class="view-section">
                     <div class="glass-card mb-4">
+                        <div class="chart-title"><i class="fa-solid fa-magnifying-glass-chart" style="color:var(--aurora-violet);"></i> Vendor Deep-Dive <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(201, 162, 39, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Vendor / Item / Bill se search</span></div>
+                        <div style="display:flex; gap:10px; margin:14px 0;">
+                            <div style="flex:1; display:flex; align-items:center; background:rgba(42,18,30,0.85); border:1px solid var(--glass-border-hover); border-radius:12px; padding:11px 16px;">
+                                <i class="fa-solid fa-search" style="color:var(--text-muted); font-size:13px;"></i>
+                                <input type="text" id="vendor-search" placeholder="Vendor (DEV), item (SAREE), ya bill no (CR1) likho..." onkeyup="vendorDeepDive()" autocomplete="off" style="background:transparent; border:none; color:#fff; padding-left:12px; font-size:14px; font-weight:500; outline:none; width:100%; font-family:'Jost',sans-serif;">
+                            </div>
+                        </div>
+                        <div id="vendor-deepdive-result"></div>
+                    </div>
+                    <div class="glass-card mb-4">
                         <div class="chart-title">Top Distributors by Sales (kis supplier ka maal zyada bika)</div>
                         <div id="echart-vendors" class="echart-container" style="min-height: 520px;"></div>
                         <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Top Distributor (by sales)</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Best Selling Source</div><div class="insight-data" style="color: var(--aurora-emerald);">Stock Up More</div></div></div>
@@ -2471,6 +2481,60 @@
                 series: [{ type: 'pie', radius: [25, '80%'], center: ['38%', '50%'], roseType: 'area', itemStyle: { borderRadius: 6, borderColor: 'rgba(20, 8, 14, 0.6)', borderWidth: 2 }, label: { color: AURORA.text, fontFamily: 'Jost', fontSize: 11, fontWeight: 600, formatter: '{b}' }, labelLine: { lineStyle: { color: AURORA.muted } }, emphasis: { itemStyle: { shadowBlur: 20 }, scale: true, scaleSize: 8 }, data: pieData }],
                 animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
             });
+        }
+
+        function vendorDeepDive() {
+            var q = (document.getElementById('vendor-search').value || "").toLowerCase().trim();
+            var box = document.getElementById('vendor-deepdive-result');
+            if (q === "") { box.innerHTML = ""; return; }
+            var ss = filteredSummarize || [];
+            // match rows by vendor/distributor, item, or bill no
+            var matched = ss.filter(function(s){
+                return ((s.distributor||'') + (s.item||'') + (s.billNo||'') + (s.customer||'')).toLowerCase().indexOf(q) > -1;
+            });
+            if (matched.length === 0) { box.innerHTML = "<div style='padding:24px;text-align:center;color:var(--text-muted);'>'" + q + "' ka koi maal nahi mila</div>"; return; }
+
+            // aggregate
+            var totSell = 0, totQty = 0, totGp = 0;
+            var itemAgg = {}, vendors = {};
+            for (var i = 0; i < matched.length; i++) {
+                var m = matched[i];
+                totSell += m.selling || 0; totQty += m.soldQty || 0; totGp += m.gp || 0;
+                vendors[m.distributor] = true;
+                if (!itemAgg[m.item]) itemAgg[m.item] = { item: m.item, qty: 0, sell: 0, gp: 0, vendor: m.distributor };
+                itemAgg[m.item].qty += m.soldQty || 0;
+                itemAgg[m.item].sell += m.selling || 0;
+                itemAgg[m.item].gp += m.gp || 0;
+            }
+            var items = Object.keys(itemAgg).map(function(k){ return itemAgg[k]; });
+            var byQty = items.slice().sort(function(a,b){ return b.qty - a.qty; });
+            var topItem = byQty[0];
+            var vendorList = Object.keys(vendors).filter(function(v){return v!=='NA';});
+
+            var html = "";
+            // summary cards
+            html += "<div class='row g-3 mb-3'>";
+            html += "<div class='col-6 col-md-3'><div style='background:rgba(224,69,123,0.06);border:1px solid var(--glass-border);border-radius:12px;padding:14px;'><div style='font-size:11px;color:var(--text-muted);text-transform:capitalize;font-weight:700;'>Total Sale</div><div style='font-size:22px;font-weight:800;color:#fff;'>"+formatFullCurrencyINR(totSell)+"</div></div></div>";
+            html += "<div class='col-6 col-md-3'><div style='background:rgba(201,162,39,0.06);border:1px solid var(--glass-border);border-radius:12px;padding:14px;'><div style='font-size:11px;color:var(--text-muted);font-weight:700;'>Qty Sold</div><div style='font-size:22px;font-weight:800;color:var(--aurora-violet);'>"+Math.round(totQty)+"</div></div></div>";
+            html += "<div class='col-6 col-md-3'><div style='background:rgba(240,101,149,0.06);border:1px solid var(--glass-border);border-radius:12px;padding:14px;'><div style='font-size:11px;color:var(--text-muted);font-weight:700;'>Gross Profit</div><div style='font-size:22px;font-weight:800;color:var(--aurora-emerald);'>"+formatFullCurrencyINR(totGp)+"</div></div></div>";
+            html += "<div class='col-6 col-md-3'><div style='background:rgba(155,106,143,0.06);border:1px solid var(--glass-border);border-radius:12px;padding:14px;'><div style='font-size:11px;color:var(--text-muted);font-weight:700;'>Top Item</div><div style='font-size:14px;font-weight:800;color:#fff;line-height:1.3;margin-top:4px;'>"+(topItem?topItem.item:'-')+"</div></div></div>";
+            html += "</div>";
+            if (vendorList.length) html += "<div style='font-size:12px;color:var(--text-muted);margin-bottom:10px;'><b style='color:var(--aurora-teal);'>Vendor(s):</b> " + vendorList.join(', ') + "</div>";
+
+            // items table (most sold first)
+            html += "<div class='table-wrapper' style='max-height:380px;'><table class='erp-table'><thead><tr><th>#</th><th>Item</th><th>Vendor</th><th>Qty Sold</th><th>Net Sale</th><th>Gross Profit</th></tr></thead><tbody>";
+            for (var j = 0; j < byQty.length; j++) {
+                var it = byQty[j];
+                var rank = j === 0 ? "<span style='color:var(--aurora-emerald);'>🔥 "+(j+1)+"</span>" : (j+1);
+                html += "<tr><td style='font-weight:800;color:var(--text-muted);'>"+rank+"</td>"+
+                    "<td style='color:#fff;font-weight:600;'>"+it.item+"</td>"+
+                    "<td style='color:var(--aurora-teal);'>"+it.vendor+"</td>"+
+                    "<td style='font-weight:700;'>"+Math.round(it.qty)+"</td>"+
+                    "<td style='color:"+AURORA.blue+";'>"+formatFullCurrencyINR(it.sell)+"</td>"+
+                    "<td style='color:"+AURORA.emerald+";font-weight:700;'>"+formatFullCurrencyINR(it.gp)+"</td></tr>";
+            }
+            html += "</tbody></table></div>";
+            box.innerHTML = html;
         }
 
         function renderVendor(fSales) {
