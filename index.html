@@ -59,7 +59,7 @@
         }
         *::-webkit-scrollbar-thumb:hover { 
             background: linear-gradient(180deg, var(--aurora-emerald), var(--aurora-purple)); 
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 8px rgba(224, 69, 123, 0.4);
         }
         * { scrollbar-width: thin; scrollbar-color: var(--aurora-violet) rgba(2, 6, 23, 0.4); }
 
@@ -119,7 +119,7 @@
 
         .admin-modal {
             background: var(--bg-soft); border: 1px solid var(--aurora-violet); border-radius: 18px;
-            padding: 32px; width: 420px; box-shadow: 0 0 60px rgba(167, 139, 250, 0.25); text-align: center;
+            padding: 32px; width: 420px; box-shadow: 0 0 60px rgba(201, 162, 39, 0.25); text-align: center;
         }
         
         .admin-input {
@@ -127,7 +127,7 @@
             padding: 11px 16px; border-radius: 10px; margin-bottom: 14px; outline: none; transition: 0.3s;
             font-size: 14px; font-weight: 500;
         }
-        .admin-input:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .admin-input:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(224, 69, 123, 0.15); }
         
         .admin-btn {
             background: linear-gradient(135deg, var(--aurora-green), var(--aurora-emerald));
@@ -135,7 +135,7 @@
             font-weight: 800; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s;
             font-size: 14px; letter-spacing: 0.3px;
         }
-        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); }
+        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(224, 69, 123, 0.35); }
 
         .form-check-label { color: #fff; font-weight: 500; font-size: 14px; }
         .form-check-input:checked { background-color: var(--aurora-green); border-color: var(--aurora-green); }
@@ -146,13 +146,13 @@
             .app-container { display: none !important; }
             .mobile-blocker {
                 display: flex; position: fixed; inset: 0; 
-                background: radial-gradient(ellipse at top left, rgba(16,185,129,0.15), transparent 60%),
-                            radial-gradient(ellipse at bottom right, rgba(167,139,250,0.15), transparent 60%),
+                background: radial-gradient(ellipse at top left, rgba(224,69,123,0.15), transparent 60%),
+                            radial-gradient(ellipse at bottom right, rgba(201,162,39,0.15), transparent 60%),
                             var(--bg-base);
                 z-index: 999999; flex-direction: column; justify-content: center; align-items: center;
                 text-align: center; padding: 30px; color: #fff;
             }
-            .mobile-blocker i { font-size: 80px; color: var(--aurora-green); margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.5)); }
+            .mobile-blocker i { font-size: 80px; color: var(--aurora-green); margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(224, 69, 123, 0.5)); }
             .mobile-blocker h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; letter-spacing: 0.5px; background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
             .mobile-blocker p { font-size: 16px; color: #94A3B8; line-height: 1.5; max-width: 350px; }
         }
@@ -219,7 +219,7 @@
             font-size: 26px; margin-right: 12px; 
             background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5)); 
+            filter: drop-shadow(0 0 10px rgba(224, 69, 123, 0.5)); 
         }
         .ikxari-text { 
             font-size: 28px; font-weight: 900; letter-spacing: 2px; 
@@ -238,15 +238,15 @@
         .nav-link:hover { color: #fff; background: var(--glass-highlight); transform: translateX(4px); }
         .nav-link.active { 
             color: #fff; 
-            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(167, 139, 250, 0.08) 50%, transparent 100%); 
+            background: linear-gradient(90deg, rgba(224, 69, 123, 0.15) 0%, rgba(201, 162, 39, 0.08) 50%, transparent 100%); 
             border-left: 3px solid var(--aurora-green); 
-            box-shadow: inset 0 0 25px rgba(16, 185, 129, 0.05); 
+            box-shadow: inset 0 0 25px rgba(224, 69, 123, 0.05); 
         }
         .nav-link.active i { color: var(--aurora-green); filter: drop-shadow(0 0 6px var(--aurora-green)); }
 
         .sidebar-footer { padding: 22px; border-top: 1px solid var(--glass-border); text-align: center; font-size: 13px; font-weight: 500; color: var(--text-muted); }
         .sidebar-footer a { color: var(--aurora-green); text-decoration: none; font-weight: 800; letter-spacing: 0.5px; transition: 0.3s; }
-        .sidebar-footer a:hover { color: var(--aurora-violet); text-shadow: 0 0 12px rgba(167, 139, 250, 0.6); }
+        .sidebar-footer a:hover { color: var(--aurora-violet); text-shadow: 0 0 12px rgba(201, 162, 39, 0.6); }
         
         .secret-trigger { cursor: pointer; display: inline-block; transition: 0.2s; user-select: none; }
         .secret-trigger:hover { transform: scale(1.25); }
@@ -296,7 +296,7 @@
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast .toast-ico { font-size: 18px; flex-shrink: 0; }
-        .toast.success { border-color: rgba(16,185,129,0.5); } .toast.success .toast-ico { color: #10B981; }
+        .toast.success { border-color: rgba(224,69,123,0.5); } .toast.success .toast-ico { color: #10B981; }
         .toast.error { border-color: rgba(239,68,68,0.5); } .toast.error .toast-ico { color: #EF4444; }
         .toast.info { border-color: var(--glass-border-hover); } .toast.info .toast-ico { color: var(--aurora-violet); }
 
@@ -351,7 +351,7 @@
             position: absolute; top: 42px; right: -10px; width: 340px;
             background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid var(--glass-border); border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(16,185,129,0.08); 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(224,69,123,0.08); 
             display: none; flex-direction: column; z-index: 1000; cursor: default;
         }
         .notif-dropdown.show { display: flex; animation: fadeUp 0.3s ease forwards; }
@@ -370,13 +370,13 @@
         .sync-indicator {
             display: flex; align-items: center; gap: 8px;
             padding: 6px 12px; border-radius: 100px;
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            background: rgba(224, 69, 123, 0.08);
+            border: 1px solid rgba(224, 69, 123, 0.2);
             font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px;
             color: var(--aurora-emerald); cursor: pointer;
             transition: 0.3s ease;
         }
-        .sync-indicator:hover { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); transform: translateY(-1px); }
+        .sync-indicator:hover { background: rgba(224, 69, 123, 0.15); border-color: rgba(224, 69, 123, 0.4); transform: translateY(-1px); }
         .sync-indicator .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--aurora-emerald); box-shadow: 0 0 8px var(--aurora-emerald); animation: syncPulse 2s infinite; }
         .sync-indicator.syncing .sync-dot { background: var(--aurora-amber); box-shadow: 0 0 8px var(--aurora-amber); animation: syncSpin 0.8s linear infinite; }
         .sync-indicator.syncing { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.25); color: var(--aurora-amber); }
@@ -404,7 +404,7 @@
             background: rgba(2,6,23,0.45); border: 1px solid rgba(255,255,255,0.08); color: #fff; 
             padding: 9px 14px; border-radius: 8px; font-weight: 600; font-size: 13.5px; outline: none; transition: 0.3s; 
         }
-        .date-input:focus, .ims-select:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .date-input:focus, .ims-select:focus { border-color: var(--aurora-green); box-shadow: 0 0 0 3px rgba(224, 69, 123, 0.15); }
         .date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; cursor: pointer; }
         .ims-select { cursor: pointer; appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; }
         .ims-select option { background: var(--bg-soft); color: #fff; }
@@ -412,9 +412,9 @@
         .btn-apply { 
             background: linear-gradient(135deg, var(--aurora-green), var(--aurora-emerald)); 
             color: var(--bg-base); border: none; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; 
-            transition: 0.3s ease; box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3); letter-spacing: 0.3px;
+            transition: 0.3s ease; box-shadow: 0 4px 18px rgba(224, 69, 123, 0.3); letter-spacing: 0.3px;
         }
-        .btn-apply:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45); }
+        .btn-apply:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(224, 69, 123, 0.45); }
 
         .glass-card { 
             background: var(--glass-bg); 
@@ -426,14 +426,14 @@
         }
         .glass-card::before {
             content: ''; position: absolute; inset: 0; border-radius: 18px; padding: 1px;
-            background: linear-gradient(135deg, rgba(167, 139, 250, 0.18), transparent 50%, rgba(16, 185, 129, 0.12));
+            background: linear-gradient(135deg, rgba(224, 69, 123, 0.18), transparent 50%, rgba(224, 69, 123, 0.12));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor; mask-composite: exclude;
             pointer-events: none; opacity: 0.8;
         }
         .glass-card:hover { 
             border-color: var(--glass-border-hover); transform: translateY(-4px); 
-            box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 30px rgba(16, 185, 129, 0.08); 
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 30px rgba(224, 69, 123, 0.08); 
         }
         
         .kpi-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
@@ -468,7 +468,7 @@
         }
         .erp-table td { padding: 14px 16px; font-size: 13.5px; font-weight: 500; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text-soft); }
         .erp-table tr { transition: background 0.2s; }
-        .erp-table tr:hover td { background: rgba(167, 139, 250, 0.04); }
+        .erp-table tr:hover td { background: rgba(201, 162, 39, 0.04); }
 
         .gauge-card {
             background: var(--glass-bg);
@@ -481,12 +481,12 @@
         }
         .gauge-card::before {
             content: ''; position: absolute; inset: 0; border-radius: 18px; padding: 1px;
-            background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), transparent 50%, rgba(16, 185, 129, 0.15));
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.2), transparent 50%, rgba(224, 69, 123, 0.15));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor; mask-composite: exclude;
             pointer-events: none;
         }
-        .gauge-card:hover { border-color: var(--glass-border-hover); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 30px rgba(16, 185, 129, 0.1); }
+        .gauge-card:hover { border-color: var(--glass-border-hover); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 30px rgba(224, 69, 123, 0.1); }
         .gauge-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: capitalize; letter-spacing: 0.6px; margin-bottom: 4px; text-align: center; }
         .gauge-sub { font-size: 11.5px; color: var(--text-muted); margin-top: -10px; opacity: 0.7; text-align: center; }
         .gauge-canvas { width: 100%; height: 200px; }
@@ -527,7 +527,7 @@
         }
         .ims-lock-box::before {
             content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 1px;
-            background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), transparent 50%, rgba(16, 185, 129, 0.2));
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.25), transparent 50%, rgba(224, 69, 123, 0.2));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
         }
@@ -536,7 +536,7 @@
             background: linear-gradient(135deg, var(--aurora-green), var(--aurora-violet));
             display: flex; align-items: center; justify-content: center;
             font-size: 28px; color: var(--bg-base);
-            box-shadow: 0 8px 28px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 8px 28px rgba(224, 69, 123, 0.35);
         }
         .ims-lock-box h3 {
             font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 10px;
@@ -551,8 +551,8 @@
         /* IMS Filter Active Banner */
         .ims-filter-banner {
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(167, 139, 250, 0.08);
-            border: 1px solid rgba(167, 139, 250, 0.2);
+            background: rgba(201, 162, 39, 0.08);
+            border: 1px solid rgba(201, 162, 39, 0.2);
             border-radius: 12px; padding: 12px 18px; margin-bottom: 20px;
             font-size: 13.5px; font-weight: 600; color: var(--text-soft);
         }
@@ -577,7 +577,7 @@
         /* IMS table card — color tint when a status filter is active */
         .ims-table-card { transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
         .ims-table-card.tint-purple { background: rgba(139, 92, 246, 0.10); border-color: rgba(139, 92, 246, 0.35); box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12); }
-        .ims-table-card.tint-green  { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 8px 32px rgba(16, 185, 129, 0.12); }
+        .ims-table-card.tint-green  { background: rgba(224, 69, 123, 0.10); border-color: rgba(224, 69, 123, 0.35); box-shadow: 0 8px 32px rgba(224, 69, 123, 0.12); }
         .ims-table-card.tint-yellow { background: rgba(251, 191, 36, 0.10); border-color: rgba(251, 191, 36, 0.35); box-shadow: 0 8px 32px rgba(251, 191, 36, 0.12); }
         .ims-table-card.tint-red    { background: rgba(239, 68, 68, 0.10);  border-color: rgba(239, 68, 68, 0.35);  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.12); }
         .ims-table-card.tint-black  { background: rgba(71, 85, 105, 0.18);  border-color: rgba(71, 85, 105, 0.5);   box-shadow: 0 8px 32px rgba(71, 85, 105, 0.15); }
@@ -663,7 +663,7 @@
             font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px;
             text-transform: capitalize;
         }
-        .data-source-badge.live { background: rgba(16, 185, 129, 0.1); color: var(--aurora-emerald); border: 1px solid rgba(16, 185, 129, 0.25); }
+        .data-source-badge.live { background: rgba(224, 69, 123, 0.1); color: var(--aurora-emerald); border: 1px solid rgba(224, 69, 123, 0.25); }
         .data-source-badge.mock { background: rgba(251, 191, 36, 0.1); color: var(--aurora-amber); border: 1px solid rgba(251, 191, 36, 0.25); }
     </style>
 </head>
@@ -895,7 +895,7 @@
                         <div class="col-12 col-md-4"><div class="glass-card" style="border-left: 3px solid var(--aurora-amber);"><div class="kpi-title">Unrecorded Expenses</div><div class="kpi-value" id="kpi-exp-unrecorded" style="font-size: 32px;">₹0</div><p class="text-muted mt-2" style="font-size: 12px;">Gofrugal Un-Recorded</p></div></div>
                     </div>
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title">Recorded Expenses <span style="font-size:11px;color:var(--text-muted);background:rgba(16,185,129,0.12);padding:4px 9px;border-radius:6px;margin-left:8px;">Recorded</span></div><div class="table-wrapper" style="max-height:420px;"><table class="erp-table" id="table-exp-recorded"><thead><tr><th>Date</th><th>Name</th><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table></div></div></div>
+                        <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title">Recorded Expenses <span style="font-size:11px;color:var(--text-muted);background:rgba(224,69,123,0.12);padding:4px 9px;border-radius:6px;margin-left:8px;">Recorded</span></div><div class="table-wrapper" style="max-height:420px;"><table class="erp-table" id="table-exp-recorded"><thead><tr><th>Date</th><th>Name</th><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table></div></div></div>
                         <div class="col-12 col-xl-6"><div class="glass-card"><div class="chart-title">Unrecorded Expenses <span style="font-size:11px;color:var(--text-muted);background:rgba(232,179,57,0.12);padding:4px 9px;border-radius:6px;margin-left:8px;">Unrecorded</span></div><div class="table-wrapper" style="max-height:420px;"><table class="erp-table" id="table-exp-unrecorded"><thead><tr><th>Date</th><th>Name</th><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table></div></div></div>
                     </div>
                     <div class="glass-card"><div class="chart-title">Expense Category Breakdown (combined)</div><div id="echart-expense" class="echart-container" style="min-height: 320px;"></div></div>
@@ -908,7 +908,7 @@
                         <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Top Distributor (by sales)</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Best Selling Source</div><div class="insight-data" style="color: var(--aurora-emerald);">Stock Up More</div></div></div>
                     </div>
                     <div class="glass-card">
-                        <div class="chart-title">Item-wise Sales <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Selling rate & qty</span></div>
+                        <div class="chart-title">Item-wise Sales <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(201, 162, 39, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Selling rate & qty</span></div>
                         <div class="table-wrapper" style="max-height: 500px;">
                             <table class="erp-table" id="table-vendor">
                                 <thead><tr><th>#</th><th>Item</th><th>Distributor</th><th>Selling Rate</th><th>Qty Sold</th><th>Net Sales</th></tr></thead>
@@ -1020,7 +1020,7 @@
                     <!-- Full Top 50 Table -->
                     <div class="glass-card ims-table-card" id="ims-table-card">
                         <div class="chart-title">
-                            <span>Top 100 Items <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Sorted by MRP (high → low)</span></span>
+                            <span>Top 100 Items <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(201, 162, 39, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">Sorted by MRP (high → low)</span></span>
                         </div>
                         <div class="table-wrapper" style="max-height: 700px;">
                             <table class="erp-table" id="table-ims">
@@ -1077,7 +1077,7 @@
 
                     <div class="glass-card">
                         <div class="chart-title">
-                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(167, 139, 250, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Purchase + Sales</span></span>
+                            <span>Purchase Log <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(201, 162, 39, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Purchase + Sales</span></span>
                             <span id="purchase-count" style="font-size: 12px; color: var(--text-muted); font-weight: 600;"></span>
                         </div>
                         <div class="table-wrapper" style="max-height: 620px;">
@@ -1168,7 +1168,7 @@
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbzb78FcQmzCcjxOMghlQlidD3iNcVu-MtJ2lrXvqzEMXh20q1T7DTKEgD245Ai_J7BqhQ/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbxywOeixYm4Z8JGr39pm9xx6_31yH_IpYs6_gu1GwN9-VuC5pg9lqz4yCJy79NtgIlxcQ/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1187,6 +1187,8 @@
         var rawCustomerCRM = [];
         var rawVendorPerf = [];
         var rawDasboardCOGS = 0;
+        var filteredSummarize = [];
+        var gStartTime = 0, gEndTime = 0;
         var rawPurchaseLog = [];
         var stockFound = false;
         var stockSource = 'none';
@@ -1211,7 +1213,7 @@
             text: '#E5D3CC', muted: '#B89AA5',
             grid: 'rgba(224, 69, 123, 0.07)',
             tooltipBg: 'rgba(42, 18, 30, 0.96)',
-            tooltipBorder: 'rgba(167, 139, 250, 0.2)'
+            tooltipBorder: 'rgba(201, 162, 39, 0.2)'
         };
 
         function toggleSidebar() {
@@ -1612,6 +1614,7 @@
                 rangeP.style.display = 'flex';
                 subtitle.innerText = 'Average day sale, net profit & total selling value';
             } else if (targetId === 'view-unrecorded') {
+                rangeP.style.display = 'flex';
                 subtitle.innerText = 'Cash / unbilled sales — Unrecorded_sale_Sheet';
             } else if (targetId === 'view-inventory') {
                 subtitle.innerText = 'Smart stock management · Max-level engine · Reorder priority';
@@ -1686,32 +1689,41 @@
             }
             kpis.days = Object.keys(dayCount).length || 1;
 
-            // ===== ACCURATE OVERRIDE: core totals from Summarize_Sales_Data (J selling, M gst, N sold, O gp) =====
-            if (rawSummarizeSales && rawSummarizeSales.length > 0) {
-                var ssSell = 0, ssGst = 0, ssGp = 0, ssSold = 0;
-                for (var sx = 0; sx < rawSummarizeSales.length; sx++) {
-                    ssSell += rawSummarizeSales[sx].selling || 0;
-                    ssGst  += rawSummarizeSales[sx].gst || 0;
-                    ssGp   += rawSummarizeSales[sx].gp || 0;
-                    ssSold += rawSummarizeSales[sx].soldQty || 0;
+            // ===== Filter Summarize_Sales by date range (Purchase Date) =====
+            gStartTime = startTime; gEndTime = endTime;
+            filteredSummarize = (rawSummarizeSales || []).filter(function(s){
+                if (!s.date || s.date === 0) return true; // keep undated rows always
+                return s.date >= startTime && s.date <= endTime;
+            });
+
+            // ===== ACCURATE OVERRIDE: core totals from FILTERED Summarize_Sales =====
+            if (filteredSummarize.length > 0 || rawSummarizeSales.length > 0) {
+                var ssSell = 0, ssGst = 0, ssGp = 0, ssSold = 0, ssCogs = 0, ssDays = {};
+                for (var sx = 0; sx < filteredSummarize.length; sx++) {
+                    var fs = filteredSummarize[sx];
+                    ssSell += fs.selling || 0;
+                    ssGst  += fs.gst || 0;
+                    ssGp   += fs.gp || 0;
+                    ssSold += fs.soldQty || 0;
+                    ssCogs += fs.purchaseValue || 0;
+                    if (fs.date) ssDays[new Date(fs.date).toISOString().split('T')[0]] = true;
                 }
-                kpis.netSales = ssSell;     // Total Sale (Ex GST) = ₹10,98,104
+                kpis.netSales = ssSell;
                 kpis.selling  = ssSell;
-                kpis.outGst   = ssGst;      // GST = ₹57,385
-                kpis.gp       = ssGp;       // Gross Profit = ₹3,60,815
+                kpis.outGst   = ssGst;
+                kpis.gp       = ssGp;
                 kpis.soldQty  = ssSold;
-                var ssCogs = 0;
-                for (var sc = 0; sc < rawSummarizeSales.length; sc++) { ssCogs += rawSummarizeSales[sc].purchaseValue || 0; }
-                kpis.cogs = ssCogs;         // COGS of sold = ₹7,37,290
+                kpis.cogs     = ssCogs;
+                kpis.days     = Object.keys(ssDays).length || 1;
             }
 
             var expCatMap = {};
-            for(var d=0; d<rawExpensesDataset.length; d++) {
-                expCatMap[rawExpensesDataset[d].category] = (expCatMap[rawExpensesDataset[d].category] || 0) + rawExpensesDataset[d].amount; 
+            for(var d=0; d<fExp.length; d++) {
+                expCatMap[fExp[d].category] = (expCatMap[fExp[d].category] || 0) + fExp[d].amount; 
             }
-            // Net Profit uses ALL expenses (Recorded + Unrecorded), not date-clipped
+            // Net Profit uses date-filtered expenses
             kpis.exp = 0;
-            for(var de=0; de<rawExpensesDataset.length; de++){ kpis.exp += rawExpensesDataset[de].amount; }
+            for(var de=0; de<fExp.length; de++){ kpis.exp += fExp[de].amount; }
 
             var taxRatio = kpis.netSales > 0 ? (kpis.outGst / kpis.netSales) : 0;
             var inGst = kpis.cogs * taxRatio; 
@@ -1994,7 +2006,12 @@
 
         function renderUnrecorded() {
             var data = rawUnrecorded || { cashSales: [], customized: [] };
-            var list = (unrecActiveTab === 'cust') ? (data.customized || []) : (data.cashSales || []);
+            var listAll = (unrecActiveTab === 'cust') ? (data.customized || []) : (data.cashSales || []);
+            // date filter (keep undated rows)
+            var list = listAll;
+            if (gStartTime && gEndTime) {
+                list = listAll.filter(function(u){ return !u.date || u.date === 0 || (u.date >= gStartTime && u.date <= gEndTime); });
+            }
             document.getElementById('unrec-title').innerHTML = (unrecActiveTab === 'cust' ? 'Customized Orders' : 'Cash Sales') + " <span style='font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;'>From Unrecorded_sale_Sheet</span>";
             var total = 0, qty = 0;
             for (var i = 0; i < list.length; i++) { total += list[i].total || 0; qty += list[i].qty || 0; }
@@ -2020,7 +2037,7 @@
 
         function renderGPAnalysis(fSales, kpis) {
             // GP per item from Summarize_Sales_Data (ready GP column = accurate)
-            var ss = rawSummarizeSales || [];
+            var ss = filteredSummarize || [];
             var gpAgg = {};   // item -> {gp, selling, qty}
             var totalGP = 0, totalSelling = 0;
             for (var i = 0; i < ss.length; i++) {
@@ -2369,7 +2386,7 @@
 
         function renderSummarize(fSales) {
             var tbody = document.querySelector('#table-summarize tbody');
-            var list = (rawSummarizeSales || []).slice();
+            var list = (filteredSummarize || []).slice();
             list.sort(function(a,b){ return b.gp - a.gp; });
             // KPI cards: GP (sum O), Net Profit = GP - total expenses, NP%, COGS (DasBoard)
             var totalGP = 0, totalSelling = 0, totalExp = 0, totalCOGS = 0;
@@ -2451,11 +2468,17 @@
         }
 
         function renderVendor(fSales) {
-            // Vendor chart from Vendor_Performance (I distributor + J sum price)
-            var vp = (rawVendorPerf || []).slice();
+            // Vendor (distributor) -wise selling from filtered Summarize_Sales (date-aware)
+            var ss = filteredSummarize || [];
+            var dagg = {};
+            for (var i = 0; i < ss.length; i++) {
+                var dn = ss[i].distributor || 'NA';
+                if (dn === 'NA' || dn === 'Unknown') continue;
+                dagg[dn] = (dagg[dn] || 0) + (ss[i].selling || 0);
+            }
+            var vp = Object.keys(dagg).map(function(k){ return { name: k, value: dagg[k] }; });
             vp.sort(function(a,b){ return b.value - a.value; });
             vp = vp.slice(0, 15).reverse();
-            var ss = rawSummarizeSales || [];
             var names = vp.map(function(v){ return v.name; });
             var values = vp.map(function(v){ return Math.round(v.value); });
             if (vp.length > 0) { document.getElementById('insight-top-vendor').innerText = vp[vp.length-1].name; }
@@ -2496,7 +2519,7 @@
 
         function renderGST(outT, inT, net) {
             // Output GST from Summarize_Sales_Data (GST amount N); avg GST% from M
-            var ss = rawSummarizeSales || [];
+            var ss = filteredSummarize || [];
             if (ss.length > 0) {
                 var gstSum = 0, pctSum = 0, pctCount = 0;
                 for (var i = 0; i < ss.length; i++) {
@@ -2513,14 +2536,14 @@
             document.getElementById('kpi-gst-in').innerText = formatFullCurrencyINR(inT);
             document.getElementById('kpi-gst-net').innerText = formatFullCurrencyINR(net);
             initEChart('echart-gst', {
-                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(167, 139, 250, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' ' + formatFullCurrencyINR(p[0].value); } }),
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(201, 162, 39, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' ' + formatFullCurrencyINR(p[0].value); } }),
                 grid: { left: '3%', right: '4%', bottom: '8%', top: '12%', containLabel: true },
                 xAxis: { type: 'category', data: ['Output GST', 'Input GST (ITC)', 'Net Payable'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12 } },
                 yAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
                 series: [{
                     type: 'bar', barWidth: '45%',
                     data: [ 
-                        { value: Math.round(outT), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.emerald }, { offset: 1, color: 'rgba(16, 185, 129, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(16, 185, 129, 0.45)' }}, 
+                        { value: Math.round(outT), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.emerald }, { offset: 1, color: 'rgba(224, 69, 123, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(224, 69, 123, 0.45)' }}, 
                         { value: Math.round(inT), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.teal }, { offset: 1, color: 'rgba(45, 212, 191, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(45, 212, 191, 0.45)' }}, 
                         { value: Math.round(net), itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: AURORA.pink }, { offset: 1, color: 'rgba(244, 114, 182, 0.2)' }]), borderRadius: [10, 10, 0, 0], shadowBlur: 14, shadowColor: 'rgba(244, 114, 182, 0.45)' }} 
                     ],
@@ -2534,8 +2557,15 @@
         }
 
         function renderItems(itemMap) {
-            // Use Item_Movements And Gp (item, soldQty, gp)
-            var mv = (rawItemMovements || []).slice();
+            // Derive from filtered Summarize_Sales (date-aware): item, soldQty, gp
+            var agg = {};
+            for (var s = 0; s < filteredSummarize.length; s++) {
+                var f = filteredSummarize[s];
+                if (!agg[f.item]) agg[f.item] = { item: f.item, soldQty: 0, gp: 0 };
+                agg[f.item].soldQty += f.soldQty || 0;
+                agg[f.item].gp += f.gp || 0;
+            }
+            var mv = Object.keys(agg).map(function(k){ return agg[k]; });
             var iArr = mv.map(function(m){ return { k: m.item, v: m.soldQty, gp: m.gp }; }).filter(function(i){ return i.v > 0; });
             iArr.sort(function(a, b) { return b.v - a.v; });
             var fast = iArr.slice(0, 15).reverse();
@@ -2550,9 +2580,9 @@
                     animation: true, animationDuration: 1400, animationEasing: 'cubicOut'
                 };
             };
-            var gradFast = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(16, 185, 129, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.8)' }, { offset: 1, color: AURORA.emerald }]);
+            var gradFast = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(224, 69, 123, 0.15)' }, { offset: 0.5, color: 'rgba(52, 211, 153, 0.8)' }, { offset: 1, color: AURORA.emerald }]);
             var gradSlow = new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: 'rgba(201, 162, 39, 0.15)' }, { offset: 0.5, color: 'rgba(224, 69, 123, 0.8)' }, { offset: 1, color: AURORA.pink }]);
-            initEChart('echart-fast-items', commonOpts(gradFast, fast, 'rgba(16, 185, 129, 0.35)'));
+            initEChart('echart-fast-items', commonOpts(gradFast, fast, 'rgba(224, 69, 123, 0.35)'));
             initEChart('echart-slow-items', commonOpts(gradSlow, slow, 'rgba(224, 69, 123, 0.35)'));
 
             // GP table
@@ -2572,8 +2602,14 @@
         }
 
         function renderCustomers(custMap) {
-            // From Customer_CRM (customer, selling)
-            var cc = (rawCustomerCRM || []).slice();
+            // Derive from filtered Summarize_Sales (date-aware): customer-wise selling
+            var agg = {};
+            for (var s = 0; s < filteredSummarize.length; s++) {
+                var f = filteredSummarize[s];
+                var cn = f.customer || 'Walk-in';
+                agg[cn] = (agg[cn] || 0) + (f.selling || 0);
+            }
+            var cc = Object.keys(agg).map(function(k){ return { customer: k, selling: agg[k] }; });
             cc.sort(function(a, b) { return b.selling - a.selling; });
             var tbody = document.querySelector('#table-customers tbody');
             var rHtml = [];
