@@ -913,7 +913,7 @@
                         <div id="vendor-deepdive-result"></div>
                     </div>
                     <div class="glass-card mb-4">
-                        <div class="chart-title">Top Distributors by Sales (kis supplier ka maal zyada bika)</div>
+                        <div class="chart-title">All Vendors by Business Volume (purchase value · Vendor_Performance)</div>
                         <div id="echart-vendors" class="echart-container" style="min-height: 520px;"></div>
                         <div class="insights-panel mt-4"><div class="insight-item"><div class="insight-label">Top Distributor (by sales)</div><div class="insight-data" id="insight-top-vendor">-</div></div><div class="insight-item"><div class="insight-label">Best Selling Source</div><div class="insight-data" style="color: var(--aurora-emerald);">Stock Up More</div></div></div>
                     </div>
@@ -2538,15 +2538,8 @@
         }
 
         function renderVendor(fSales) {
-            // Vendor (distributor) -wise selling from filtered Summarize_Sales (date-aware)
-            var ss = filteredSummarize || [];
-            var dagg = {};
-            for (var i = 0; i < ss.length; i++) {
-                var dn = ss[i].distributor || 'NA';
-                if (dn === 'NA' || dn === 'Unknown') continue;
-                dagg[dn] = (dagg[dn] || 0) + (ss[i].selling || 0);
-            }
-            var vp = Object.keys(dagg).map(function(k){ return { name: k, value: dagg[k] }; });
+            // ALL vendors from Vendor_Performance (I=Distributor, J=sum Price) — complete list
+            var vp = (rawVendorPerf || []).slice().filter(function(v){ return v.name && v.name !== 'NA'; });
             vp.sort(function(a,b){ return b.value - a.value; });
             vp = vp.reverse();
             var names = vp.map(function(v){ return v.name; });
@@ -2555,7 +2548,7 @@
             var vEl = document.getElementById('echart-vendors');
             if (vEl) { vEl.style.minHeight = Math.max(520, vp.length * 34) + 'px'; vEl.style.height = Math.max(520, vp.length * 34) + 'px'; }
             initEChart('echart-vendors', {
-                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(224, 69, 123, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value); } }),
+                tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(224, 69, 123, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Business: ' + formatFullCurrencyINR(p[0].value); } }),
                 grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
                 xAxis: { type: 'value', splitLine: { lineStyle: { color: AURORA.grid, type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.muted, fontFamily: 'Jost', fontSize: 11, formatter: function(v){return formatShortCurrency(v);} } },
                 yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: AURORA.text, fontWeight: 600, fontFamily: 'Jost', fontSize: 12, width: 160, overflow: 'truncate' } },
