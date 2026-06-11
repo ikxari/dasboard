@@ -1035,7 +1035,7 @@
                         <div class="table-wrapper" style="max-height: 700px;">
                             <table class="erp-table" id="table-ims">
                                 <thead><tr>
-                                    <th>#</th><th>Item</th><th>Distributor</th><th>Type of Wear</th><th>MRP</th><th>Selling</th><th>Avg Daily Sale</th>
+                                    <th>#</th><th>Item</th><th>Distributor</th><th>Type of Wear</th><th>Selling</th>
                                     <th>Current Stock</th><th>Max Level</th><th>Status</th><th>Reorder Qty</th>
                                 </tr></thead>
                                 <tbody></tbody>
@@ -1834,7 +1834,7 @@
                 displayList = imsTop50Cache.filter(function(it) { return it.statusOrder === imsStatusFilter; });
             }
             if (displayList.length === 0) {
-                rHtml.push("<tr><td colspan='11' style='text-align:center; padding:40px; color:var(--text-muted);'>No items in this category.</td></tr>");
+                rHtml.push("<tr><td colspan='9' style='text-align:center; padding:40px; color:var(--text-muted);'>No items in this category.</td></tr>");
             } else {
                 for (var t = 0; t < displayList.length; t++) {
                     var it2 = displayList[t];
@@ -1843,9 +1843,7 @@
                         "<td style='color:#fff; font-weight:600;'>" + it2.name + "</td>" +
                         "<td style='color:var(--aurora-violet); font-weight:600;'>" + (it2.distributor || 'NA') + "</td>" +
                         "<td style='color:var(--aurora-teal);'>" + (it2.wear || 'NA') + "</td>" +
-                        "<td style='color:" + AURORA.blue + "; font-weight:700;'>" + formatFullCurrencyINR(it2.mrp || 0) + "</td>" +
                         "<td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(it2.selling || 0) + "</td>" +
-                        "<td>" + it2.avgDaily.toFixed(2) + " U/day</td>" +
                         "<td style='font-weight:700; color:#fff;'>" + it2.currentStock + "</td>" +
                         "<td style='color:var(--text-muted);'>" + it2.maxLevel + "</td>" +
                         "<td><span class='status-pill-ims " + it2.statusClass + "'><span class='dot'></span>" + it2.status + "</span></td>" +
@@ -2550,10 +2548,12 @@
             }
             var vp = Object.keys(dagg).map(function(k){ return { name: k, value: dagg[k] }; });
             vp.sort(function(a,b){ return b.value - a.value; });
-            vp = vp.slice(0, 15).reverse();
+            vp = vp.reverse();
             var names = vp.map(function(v){ return v.name; });
             var values = vp.map(function(v){ return Math.round(v.value); });
             if (vp.length > 0) { document.getElementById('insight-top-vendor').innerText = vp[vp.length-1].name; }
+            var vEl = document.getElementById('echart-vendors');
+            if (vEl) { vEl.style.minHeight = Math.max(520, vp.length * 34) + 'px'; vEl.style.height = Math.max(520, vp.length * 34) + 'px'; }
             initEChart('echart-vendors', {
                 tooltip: auroraTooltip({ trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(224, 69, 123, 0.05)' } }, formatter: function(p) { return '<b>' + p[0].name + '</b><br/>' + p[0].marker + ' Sales: ' + formatFullCurrencyINR(p[0].value); } }),
                 grid: { left: '3%', right: '12%', bottom: '3%', top: '3%', containLabel: true },
