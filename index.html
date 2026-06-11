@@ -1035,7 +1035,7 @@
                         <div class="table-wrapper" style="max-height: 700px;">
                             <table class="erp-table" id="table-ims">
                                 <thead><tr>
-                                    <th>#</th><th>Item</th><th>Type of Wear</th><th>MRP</th><th>Selling</th><th>Avg Daily Sale</th>
+                                    <th>#</th><th>Item</th><th>Distributor</th><th>Type of Wear</th><th>MRP</th><th>Selling</th><th>Avg Daily Sale</th>
                                     <th>Current Stock</th><th>Max Level</th><th>Status</th><th>Reorder Qty</th>
                                 </tr></thead>
                                 <tbody></tbody>
@@ -1069,7 +1069,7 @@
                         <div class="chart-title">Day-wise Operations <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Daily_Operations</span></div>
                         <div class="table-wrapper">
                             <table class="erp-table" id="table-daily">
-                                <thead><tr><th>#</th><th>Date</th><th>Selling</th><th>Purchase Value (WOT)</th><th>Day Gross</th><th>Margin %</th></tr></thead>
+                                <thead><tr><th>#</th><th>Date</th><th>Selling</th><th>Cost of Sales (COGS)</th><th>Day Gross</th><th>Margin %</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
@@ -1834,13 +1834,14 @@
                 displayList = imsTop50Cache.filter(function(it) { return it.statusOrder === imsStatusFilter; });
             }
             if (displayList.length === 0) {
-                rHtml.push("<tr><td colspan='10' style='text-align:center; padding:40px; color:var(--text-muted);'>No items in this category.</td></tr>");
+                rHtml.push("<tr><td colspan='11' style='text-align:center; padding:40px; color:var(--text-muted);'>No items in this category.</td></tr>");
             } else {
                 for (var t = 0; t < displayList.length; t++) {
                     var it2 = displayList[t];
                     rHtml.push("<tr>" +
                         "<td style='font-weight:800; color:var(--text-muted);'>" + (it2.rank) + "</td>" +
                         "<td style='color:#fff; font-weight:600;'>" + it2.name + "</td>" +
+                        "<td style='color:var(--aurora-violet); font-weight:600;'>" + (it2.distributor || 'NA') + "</td>" +
                         "<td style='color:var(--aurora-teal);'>" + (it2.wear || 'NA') + "</td>" +
                         "<td style='color:" + AURORA.blue + "; font-weight:700;'>" + formatFullCurrencyINR(it2.mrp || 0) + "</td>" +
                         "<td style='color:" + AURORA.emerald + "; font-weight:700;'>" + formatFullCurrencyINR(it2.selling || 0) + "</td>" +
@@ -2194,6 +2195,7 @@
                         status: status, statusClass: statusClass, statusOrder: statusOrder,
                         reorderQty: reorderQty,
                         capitalLocked: currentStock * d.landingCost,
+                        distributor: d.distributor || d.brand || 'NA',
                         vendor: d.distributor || d.brand || 'NA'
                     });
                 }
