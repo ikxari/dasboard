@@ -873,10 +873,10 @@
 
                 <div id="view-summarize" class="view-section">
                     <div class="row g-4 mb-4">
-                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-violet);"><div class="kpi-title">Gross Profit</div><div class="kpi-value" id="sum-gp" style="font-size:26px;">₹0</div></div></div>
-                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-emerald);"><div class="kpi-title">Net Profit</div><div class="kpi-value" id="sum-np" style="font-size:26px;">₹0</div></div></div>
-                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-amber);"><div class="kpi-title">Net Profit %</div><div class="kpi-value" id="sum-nppct" style="font-size:26px;">0%</div></div></div>
-                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-blue);"><div class="kpi-title">Total COGS</div><div class="kpi-value" id="sum-cogs" style="font-size:26px;">₹0</div></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-violet);"><div class="kpi-title">Gross Profit (WOT)</div><div class="kpi-value" id="sum-gp" style="font-size:24px;">₹0</div><p class="text-muted mt-1" style="font-size:11px;">Sale − cost (no landing)</p></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-emerald);"><div class="kpi-title">Gross Profit (WT)</div><div class="kpi-value" id="sum-gpwt" style="font-size:24px;">₹0</div><p class="text-muted mt-1" style="font-size:11px;">Sale − cost+landing</p></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-amber);"><div class="kpi-title">Net Profit (WT)</div><div class="kpi-value" id="sum-np" style="font-size:24px;">₹0</div><p class="text-muted mt-1" style="font-size:11px;">GP(WT) − Expenses</p></div></div>
+                        <div class="col-6 col-md-3"><div class="glass-card" style="border-left:3px solid var(--aurora-blue);"><div class="kpi-title">COGS (WT / WOT)</div><div class="kpi-value" id="sum-cogs" style="font-size:24px;">₹0</div><p class="text-muted mt-1" style="font-size:11px;" id="sum-cogs-wot">WOT: ₹0</p></div></div>
                     </div>
                     <div class="glass-card">
                         <div class="chart-title">Summarize Sales Data <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(224, 69, 123, 0.1); padding: 4px 9px; border-radius: 6px; margin-left: 10px;">From Summarize_Sales_Data</span></div>
@@ -1200,7 +1200,7 @@
 
     <script>
     const IKXARI_CONFIG = {
-        API_URL: "https://script.google.com/macros/s/AKfycbzApSAQFOnHeJYcYZILZ0zB7g2vTcdaTx-2Sz0S_JzVJ4wd6N7RULff3_aHDNA6QNy_ZA/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycbweEzb4jNUfyGdsqtMslohlHGUCoJ0TdqQsAm8Lute912_GMFUPf98nM6z2feYfE7H4/exec",
         API_TOKEN: "IkxariAurora_2026_xK9pQ7mZ_SomnathSecret",
         AUTO_REFRESH_INTERVAL_MS: 60000
     };
@@ -1222,6 +1222,7 @@
         var rawItemsCatalog = [];
         var filteredSummarize = [];
         var gStartTime = 0, gEndTime = 0;
+        var gGpWot = 0, gGpWt = 0, gCogsWot = 0, gCogsWt = 0, gSellEx = 0, gSellInc = 0;
         var rawPurchaseLog = [];
         var stockFound = false;
         var stockSource = 'none';
@@ -1737,25 +1738,35 @@
                 filteredSummarize = rawSummarizeSales.slice();
             }
 
-            // ===== ACCURATE OVERRIDE: core totals from FILTERED Summarize_Sales (only if dates exist) =====
+            // ===== ACCURATE OVERRIDE: core totals from FILTERED Master_Sales (date-aware) =====
             if (ssHasDates) {
-                var ssSell = 0, ssGst = 0, ssGp = 0, ssSold = 0, ssCogs = 0, ssDays = {};
+                var ssSellInc = 0, ssSellEx = 0, ssGst = 0, ssGpWot = 0, ssGpWt = 0, ssSold = 0, ssCogsWot = 0, ssCogsWt = 0, ssDays = {};
                 for (var sx = 0; sx < filteredSummarize.length; sx++) {
                     var fs = filteredSummarize[sx];
-                    ssSell += fs.selling || 0;
-                    ssGst  += fs.gst || 0;
-                    ssGp   += fs.gp || 0;
-                    ssSold += fs.soldQty || 0;
-                    ssCogs += fs.purchaseValue || 0;
+                    ssSellInc += fs.selling || 0;            // P inc GST
+                    ssSellEx  += (fs.sellExGst != null ? fs.sellExGst : fs.netSales) || 0; // N ex GST
+                    ssGst     += fs.gst || 0;
+                    ssGpWot   += (fs.gpWot != null ? fs.gpWot : fs.gp) || 0;
+                    ssGpWt    += (fs.gpWt != null ? fs.gpWt : fs.gp) || 0;
+                    ssSold    += fs.soldQty || 0;
+                    ssCogsWot += (fs.cogsWot != null ? fs.cogsWot : fs.purchaseValue) || 0;
+                    ssCogsWt  += (fs.cogsWt != null ? fs.cogsWt : fs.purchaseValue) || 0;
                     if (fs.date) ssDays[new Date(fs.date).toISOString().split('T')[0]] = true;
                 }
-                kpis.netSales = ssSell;
-                kpis.selling  = ssSell;
+                kpis.netSales = ssSellEx;       // ex-GST headline sale
+                kpis.sellingInc = ssSellInc;    // inc-GST
+                kpis.selling  = ssSellEx;
                 kpis.outGst   = ssGst;
-                kpis.gp       = ssGp;
+                kpis.gp       = ssGpWt;         // default GP = WT (conservative, after landing)
+                kpis.gpWot    = ssGpWot;
+                kpis.gpWt     = ssGpWt;
                 kpis.soldQty  = ssSold;
-                kpis.cogs     = ssCogs;
+                kpis.cogs     = ssCogsWt;
+                kpis.cogsWot  = ssCogsWot;
+                kpis.cogsWt   = ssCogsWt;
                 kpis.days     = Object.keys(ssDays).length || 1;
+                // globals for Summarize cards
+                gGpWot = ssGpWot; gGpWt = ssGpWt; gCogsWot = ssCogsWot; gCogsWt = ssCogsWt; gSellEx = ssSellEx; gSellInc = ssSellInc;
             }
             // else: kpis already computed from date-filtered fSales (3112) above — date filter still works
 
@@ -1767,8 +1778,14 @@
             kpis.exp = 0;
             for(var de=0; de<fExp.length; de++){ kpis.exp += fExp[de].amount; }
 
-            var taxRatio = kpis.netSales > 0 ? (kpis.outGst / kpis.netSales) : 0;
-            var inGst = kpis.cogs * taxRatio; 
+            // Input GST: prefer real purchase GST (purchaseLog), else estimate
+            var inGst = 0;
+            if (rawPurchaseLog && rawPurchaseLog.length > 0) {
+                for (var ig = 0; ig < rawPurchaseLog.length; ig++) { inGst += rawPurchaseLog[ig].gst || 0; }
+            } else {
+                var taxRatio = kpis.netSales > 0 ? (kpis.outGst / kpis.netSales) : 0;
+                inGst = kpis.cogs * taxRatio;
+            }
             var netGst = kpis.outGst - inGst;
 
             if (globalCurrentActiveView === 'view-overview') renderOverview(kpis, trendMap, catMap);
@@ -2486,20 +2503,32 @@
             };
         }
 
+        function fExpGlobal() {
+            if (!gStartTime || !gEndTime) return rawExpensesDataset || [];
+            return (rawExpensesDataset || []).filter(function(e){ return !e.dateObj || (e.dateObj >= gStartTime && e.dateObj <= gEndTime); });
+        }
+
         function renderSummarize(fSales) {
             var tbody = document.querySelector('#table-summarize tbody');
             var list = (filteredSummarize || []).slice();
-            list.sort(function(a,b){ return b.gp - a.gp; });
-            // KPI cards: GP (sum O), Net Profit = GP - total expenses, NP%, COGS (DasBoard)
-            var totalGP = 0, totalSelling = 0, totalExp = 0, totalCOGS = 0;
-            for (var g = 0; g < list.length; g++) { totalGP += list[g].gp; totalSelling += list[g].selling; totalCOGS += (list[g].purchaseValue || 0); }
-            for (var e = 0; e < rawExpensesDataset.length; e++) { totalExp += rawExpensesDataset[e].amount; }
-            var np = totalGP - totalExp;
-            var npPct = totalSelling > 0 ? ((np / totalSelling) * 100) : 0;
-            document.getElementById('sum-gp').innerText = formatFullCurrencyINR(totalGP);
-            document.getElementById('sum-np').innerText = formatFullCurrencyINR(np);
-            document.getElementById('sum-nppct').innerText = npPct.toFixed(1) + "%";
-            document.getElementById('sum-cogs').innerText = formatFullCurrencyINR(totalCOGS);
+            list.sort(function(a,b){ return (b.gpWt!=null?b.gpWt:b.gp) - (a.gpWt!=null?a.gpWt:a.gp); });
+            // WOT/WT split
+            var gpWot = 0, gpWt = 0, cogsWot = 0, cogsWt = 0, sellEx = 0, totalExp = 0;
+            for (var g = 0; g < list.length; g++) {
+                gpWot += (list[g].gpWot != null ? list[g].gpWot : list[g].gp) || 0;
+                gpWt  += (list[g].gpWt  != null ? list[g].gpWt  : list[g].gp) || 0;
+                cogsWot += (list[g].cogsWot != null ? list[g].cogsWot : list[g].purchaseValue) || 0;
+                cogsWt  += (list[g].cogsWt  != null ? list[g].cogsWt  : list[g].purchaseValue) || 0;
+                sellEx += (list[g].sellExGst != null ? list[g].sellExGst : list[g].netSales) || 0;
+            }
+            for (var e = 0; e < fExpGlobal().length; e++) { totalExp += fExpGlobal()[e].amount; }
+            var npWt = gpWt - totalExp;
+            document.getElementById('sum-gp').innerText = formatFullCurrencyINR(gpWot);
+            document.getElementById('sum-gpwt').innerText = formatFullCurrencyINR(gpWt);
+            document.getElementById('sum-np').innerText = formatFullCurrencyINR(npWt);
+            document.getElementById('sum-cogs').innerText = formatFullCurrencyINR(cogsWt);
+            var cogsWotEl = document.getElementById('sum-cogs-wot');
+            if (cogsWotEl) cogsWotEl.innerText = "WOT: " + formatFullCurrencyINR(cogsWot);
             var rHtml = [];
             for(var i=0; i<list.length; i++) {
                 var r = list[i];
