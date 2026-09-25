@@ -181,6 +181,50 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .tbl td{padding:10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
 .tbl tr:hover td{background:rgba(255,255,255,.02)}
 
+/* ---------- order workspace (command center) ---------- */
+.wsWrap{position:fixed;inset:0;background:rgba(5,5,12,.72);backdrop-filter:blur(9px);z-index:9998;display:flex;align-items:center;justify-content:center;padding:2vh 2.5vw;animation:wsfade .22s ease}
+@keyframes wsfade{from{opacity:0}}
+.workspace{width:95vw;max-width:1560px;height:90vh;background:linear-gradient(180deg,rgba(22,20,34,.97),rgba(13,13,24,.97));backdrop-filter:blur(28px);border:1px solid var(--brd);border-radius:20px;box-shadow:0 50px 130px rgba(0,0,0,.78);display:flex;flex-direction:column;overflow:hidden;animation:cin .3s cubic-bezier(.16,1,.3,1) both}
+.wsHead{display:flex;align-items:center;gap:14px;padding:16px 26px;border-bottom:1px solid var(--brd);background:rgba(255,255,255,.025)}
+.wsHead .wid{font-size:22px;font-weight:700;letter-spacing:.3px}
+.wsHead .wsp{flex:1}
+.wsBody{flex:1;overflow-y:auto;padding:22px 26px 34px}
+.wsBody::-webkit-scrollbar{width:9px}
+.wsBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:8px}
+.wsBody::-webkit-scrollbar-track{background:transparent}
+.wsSum{display:flex;flex-wrap:wrap;gap:26px;align-items:center;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:16px;padding:16px 22px;margin-bottom:22px}
+.kv{display:flex;flex-direction:column;gap:3px;min-width:90px}
+.kv b{font-size:15px;font-weight:600}
+.kv small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.kv.grow{flex:1;min-width:200px}
+.wsSec{font-size:12px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin:24px 0 14px;display:flex;align-items:center;gap:10px}
+.wsSec:first-child{margin-top:4px}
+.wsSec .ln{flex:1;height:1px;background:var(--brd)}
+.ws .fcard{padding:15px 18px;margin-bottom:11px}
+.ws .ftile{width:46px;height:46px;font-size:21px}
+.ws .fname{font-size:16px}
+/* audit log */
+.log{border:1px solid var(--brd);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02)}
+.logrow{display:flex;gap:14px;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.05);align-items:flex-start}
+.logrow:last-child{border-bottom:none}
+.logrow:hover{background:rgba(255,255,255,.02)}
+.logdot{width:34px;height:34px;flex:none;border-radius:50%;background:var(--accentDim);display:flex;align-items:center;justify-content:center;font-size:15px}
+.logmain{flex:1;min-width:0}
+.logmain b{font-size:14px;font-weight:600}
+.logmain .act{color:var(--muted);font-size:13px;margin-top:1px}
+.logtime{color:var(--muted);font-size:12px;text-align:right;white-space:nowrap;flex:none;line-height:1.5}
+.logtime .d{color:var(--txt);font-weight:500}
+@media(max-width:1024px){.workspace{width:96vw;height:92vh}.wsBody{padding:18px 18px 28px}.wsHead{padding:14px 18px}}
+@media(max-width:640px){
+  .wsWrap{padding:0}
+  .workspace{width:100vw;height:100dvh;max-width:none;border-radius:0;border:none}
+  .wsSum{gap:14px;padding:14px}
+  .ws .fcard{flex-direction:column}
+  .ws .fcard .ftile{width:40px;height:40px}
+  .logtime{text-align:left}
+  .logrow{flex-wrap:wrap}
+}
+
 /* ---------- modal ---------- */
 .mwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:9998;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px}
 .modal{background:var(--panel);backdrop-filter:blur(26px);border:1px solid var(--brd);border-radius:20px;width:90vw;max-width:640px;margin:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:cin .25s both;max-height:92dvh;display:flex;flex-direction:column}
@@ -232,13 +276,14 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 </div>
 
 <div id="modalRoot"></div>
+<div id="wsRoot"></div>
 <div id="confirmRoot"></div>
 <div id="toasts"></div>
 <div id="urlBanner">⚠️ Can't reach the server. <a onclick="askUrl()">Set API URL</a></div>
 
 <script>
 /* ============ CONFIG ============ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbwVRdgxMGcrfx5466pIRlREKPPS5KCDMpm1kR46ARQISXpAVcENuLxLxioQUB-avAAaQQ/exec';
+var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbzJStI-7MOcmh3pRruAPWtg0TZXjVNq3q0U5g6nnuHJzrzrc2lZ9i13xfn7aIfy1tr8JA/exec';
 var API = localStorage.getItem('ikx_api') || API_DEFAULT;
 var ACTOR = localStorage.getItem('ikx_name') || '';
 var ISADMIN = localStorage.getItem('ikx_admin')==='1';
@@ -491,24 +536,50 @@ function drawOrder(r){
   var o=r.order, steps=r.steps, his=r.history||[];
   var pct=o.total?Math.round(o.done/o.total*100):0;
   var st=o.status;
-  var body='<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center">'+
-    '<div><div class="oclient">'+esc(o.client||'—')+(o.mobile?' · '+esc(o.mobile):'')+'</div>'+
-    '<div class="hint">'+esc(o.fabric||'')+' · by '+esc(o.sales_person||o.created_by)+' · '+fmt(o.created_ts)+'</div></div>'+
-    '<span class="pill p-'+st+'">'+st+'</span></div>'+
-    '<div class="hint" style="margin-top:6px">Workflow: <b style="color:var(--txt)">'+esc(o.version_name)+'</b>'+(o.trial_round?' · Trial '+(o.trial_round+1)+' of max '+o.max_trials:'')+'</div>'+
-    '<div class="prog" style="margin:10px 0 16px"><i style="width:'+pct+'%"></i></div>';
 
-  body+=steps.map(function(s){ return stepCard(o,s); }).join('');
+  var cancelBtn = (can('config') && st==='Running')
+    ? '<button class="btn ghost sm" onclick="wsCancel(\''+o.order_id+'\')">Cancel Order</button>' : '';
 
-  body+='<div class="sechead">Activity</div><div style="max-height:180px;overflow:auto">'+
-    (his.length?his.map(function(h){return '<div style="font-size:12.5px;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">🕘 <b style="color:var(--txt)">'+esc(h.who)+'</b> · '+esc(h.action)+(h.detail?' — '+esc(h.detail):'')+' <span style="opacity:.6">'+fmtDT(h.ts)+'</span></div>';}).join(''):'<div class="hint">No activity yet.</div>')+'</div>';
+  // summary bar
+  var sum='<div class="wsSum">'+
+    '<div class="kv"><small>Client</small><b>'+esc(o.client||'—')+'</b></div>'+
+    (o.mobile?'<div class="kv"><small>Mobile</small><b>'+esc(o.mobile)+'</b></div>':'')+
+    (o.fabric?'<div class="kv"><small>Fabric</small><b>'+esc(o.fabric)+'</b></div>':'')+
+    '<div class="kv"><small>Sales Person</small><b>'+esc(o.sales_person||o.created_by||'—')+'</b></div>'+
+    (o.assignment_type?'<div class="kv"><small>Assignment</small><b>'+esc(o.assignment_type)+'</b></div>':'')+
+    '<div class="kv"><small>Workflow</small><b>'+esc(o.version_name)+'</b></div>'+
+    (o.trial_round?'<div class="kv"><small>Trial</small><b>'+(o.trial_round+1)+' / '+o.max_trials+'</b></div>':'')+
+    '<div class="kv"><small>Created</small><b>'+fmt(o.created_ts)+'</b></div>'+
+    '<div class="kv grow"><small>Progress · '+o.done+'/'+o.total+' steps</small><div class="prog" style="margin-top:6px"><i style="width:'+pct+'%"></i></div></div>'+
+    '</div>';
 
-  var foot=[];
-  if(can('config') && (st==='Running')) foot.push({t:'Cancel Order',c:'btn ghost',f:function(){ confirmBox('Cancel this order?','It will be marked Cancelled.',function(){ api({action:'cancelOrder',order_id:o.order_id}).then(function(x){ if(x.ok){toast('Order cancelled','ok');closeModal();loadOrders();} }); }); }});
-  foot.push({t:'Close',c:'btn ghost',f:closeModal});
+  // steps
+  var stepsHtml='<div class="wsSec">Workflow<span class="ln"></span></div>'+
+    (steps.length?steps.map(function(s){ return stepCard(o,s); }).join(''):'<div class="hint">No steps.</div>');
 
-  modal(esc(o.order_id), body, foot, true);
+  // audit trail
+  var logHtml='<div class="wsSec">Activity · Audit Trail<span class="ln"></span></div>'+
+    (his.length?'<div class="log">'+his.map(function(h){
+      var d=new Date(Number(h.ts));
+      var dd=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit',timeZone:'Asia/Kolkata'});
+      var tt=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
+      return '<div class="logrow"><div class="logdot">🕘</div>'+
+        '<div class="logmain"><b>'+esc(h.who||'—')+'</b><div class="act">'+esc(h.action)+(h.detail?' — '+esc(h.detail):'')+'</div></div>'+
+        '<div class="logtime"><span class="d">'+dd+'</span><br>'+tt+'</div></div>';
+    }).join('')+'</div>':'<div class="hint">No activity yet.</div>');
+
+  var html='<div class="wsWrap ws" onclick="if(event.target===this)closeWorkspace()">'+
+    '<div class="workspace">'+
+      '<div class="wsHead"><div class="wid">'+esc(o.order_id)+'</div>'+
+        '<span class="pill p-'+st+'">'+st+'</span><div class="wsp"></div>'+
+        cancelBtn+
+        '<button class="mx" onclick="closeWorkspace()">✕</button></div>'+
+      '<div class="wsBody">'+sum+stepsHtml+logHtml+'</div>'+
+    '</div></div>';
+  $('wsRoot').innerHTML=html;
 }
+function closeWorkspace(){ $('wsRoot').innerHTML=''; if(TICK){clearInterval(TICK);TICK=null;} }
+function wsCancel(id){ confirmBox('Cancel this order?','It will be marked Cancelled.',function(){ api({action:'cancelOrder',order_id:id}).then(function(x){ if(x.ok){toast('Order cancelled','ok');closeWorkspace();loadOrders();} else toast(x.error,'err'); }); }); }
 function tatText(s){
   var cur = s.ovr_tat_value!=null ? (s.ovr_tat_value+' '+s.ovr_tat_unit) : (s.def_tat_value+' '+s.def_tat_unit);
   var h='Default TAT: <b>'+s.def_tat_value+' '+esc(s.def_tat_unit)+'</b>';
@@ -559,9 +630,9 @@ function tatOverride(id,seq){
     '<div><label class="f">Unit</label>'+unitSelect('ovUnit',s.ovr_tat_unit||s.def_tat_unit)+'</div></div>',
     [{t:'Save Override',c:'btn',f:function(){
       api({action:'setStepTatOverride',order_id:id,seq:seq,tat_value:$('ovVal').value,tat_unit:$('ovUnit').value}).then(function(r){
-        if(!r.ok){toast(r.error,'err');return;} closeModal();toast('TAT updated for this order','ok');openOrder(id);
+        if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('TAT updated for this order','ok');openOrder(id);
       });
-    }},{t:'Cancel',c:'btn ghost',f:closeModal}], false, 'confirmRoot');
+    }},{t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}], false, 'confirmRoot');
 }
 
 /* ============ MY TASKS ============ */
