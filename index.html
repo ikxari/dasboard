@@ -220,6 +220,7 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
     <div class="nav" id="nav"></div>
     <div class="umenu">
       <div class="uav" id="uav">?</div>
+      <button class="icb" id="admBtn" title="Admin" onclick="adminToggle()">🔓</button>
       <button class="icb" title="Change name" onclick="signout()">⏻</button>
     </div>
   </div>
@@ -234,9 +235,10 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 
 <script>
 /* ============ CONFIG ============ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbyUflG-6ET6gPyMAN7cHYCDQIINmTvYGjMyaV0j9GSYxMMWaAdhCuatclxru3JkbPLZqw/exec';
+var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbz9ngaOsY0huSJ-8GIH_3tIVB-mFA3-kcsoABaOdojzIlTV2xjgF9OeudYdpTJhApFAvA/exec';
 var API = localStorage.getItem('ikx_api') || API_DEFAULT;
 var ACTOR = localStorage.getItem('ikx_name') || '';
+var ISADMIN = localStorage.getItem('ikx_admin')==='1';
 var ME = null, MEPERM = {};
 var WORKERS=[], ROLES=[], SETTINGS={};
 var DRAFT=[];            // process builder working copy
@@ -283,14 +285,19 @@ function apiCall(p,silent){
 function api(p){return apiCall(p,false)}
 function apiS(p){return apiCall(p,true)}
 
-/* ============ boot (no login) ============ */
+/* ============ boot (no login, soft admin gate) ============ */
 window.addEventListener('DOMContentLoaded',function(){ boot(); });
-function adminAll(){ return {config:1,view_all:1,create_order:1,complete_task:1,update_trial:1,update_delivery:1,manage_team:1}; }
+function basePerms(){ return {create_order:1,complete_task:1,update_trial:1,update_delivery:1,view_all:1}; }
+function applyPerms(){ MEPERM=basePerms(); if(ISADMIN){ MEPERM.config=1; MEPERM.manage_team=1; } if(ME) ME.role=ISADMIN?'Admin':'Staff'; }
 function boot(){
+  // API URL not set yet → don't spew errors, just ask for it
+  if(!API || API==='PASTE_YOUR_WEB_APP_EXEC_URL_HERE' || !/\/exec$/.test(API)){
+    $('loader').classList.add('hidden'); askUrl(); return;
+  }
   apiS({action:'__ping'}).then(function(r){
     $('loader').classList.add('hidden');
     if(!r || !r.ok){ $('urlBanner').style.display='block'; }
-    ME={name:ACTOR||'User',role:'Admin'}; MEPERM=adminAll();
+    ME={name:ACTOR||'User',role:ISADMIN?'Admin':'Staff'}; applyPerms();
     if(!ACTOR){ askName(function(){ ME.name=ACTOR; showApp(); }); }
     else showApp();
   });
@@ -300,6 +307,20 @@ function askName(cb){
     '<label class="f">Your name</label><input class="in" id="nmIn" placeholder="e.g. Sam">'+
     '<div class="hint">Just tags who did what in the activity log. No password.</div>',
     [{t:'Continue →',c:'btn',f:function(){ var v=$('nmIn').value.trim(); if(!v){toast('Enter your name','err');return;} ACTOR=v; localStorage.setItem('ikx_name',v); closeModal(); cb(); }}]);
+}
+function adminToggle(){
+  if(ISADMIN){
+    confirmBox('Lock admin?','Config pages will be hidden again.',function(){ ISADMIN=false; localStorage.removeItem('ikx_admin'); applyPerms(); buildNav(); toast('Admin locked 🔒','ok'); go('orders'); });
+    return;
+  }
+  modal('Admin Access',
+    '<label class="f">Admin password</label><div class="pwrap"><input class="in" id="admPw" type="password" placeholder="••••••" onkeydown="if(event.key===\'Enter\')admUnlock()"><span class="eye" onclick="tog(\'admPw\',this)">👁</span></div>'+
+    '<div class="hint">Unlocks Process Builder, Workers, Roles, Settings & Change Log.</div>',
+    [{t:'Unlock 🔓',c:'btn',f:admUnlock}]);
+}
+function admUnlock(){
+  if($('admPw').value==='11102000'){ ISADMIN=true; localStorage.setItem('ikx_admin','1'); applyPerms(); buildNav(); closeModal(); toast('Admin unlocked 🔓','ok'); go('builder'); }
+  else toast('Wrong password','err');
 }
 function signout(){ confirmBox('Change name?','Enter a different name for the activity log.',function(){ localStorage.removeItem('ikx_name'); location.reload(); }); }
 
@@ -314,6 +335,7 @@ function showApp(){
   });
 }
 function buildNav(){
+  var ab=$('admBtn'); if(ab){ ab.textContent=ISADMIN?'🔒':'🔓'; ab.title=ISADMIN?'Lock admin':'Admin access'; }
   var n=$('nav'); n.innerHTML='';
   PAGES.forEach(function(p){
     if(p.perm && !can(p.perm)) return;
