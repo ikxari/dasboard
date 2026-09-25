@@ -192,6 +192,7 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .wsBody::-webkit-scrollbar{width:9px}
 .wsBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:8px}
 .wsBody::-webkit-scrollbar-track{background:transparent}
+.wsSpin{width:44px;height:44px;border:3px solid rgba(255,255,255,.14);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:60px auto}
 .wsSum{display:flex;flex-wrap:wrap;gap:26px;align-items:center;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:16px;padding:16px 22px;margin-bottom:22px}
 .kv{display:flex;flex-direction:column;gap:3px;min-width:90px}
 .kv b{font-size:15px;font-weight:600}
@@ -283,7 +284,7 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 
 <script>
 /* ============ CONFIG ============ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycby87vntqNKRNIv73PfEyY1XU9PNLZOxGe8jz0uYMVa5yVZdHGOp9Uxxg8Ij_HYglD3DRA/exec';
+var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbxJRbixO5uoSJK7wfMvA44T3-L9RlB7Lwdnbs8ixw_HCNpcw53CNe7Iwt9846Z6GhTS4Q/exec';
 var API = localStorage.getItem('ikx_api') || API_DEFAULT;
 var ACTOR = localStorage.getItem('ikx_name') || '';
 var ISADMIN = localStorage.getItem('ikx_admin')==='1';
@@ -300,6 +301,7 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
 var PAGES = [
   {id:'orders', label:'Orders', perm:null},
   {id:'tasks',  label:'My Tasks', perm:null},
+  {id:'reports',label:'Reports', perm:null},
   {id:'builder',label:'Process Builder', perm:'config'},
   {id:'workers',label:'Workers', perm:'config'},
   {id:'roles',  label:'Roles', perm:'config'},
@@ -382,9 +384,12 @@ function showApp(){
   $('appView').classList.remove('hidden');
   $('uav').textContent=(ME.name||'?').charAt(0).toUpperCase();
   buildNav();
-  Promise.all([apiS({action:'listWorkers'}),apiS({action:'listRoles'}),apiS({action:'getSettings'}),apiS({action:'listFabrics'})]).then(function(a){
-    if(a[0].ok)WORKERS=a[0].workers; if(a[1].ok)ROLES=a[1].roles; if(a[2].ok)SETTINGS=a[2].settings; if(a[3].ok)FABRICS=a[3].fabrics;
-    go('orders');
+  // instant render from cache, then refresh masters in ONE call
+  try{ var c=JSON.parse(localStorage.getItem('ikx_masters')||'{}'); if(c.workers){WORKERS=c.workers;ROLES=c.roles||[];FABRICS=c.fabrics||[];SETTINGS=c.settings||{};} }catch(e){}
+  go('orders');
+  apiS({action:'bootstrap'}).then(function(r){
+    if(r&&r.ok){ WORKERS=r.workers||[]; ROLES=r.roles||[]; FABRICS=r.fabrics||[]; SETTINGS=r.settings||{};
+      try{ localStorage.setItem('ikx_masters',JSON.stringify({workers:WORKERS,roles:ROLES,fabrics:FABRICS,settings:SETTINGS})); }catch(e){} }
   });
 }
 function buildNav(){
@@ -402,6 +407,7 @@ function go(page){
   if(TICK){clearInterval(TICK);TICK=null;}
   if(page==='orders')   renderOrders();
   else if(page==='tasks') renderTasks();
+  else if(page==='reports') renderReports();
   else if(page==='builder') renderBuilder();
   else if(page==='workers') renderWorkers();
   else if(page==='roles') renderRoles();
@@ -523,9 +529,15 @@ function submitOrder(){
 }
 
 /* ---- order detail ---- */
+function showWsLoading(id){
+  $('wsRoot').innerHTML='<div class="wsWrap ws" onclick="if(event.target===this)closeWorkspace()"><div class="workspace">'+
+    '<div class="wsHead"><div class="wid">'+esc(id)+'</div><div class="wsp"></div><button class="mx" onclick="closeWorkspace()">✕</button></div>'+
+    '<div class="wsBody"><div class="wsSpin"></div><div class="empty" style="padding:0">Loading order…</div></div></div></div>';
+}
 function openOrder(id){
+  showWsLoading(id);
   api({action:'getOrder',order_id:id}).then(function(r){
-    if(!r.ok){toast(r.error||'error','err');return;}
+    if(!r.ok){toast(r.error||'error','err'); closeWorkspace(); return;}
     CUR_ORDER=r.order; CUR_STEPS=r.steps;
     drawOrder(r);
     if(TICK)clearInterval(TICK);
@@ -597,7 +609,7 @@ function stepCard(o,s){
         return can('complete_task')?'<button class="'+cls+'" onclick="decide(\''+o.order_id+'\','+s.seq+',\''+esc(op.label)+'\')">'+esc(op.label)+'</button>':'';
       }).join('');
     } else if(can('complete_task')){
-      acts='<button class="btn ok sm" onclick="doneStep(\''+o.order_id+'\','+s.seq+')">Mark Done ✅</button>';
+      acts='<button class="btn ok sm" onclick="doneStep(\''+o.order_id+'\','+s.seq+')">Mark Done</button>';
     }
     if(!s.mandatory && can('complete_task')) acts+='<button class="btn ghost sm" onclick="skip(\''+o.order_id+'\','+s.seq+')">Skip</button>';
     if(can('config')) acts+='<button class="btn ghost sm" onclick="tatOverride(\''+o.order_id+'\','+s.seq+')">TAT</button>';
@@ -888,6 +900,71 @@ function saveSet(){
   api({action:'saveSettings',settings:{store_name:$('setStore').value,timezone:$('setTz').value,working_days:$('setDays').value,status_settings:$('setStatus').value,max_trial_rounds:$('setTrials').value}}).then(function(r){
     if(!r.ok){toast(r.error,'err');return;} SETTINGS=r.settings; toast('Settings saved ✅','ok');
   });
+}
+
+/* ============ REPORTS ============ */
+var REP_RANGE='30', REP_STATUS='All', REP_PERSON='', REP_DATA=null;
+function repRangeMs(){
+  if(REP_RANGE==='all') return {from:0,to:Date.now()};
+  var days=Number(REP_RANGE)||30; return {from:Date.now()-days*864e5, to:Date.now()};
+}
+function renderReports(){
+  var ppl=[], seen={};
+  WORKERS.forEach(function(w){ if(w.active&&!seen[w.name]){seen[w.name]=1;ppl.push(w.name);} });
+  $('content').innerHTML='<div class="pageH"><div><h2>Reports</h2><div class="sub">Order summary · export to PDF or Sheet</div></div></div>'+
+    '<div class="tools">'+
+    '<select class="in" id="rpRange" style="max-width:150px"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select>'+
+    '<select class="in" id="rpStatus" style="max-width:150px"><option>All</option><option>Running</option><option>Completed</option><option>Stopped</option><option>Cancelled</option></select>'+
+    '<select class="in" id="rpPerson" style="max-width:180px"><option value="">All people</option>'+ppl.map(function(n){return '<option>'+esc(n)+'</option>'}).join('')+'</select>'+
+    '<div style="flex:1"></div>'+
+    '<button class="btn ghost" onclick="reportPDF()">⬇ Download PDF</button>'+
+    (can('config')?'<button class="btn" onclick="reportToSheet()">Write to Sheet</button>':'')+
+    '</div>'+
+    '<div id="rpKpi" class="stats"></div><div class="card" id="rpTbl"><div class="empty">Loading…</div></div>';
+  $('rpRange').value=REP_RANGE; $('rpStatus').value=REP_STATUS; $('rpPerson').value=REP_PERSON;
+  $('rpRange').onchange=function(){REP_RANGE=this.value;loadReport();};
+  $('rpStatus').onchange=function(){REP_STATUS=this.value;loadReport();};
+  $('rpPerson').onchange=function(){REP_PERSON=this.value;loadReport();};
+  loadReport();
+}
+function loadReport(){
+  var r=repRangeMs();
+  api({action:'reportData',from:r.from,to:r.to,status:REP_STATUS,person:REP_PERSON}).then(function(d){
+    if(!d.ok){$('rpTbl').innerHTML='<div class="empty">'+esc(d.error)+'</div>';return;}
+    REP_DATA=d; var k=d.kpi;
+    var cards=[['Total',k.total,'var(--accent)'],['Running',k.running,'var(--info)'],['Delayed',k.delayed,'var(--err)'],['Completed',k.completed,'var(--ok)'],['Stopped',k.stopped,'var(--warn)'],['Cancelled',k.cancelled,'var(--grey)']];
+    $('rpKpi').innerHTML=cards.map(function(c){return '<div class="stat"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div><div class="bar" style="background:'+c[2]+'"></div></div>';}).join('');
+    if(!d.rows.length){$('rpTbl').innerHTML='<div class="empty">No orders in this range.</div>';return;}
+    $('rpTbl').innerHTML='<div style="overflow-x:auto"><table class="tbl"><tr><th>Order</th><th>Client</th><th>Sales</th><th>Fabric</th><th>Type</th><th>Status</th><th>Progress</th><th>Current</th><th>Created</th></tr>'+
+      d.rows.map(function(r){var st=r.delayed&&r.status==='Running'?'Delayed':r.status;return '<tr><td><b>'+esc(r.order_id)+'</b></td><td>'+esc(r.client||'—')+'</td><td>'+esc(r.sales_person||'—')+'</td><td>'+esc(r.fabric||'—')+'</td><td>'+esc(r.assignment_type||'—')+'</td><td><span class="pill p-'+st+'">'+st+'</span></td><td>'+r.done+'/'+r.total+'</td><td>'+esc(r.current)+'</td><td>'+fmt(r.created_ts)+'</td></tr>';}).join('')+'</table></div>';
+  });
+}
+function reportToSheet(){
+  var r=repRangeMs();
+  api({action:'exportReportSheet',from:r.from,to:r.to,status:REP_STATUS,person:REP_PERSON}).then(function(d){
+    if(!d.ok){toast(d.error,'err');return;} toast(d.count+' rows written to '+d.sheet+' ✅','ok');
+  });
+}
+function reportPDF(){
+  if(!REP_DATA||!REP_DATA.rows.length){toast('Nothing to export','err');return;}
+  var k=REP_DATA.kpi, rows=REP_DATA.rows;
+  var rangeLbl=REP_RANGE==='all'?'All time':('Last '+REP_RANGE+' days');
+  var when=new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+  var kpi=[['Total',k.total],['Running',k.running],['Delayed',k.delayed],['Completed',k.completed],['Stopped',k.stopped],['Cancelled',k.cancelled]];
+  var html='<!doctype html><html><head><meta charset="utf-8"><title>Ikxari FMS Report</title>'+
+    '<style>*{font-family:Jost,Arial,sans-serif}body{margin:28px;color:#111}h1{margin:0;font-size:22px}.sub{color:#666;font-size:13px;margin:4px 0 18px}'+
+    '.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.kc{border:1px solid #ddd;border-radius:8px;padding:10px 16px;min-width:90px}.kc .n{font-size:22px;font-weight:700}.kc .l{color:#777;font-size:12px}'+
+    'table{width:100%;border-collapse:collapse;font-size:12px}th{background:#E0457B;color:#fff;text-align:left;padding:7px 8px}td{padding:6px 8px;border-bottom:1px solid #eee}'+
+    'h1 span{color:#E0457B}.ft{margin-top:20px;color:#999;font-size:11px;text-align:center}@media print{.noprint{display:none}}</style></head><body>'+
+    '<h1>Ikxari <span>FMS</span> — Order Report</h1><div class="sub">'+rangeLbl+' · Status: '+esc(REP_STATUS)+(REP_PERSON?' · Person: '+esc(REP_PERSON):'')+' · Generated '+esc(when)+' by '+esc(ME.name)+'</div>'+
+    '<div class="kpis">'+kpi.map(function(c){return '<div class="kc"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>';}).join('')+'</div>'+
+    '<table><thead><tr><th>Order</th><th>Client</th><th>Sales</th><th>Fabric</th><th>Type</th><th>Status</th><th>Progress</th><th>Current</th><th>Created</th></tr></thead><tbody>'+
+    rows.map(function(r){var st=r.delayed&&r.status==='Running'?'Delayed':r.status;return '<tr><td>'+esc(r.order_id)+'</td><td>'+esc(r.client||'-')+'</td><td>'+esc(r.sales_person||'-')+'</td><td>'+esc(r.fabric||'-')+'</td><td>'+esc(r.assignment_type||'-')+'</td><td>'+st+'</td><td>'+r.done+'/'+r.total+'</td><td>'+esc(r.current)+'</td><td>'+fmt(r.created_ts)+'</td></tr>';}).join('')+
+    '</tbody></table><div class="ft">Ikxari · Fashion Management System · '+rows.length+' orders</div>'+
+    '<div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="background:#E0457B;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer">Print / Save PDF</button></div>'+
+    '<'+'script>window.onload=function(){setTimeout(window.print,400)}<\/script></body></html>';
+  var w=window.open('','_blank'); if(!w){toast('Allow popups to download PDF','err');return;}
+  w.document.write(html); w.document.close();
 }
 
 /* ============ CHANGE LOG ============ */
