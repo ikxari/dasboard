@@ -321,7 +321,7 @@ select.in optgroup{background:#17172b;color:#9aa0b4}
 
 <script>
 /* ============ CONFIG ============ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbxtkYHjRcPzheYBZ_7Hdiidf35ZqO11BZrkUrCeE8QE9-cYj83oQfMA87b7zmhbBqVI/exec';
+var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbxH8xaJTHSQRqeF7Gwp2W2KGTiEAtFikjFBj_kCoKD77M0YzWe3UAQtj9xevP0NFMjFhA/exec';
 var API = localStorage.getItem('ikx_api') || API_DEFAULT;
 var ACTOR = localStorage.getItem('ikx_name') || '';
 var ISADMIN = localStorage.getItem('ikx_admin')==='1';
@@ -338,6 +338,7 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
 var PAGES = [
   {id:'orders', label:'Orders', perm:null},
   {id:'tasks',  label:'My Tasks', perm:null},
+  {id:'followups',label:'Follow-ups', perm:null},
   {id:'reports',label:'Reports', perm:null},
   {id:'builder',label:'Process Builder', perm:'config'},
   {id:'workers',label:'Workers', perm:'config'},
@@ -444,6 +445,7 @@ function go(page){
   if(TICK){clearInterval(TICK);TICK=null;}
   if(page==='orders')   renderOrders();
   else if(page==='tasks') renderTasks();
+  else if(page==='followups') renderFollowups();
   else if(page==='reports') renderReports();
   else if(page==='builder') renderBuilder();
   else if(page==='workers') renderWorkers();
@@ -491,7 +493,7 @@ function orderCard(o){
   return '<div class="ocard" onclick="openOrder(\''+o.order_id+'\')">'+
     '<div class="ohead"><div><div class="oid">'+esc(o.order_id)+'</div><div class="oclient">'+esc(o.client||'No client')+(o.fabric?' · '+esc(o.fabric):'')+'</div></div>'+
     '<span class="pill p-'+st+'">'+st+'</span></div>'+
-    '<div class="ometa">'+cur+(o.trial_round?'<span>🔁 Trial '+(o.trial_round+1)+'/'+o.max_trials+'</span>':'')+'<span>'+o.done+'/'+o.total+' steps</span></div>'+
+    '<div class="ometa">'+cur+(o.trial_round?'<span>🔁 Trial '+(o.trial_round+1)+'/'+o.max_trials+'</span>':'')+'<span>'+o.done+'/'+o.total+' steps</span>'+(o.due>0?'<span style="color:var(--err)">₹'+o.due+' due</span>':'')+'</div>'+
     '<div class="prog"><i style="width:'+pct+'%"></i></div></div>';
 }
 
@@ -509,18 +511,34 @@ function roleWorkerSelect(role){
   var ws=WORKERS.filter(function(w){return w.active && String(w.role).toLowerCase()===role.toLowerCase()});
   return '<select class="in coWk" data-role="'+esc(role)+'"><option value="">'+esc(role)+' — any / default</option>'+ws.map(function(w){return '<option>'+esc(w.name)+'</option>'}).join('')+'</select>';
 }
+var PENDING_DESIGN=null;
 function openCreateOrder(){
+  PENDING_DESIGN=null;
   modal('New Order',
     '<label class="f">Client name *</label><input class="in" id="coClient" placeholder="Customer name">'+
     '<div style="height:10px"></div><div class="row"><div><label class="f">Mobile</label><input class="in" id="coMobile"></div><div><label class="f">Sales Person</label>'+salesSelect()+'</div></div>'+
     '<div style="height:10px"></div><label class="f">Fabric</label>'+fabricSelect()+
+    '<div style="height:10px"></div><label class="f">Product Description</label><textarea class="in" id="coDesc" placeholder="Item, style, colour…"></textarea>'+
+    '<div style="height:10px"></div><label class="f">Measurement</label><textarea class="in" id="coMeas" placeholder="Chest 38, Length 42…"></textarea>'+
+    '<div style="height:10px"></div><label class="f">Design Image</label><div class="row"><button type="button" class="btn ghost" onclick="pickDesign()">📎 Choose Image</button><div id="coDesignName" class="hint" style="align-self:center;flex:2"></div></div><input type="file" id="coDesignFile" accept="image/*" style="display:none" onchange="onDesignPick(this)">'+
+    '<div class="sechead">Billing</div>'+
+    '<div class="row"><div><label class="f">Total Bill (₹)</label><input class="in" id="coBill" type="number" min="0" placeholder="optional"></div>'+
+    '<div><label class="f">Advance (₹)</label><input class="in" id="coAdv" type="number" min="0" placeholder="0"></div>'+
+    '<div><label class="f">Advance Mode</label>'+modeSelect('coAdvMode')+'</div></div>'+
     '<div class="sechead">Assignment</div>'+
     '<label class="f">Assignment Type *</label>'+
     '<select class="in" id="coAsgType" onchange="onAsgType()"><option value="">— choose —</option><option>All</option><option>Partial</option><option>Single</option></select>'+
     '<div id="coAsgWrap" style="margin-top:10px"></div>'+
     '<div style="height:10px"></div><label class="f">Notes</label><textarea class="in" id="coNotes"></textarea>'+
-    '<div class="hint">Non-department steps (Master, Client Ready, Trial…) always follow, from the active workflow. Old orders never change on later edits.</div>',
+    '<div class="hint">Non-department steps (Master, Client Ready, Trial…) always follow. Old orders never change on later edits.</div>',
     [{t:'Create Order',c:'btn',f:submitOrder}]);
+}
+function modeSelect(id,sel){ return '<select class="in" id="'+id+'">'+['Cash','UPI','Card','Bank','Other'].map(function(m){return '<option'+(m===sel?' selected':'')+'>'+m+'</option>'}).join('')+'</select>'; }
+function pickDesign(){ $('coDesignFile').click(); }
+function onDesignPick(el){
+  var f=el.files[0]; if(!f){PENDING_DESIGN=null;$('coDesignName').textContent='';return;}
+  if(f.size>4*1024*1024){toast('Image too big (max 4MB)','err');el.value='';return;}
+  var r=new FileReader(); r.onload=function(){ PENDING_DESIGN={filename:f.name,dataUrl:r.result}; $('coDesignName').textContent=f.name; }; r.readAsDataURL(f);
 }
 function onAsgType(){
   var t=$('coAsgType').value, w=$('coAsgWrap'); w.innerHTML='';
@@ -558,10 +576,12 @@ function submitOrder(){
   var client=$('coClient').value.trim(); if(!client){toast('Client name required','err');return;}
   var asg=collectAsg(); if(!asg){toast('Choose assignment type & department','err');return;}
   var fabEl=$('coFabric'), salesEl=$('coSales');
-  api({action:'createOrder',client:client,mobile:$('coMobile').value,fabric:fabEl?fabEl.value:'',sales_person:salesEl?salesEl.value:ME.name,notes:$('coNotes').value,
-       assignment_type:asg.assignment_type,roles:asg.roles,workers:asg.workers}).then(function(r){
+  api({action:'createOrder',client:client,mobile:$('coMobile').value,fabric:fabEl?fabEl.value:'',sales_person:salesEl?salesEl.value:ME.name,
+       product_desc:$('coDesc').value,measurement:$('coMeas').value,total_bill:$('coBill').value,advance:$('coAdv').value,advance_mode:$('coAdvMode').value,
+       notes:$('coNotes').value,assignment_type:asg.assignment_type,roles:asg.roles,workers:asg.workers}).then(function(r){
     if(!r.ok){toast(r.error||'error','err');return;}
     closeModal();toast('Order '+r.order_id+' created ✅','ok');loadOrders();openOrder(r.order_id);
+    if(PENDING_DESIGN){ var d=PENDING_DESIGN; PENDING_DESIGN=null; apiS({action:'uploadDesign',order_id:r.order_id,filename:d.filename,dataUrl:d.dataUrl}).then(function(x){ if(x.ok){toast('Design uploaded','ok'); if(CUR_ORDER&&CUR_ORDER.order_id===r.order_id)openOrder(r.order_id);} else toast(x.error||'design upload failed','err'); }); }
   });
 }
 
@@ -606,6 +626,40 @@ function drawOrder(r){
   var stepsHtml='<div class="wsSec">Workflow<span class="ln"></span></div>'+
     (steps.length?steps.map(function(s){ return stepCard(o,s); }).join(''):'<div class="hint">No steps.</div>');
 
+  // details (product / measurement / design)
+  var detHtml='';
+  if(o.product_desc||o.measurement||o.design_url){
+    detHtml='<div class="wsSec">Details<span class="ln"></span></div><div class="wsSum" style="align-items:flex-start">'+
+      (o.product_desc?'<div class="kv grow"><small>Product</small><b style="font-weight:500;white-space:pre-wrap">'+esc(o.product_desc)+'</b></div>':'')+
+      (o.measurement?'<div class="kv grow"><small>Measurement</small><b style="font-weight:500;white-space:pre-wrap">'+esc(o.measurement)+'</b></div>':'')+
+      (o.design_url?'<div class="kv"><small>Design</small><a href="'+esc(o.design_url)+'" target="_blank" class="btn ghost sm" style="margin-top:4px">🖼 View Design</a></div>':'')+
+      '</div>';
+  }
+
+  // billing
+  var bill=Number(o.total_bill)||0, paid=Number(o.paid)||0, due=Number(o.due)||0;
+  var canBill=can('config')||can('update_delivery')||can('complete_task');
+  var billHtml='<div class="wsSec">Billing<span class="ln"></span></div><div class="wsSum">'+
+    '<div class="kv"><small>Total Bill</small><b>₹'+bill+'</b></div>'+
+    '<div class="kv"><small>Paid</small><b style="color:var(--ok)">₹'+paid+'</b></div>'+
+    '<div class="kv"><small>Due</small><b style="color:'+(due>0?'var(--err)':'var(--ok)')+'">₹'+due+'</b></div>'+
+    '<div class="kv grow" style="align-items:flex-end;flex-direction:row;gap:8px;justify-content:flex-end">'+
+      (canBill?'<button class="btn ghost sm" onclick="editBill(\''+o.order_id+'\','+bill+')">Set Bill</button><button class="btn sm" onclick="addPay(\''+o.order_id+'\','+due+')">+ Payment</button>':'')+
+    '</div></div>';
+  if(r.payments&&r.payments.length){
+    billHtml+='<div class="log" style="margin-top:10px">'+r.payments.map(function(pm){
+      return '<div class="logrow"><div class="logdot">₹</div><div class="logmain"><b>₹'+pm.amount+' · '+esc(pm.type)+'</b><div class="act">'+esc(pm.mode)+(pm.note?' — '+esc(pm.note):'')+' · '+esc(pm.by)+'</div></div><div class="logtime">'+fmt(pm.ts)+'</div></div>';
+    }).join('')+'</div>';
+  }
+
+  // followups
+  var fus=r.followups||[];
+  var fuHtml='<div class="wsSec">Follow-ups '+(due>0?'· ₹'+due+' due':'')+'<span class="ln"></span></div>'+
+    '<button class="btn ghost sm" onclick="addFU(\''+o.order_id+'\')">+ Add Follow-up</button>'+
+    (fus.length?'<div class="log" style="margin-top:10px">'+fus.map(function(f){
+      return '<div class="logrow"><div class="logdot">'+(f.status==='Open'?'🔔':'✅')+'</div><div class="logmain"><b>'+esc(f.note||'(no note)')+'</b><div class="act">'+(f.next_date?'Next: '+esc(f.next_date)+' · ':'')+esc(f.by)+' · '+esc(f.status)+'</div></div>'+(f.status==='Open'?'<button class="btn ghost sm" onclick="closeFU(\''+f.fu_id+'\',\''+o.order_id+'\')">Done</button>':'')+'</div>';
+    }).join('')+'</div>':'<div class="hint" style="margin-top:8px">No follow-ups.</div>');
+
   // audit trail
   var logHtml='<div class="wsSec">Activity · Audit Trail<span class="ln"></span></div>'+
     (his.length?'<div class="log">'+his.map(function(h){
@@ -623,12 +677,31 @@ function drawOrder(r){
         '<span class="pill p-'+st+'">'+st+'</span><div class="wsp"></div>'+
         cancelBtn+
         '<button class="mx" onclick="closeWorkspace()">✕</button></div>'+
-      '<div class="wsBody">'+sum+stepsHtml+logHtml+'</div>'+
+      '<div class="wsBody">'+sum+detHtml+billHtml+fuHtml+stepsHtml+logHtml+'</div>'+
     '</div></div>';
   $('wsRoot').innerHTML=html;
 }
 function closeWorkspace(){ $('wsRoot').innerHTML=''; if(TICK){clearInterval(TICK);TICK=null;} }
 function wsCancel(id){ confirmBox('Cancel this order?','It will be marked Cancelled.',function(){ api({action:'cancelOrder',order_id:id}).then(function(x){ if(x.ok){toast('Order cancelled','ok');closeWorkspace();loadOrders();} else toast(x.error,'err'); }); }); }
+function editBill(id,cur){
+  modal('Set Total Bill','<label class="f">Total Bill (₹)</label><input class="in" id="blVal" type="number" min="0" value="'+(cur||'')+'">',
+    [{t:'Save',c:'btn',f:function(){ api({action:'setBill',order_id:id,total_bill:$('blVal').value}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('Bill saved','ok');openOrder(id);loadOrders(); }); }},
+     {t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}],false,'confirmRoot');
+}
+function addPay(id,due){
+  modal('Add Payment','<div class="row"><div><label class="f">Amount (₹)</label><input class="in" id="pyAmt" type="number" min="1" value="'+(due>0?due:'')+'"></div><div><label class="f">Mode</label>'+modeSelect('pyMode')+'</div></div>'+
+    '<div style="height:10px"></div><label class="f">Type</label><select class="in" id="pyType"><option>Payment</option><option>Advance</option><option>Refund</option></select>'+
+    '<div style="height:10px"></div><label class="f">Note</label><input class="in" id="pyNote">',
+    [{t:'Save Payment',c:'btn',f:function(){ api({action:'addPayment',order_id:id,amount:$('pyAmt').value,mode:$('pyMode').value,type:$('pyType').value,note:$('pyNote').value}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('Payment recorded ✅','ok');openOrder(id);loadOrders(); }); }},
+     {t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}],false,'confirmRoot');
+}
+function addFU(id){
+  modal('Add Follow-up','<label class="f">Note</label><textarea class="in" id="fuNote" placeholder="Called customer, will pay by…"></textarea>'+
+    '<div style="height:10px"></div><label class="f">Next follow-up date</label><input class="in" id="fuDate" type="date">',
+    [{t:'Save',c:'btn',f:function(){ api({action:'addFollowup',order_id:id,note:$('fuNote').value,next_date:$('fuDate').value}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('Follow-up added','ok');openOrder(id); }); }},
+     {t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}],false,'confirmRoot');
+}
+function closeFU(fid,oid){ api({action:'closeFollowup',fu_id:fid}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast('Closed','ok');openOrder(oid); }); }
 function tatText(s){
   var cur = s.ovr_tat_value!=null ? (s.ovr_tat_value+' '+s.ovr_tat_unit) : (s.def_tat_value+' '+s.def_tat_unit);
   var h='Default TAT: <b>'+s.def_tat_value+' '+esc(s.def_tat_unit)+'</b>';
@@ -936,6 +1009,23 @@ function delFabric(id){
 function saveSet(){
   api({action:'saveSettings',settings:{store_name:$('setStore').value,timezone:$('setTz').value,working_days:$('setDays').value,status_settings:$('setStatus').value,max_trial_rounds:$('setTrials').value}}).then(function(r){
     if(!r.ok){toast(r.error,'err');return;} SETTINGS=r.settings; toast('Settings saved ✅','ok');
+  });
+}
+
+/* ============ FOLLOW-UPS (due tracking) ============ */
+function renderFollowups(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Follow-ups</h2><div class="sub">Orders with pending dues or open follow-ups</div></div></div><div id="fuList"><div class="empty">Loading…</div></div>';
+  api({action:'listFollowups'}).then(function(r){
+    if(!r.ok){$('fuList').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
+    var rows=r.rows||[];
+    if(!rows.length){$('fuList').innerHTML='<div class="empty"><div class="em">🎉</div>No pending dues or follow-ups.</div>';return;}
+    var totalDue=0; rows.forEach(function(x){totalDue+=(x.due>0?x.due:0);});
+    $('fuList').innerHTML='<div class="stats"><div class="stat"><div class="n">'+rows.length+'</div><div class="l">Orders</div><div class="bar"></div></div><div class="stat"><div class="n">₹'+totalDue+'</div><div class="l">Total Due</div><div class="bar" style="background:var(--err)"></div></div></div>'+
+      '<div class="olist">'+rows.map(function(x){
+        return '<div class="ocard" onclick="openOrder(\''+x.order_id+'\')"><div class="ohead"><div><div class="oid">'+esc(x.order_id)+'</div><div class="oclient">'+esc(x.client||'—')+(x.mobile?' · '+esc(x.mobile):'')+'</div></div>'+(x.due>0?'<span class="pill p-Delayed">₹'+x.due+' due</span>':'<span class="pill p-Running">follow-up</span>')+'</div>'+
+        '<div class="ometa"><span>Bill ₹'+x.total_bill+'</span><span style="color:var(--ok)">Paid ₹'+x.paid+'</span>'+(x.open_followups?'<span>🔔 '+x.open_followups+' open</span>':'')+(x.next_date?'<span>Next: '+esc(x.next_date)+'</span>':'')+'<span>👤 '+esc(x.sales_person||'—')+'</span></div>'+
+        (x.last_note?'<div class="hint">📝 '+esc(x.last_note)+'</div>':'')+'</div>';
+      }).join('')+'</div>';
   });
 }
 
