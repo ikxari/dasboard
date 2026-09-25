@@ -61,7 +61,9 @@ label.f{display:block;font-size:12.5px;color:var(--muted);margin:0 0 5px 2px;fon
 .in,select.in,textarea.in{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:11px;padding:11px 13px;color:var(--txt);outline:none;transition:.15s}
 .in:focus{border-color:var(--accent);background:rgba(224,69,123,.06)}
 textarea.in{resize:vertical;min-height:64px}
-select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239aa0b4' d='M6 8 0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239aa0b4' d='M6 8 0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.in option, select.in option, select option{background:#17172b;color:#eef0f7}
+select.in optgroup{background:#17172b;color:#9aa0b4}
 .row{display:flex;gap:12px}.row>*{flex:1}
 .chkline{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:6px 0}
 .chkline input{width:18px;height:18px;accent-color:var(--accent)}
@@ -253,6 +255,41 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 @media(max-width:560px){.grid2{grid-template-columns:1fr}.row{flex-direction:column}}
 #urlBanner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9997;background:var(--errbg);color:var(--err);text-align:center;padding:9px;font-size:13px;border-top:1px solid var(--err)}
 #urlBanner a{color:var(--err);font-weight:700;text-decoration:underline;cursor:pointer}
+
+/* ---------- mobile ---------- */
+@media(max-width:640px){
+  body{font-size:14.5px}
+  .topbar{padding:10px 12px;gap:10px}
+  .brand{font-size:16px}
+  .content{padding:16px 12px 120px}
+  .pageH{align-items:flex-start}
+  .pageH h2{font-size:19px}
+  .pageH .btn{width:100%}
+  .stats{grid-template-columns:repeat(2,1fr);gap:9px}
+  .stat .n{font-size:22px}
+  .tools{gap:8px}
+  .tools .in,.tools select.in{max-width:none;width:100%;flex:1 1 100%}
+  .tools .btn{flex:1 1 100%}
+  .card{padding:14px;overflow-x:auto}
+  .tbl{min-width:560px}
+  .ocard{padding:13px}
+  .ometa{gap:8px}
+  .modal{width:94vw;max-width:none}
+  .mbody{padding:16px}
+  .mfoot{flex-direction:column-reverse}
+  .mfoot .btn{width:100%}
+  .row{flex-direction:column;gap:10px}
+  .grid2{grid-template-columns:1fr}
+  .flowview{padding:12px}
+  .brow{flex-wrap:wrap}
+  .bctl{width:100%;justify-content:flex-end}
+  .np{padding:8px 12px;font-size:13px}
+  .facts .btn{flex:1}
+}
+@media(max-width:400px){
+  .stats{grid-template-columns:1fr 1fr}
+  .brand{font-size:15px}
+}
 </style>
 </head>
 <body>
