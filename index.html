@@ -52,6 +52,9 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .btn.danger{background:linear-gradient(135deg,#d8404f,#ff5d6c);box-shadow:none}
 .btn.block{width:100%}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.loading{color:transparent!important;pointer-events:none;position:relative}
+.btn.loading::after{content:"";position:absolute;width:16px;height:16px;top:50%;left:50%;margin:-8px 0 0 -8px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ---------- inputs ---------- */
 label.f{display:block;font-size:12.5px;color:var(--muted);margin:0 0 5px 2px;font-weight:500}
@@ -235,17 +238,19 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 
 <script>
 /* ============ CONFIG ============ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbz9ngaOsY0huSJ-8GIH_3tIVB-mFA3-kcsoABaOdojzIlTV2xjgF9OeudYdpTJhApFAvA/exec';
+var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbwVRdgxMGcrfx5466pIRlREKPPS5KCDMpm1kR46ARQISXpAVcENuLxLxioQUB-avAAaQQ/exec';
 var API = localStorage.getItem('ikx_api') || API_DEFAULT;
 var ACTOR = localStorage.getItem('ikx_name') || '';
 var ISADMIN = localStorage.getItem('ikx_admin')==='1';
 var ME = null, MEPERM = {};
-var WORKERS=[], ROLES=[], SETTINGS={};
+var WORKERS=[], ROLES=[], FABRICS=[], SETTINGS={};
 var DRAFT=[];            // process builder working copy
 var CUR_ORDER=null;      // open order detail
 var CUR_STEPS=[];
-var LIST_FILT='All', LIST_Q='';
+var LIST_FILT='All', LIST_Q='', LIST_PERSON='';
 var TICK=null;
+var LASTBTN=null;
+document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.btn'); if(b) LASTBTN=b; },true);
 
 var PAGES = [
   {id:'orders', label:'Orders', perm:null},
@@ -270,16 +275,19 @@ function due(ts){ if(!ts) return ''; var diff=Number(ts)-Date.now(); var late=di
 
 /* ============ API ============ */
 function apiCall(p,silent){
+  var btn = (!silent) ? LASTBTN : null; LASTBTN=null;
+  if(btn){ btn.classList.add('loading'); btn.disabled=true; }
+  function clr(){ if(btn){ btn.classList.remove('loading'); btn.disabled=false; } }
   return new Promise(function(res){
     p.actor=ACTOR;
     fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)})
     .then(function(r){return r.text()})
     .then(function(t){
-      $('urlBanner').style.display='none';
+      clr(); $('urlBanner').style.display='none';
       var j; try{j=JSON.parse(t)}catch(e){ toast('Server returned HTML — check deployment access = Anyone','err'); res({ok:false,error:'bad response'}); return; }
       res(j);
     })
-    .catch(function(e){ if(!silent){$('urlBanner').style.display='block';} res({ok:false,error:'network'}); });
+    .catch(function(e){ clr(); if(!silent){$('urlBanner').style.display='block';} res({ok:false,error:'network'}); });
   });
 }
 function api(p){return apiCall(p,false)}
@@ -329,8 +337,8 @@ function showApp(){
   $('appView').classList.remove('hidden');
   $('uav').textContent=(ME.name||'?').charAt(0).toUpperCase();
   buildNav();
-  Promise.all([apiS({action:'listWorkers'}),apiS({action:'listRoles'}),apiS({action:'getSettings'})]).then(function(a){
-    if(a[0].ok)WORKERS=a[0].workers; if(a[1].ok)ROLES=a[1].roles; if(a[2].ok)SETTINGS=a[2].settings;
+  Promise.all([apiS({action:'listWorkers'}),apiS({action:'listRoles'}),apiS({action:'getSettings'}),apiS({action:'listFabrics'})]).then(function(a){
+    if(a[0].ok)WORKERS=a[0].workers; if(a[1].ok)ROLES=a[1].roles; if(a[2].ok)SETTINGS=a[2].settings; if(a[3].ok)FABRICS=a[3].fabrics;
     go('orders');
   });
 }
@@ -362,13 +370,19 @@ function renderOrders(){
   $('content').innerHTML='<div class="pageH"><div><h2>Orders</h2><div class="sub">Every order runs the workflow it was created under</div></div>'+
     (can('create_order')?'<button class="btn" onclick="openCreateOrder()">+ New Order</button>':'')+'</div>'+
     '<div class="stats" id="oStats"></div>'+
-    '<div class="tools"><input class="in" id="oSearch" placeholder="Search order / client / mobile…" value="'+esc(LIST_Q)+'"></div>'+
+    '<div class="tools"><input class="in" id="oSearch" placeholder="Search order / client / mobile…" value="'+esc(LIST_Q)+'">'+
+    '<select class="in" id="oPerson" style="max-width:220px"></select></div>'+
     '<div class="olist" id="oList"><div class="empty">Loading…</div></div>';
   $('oSearch').addEventListener('input',function(){LIST_Q=this.value;loadOrders();});
+  var ppl=[], seen={};
+  WORKERS.forEach(function(w){ if(w.active && !seen[w.name]){seen[w.name]=1; ppl.push(w.name+' ('+(w.role||'—')+')|'+w.name);} });
+  ROLES.filter(function(r){return r.active}).forEach(function(r){ if(!seen['role:'+r.role_name]){seen['role:'+r.role_name]=1; ppl.push('Role: '+r.role_name+'|'+r.role_name);} });
+  $('oPerson').innerHTML='<option value="">👥 Filter by person / role…</option>'+ppl.map(function(x){var pr=x.split('|');return '<option value="'+esc(pr[1])+'"'+(pr[1]===LIST_PERSON?' selected':'')+'>'+esc(pr[0])+'</option>';}).join('');
+  $('oPerson').addEventListener('change',function(){LIST_PERSON=this.value;loadOrders();});
   loadOrders();
 }
 function loadOrders(){
-  api({action:'listOrders',status:LIST_FILT,q:LIST_Q}).then(function(r){
+  api({action:'listOrders',status:LIST_FILT,q:LIST_Q,person:LIST_PERSON}).then(function(r){
     if(!r.ok){$('oList').innerHTML='<div class="empty">'+esc(r.error||'error')+'</div>';return;}
     var s=r.stats||{};
     var cards=[['All',s.All||0],['Running',s.Running||0],['Delayed',s.Delayed||0],['Completed',s.Completed||0],['Stopped',s.Stopped||0],['Cancelled',s.Cancelled||0]];
@@ -376,7 +390,7 @@ function loadOrders(){
       return '<div class="stat'+(LIST_FILT===c[0]?' on':'')+'" onclick="setFilt(\''+c[0]+'\')"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div><div class="bar" style="background:'+statColor(c[0])+'"></div></div>';
     }).join('');
     var os=r.orders||[];
-    if(!os.length){$('oList').innerHTML='<div class="empty"><div class="em">🧵</div>No orders yet.'+(can('create_order')?' Spin up your first one.':'')+'</div>';return;}
+    if(!os.length){$('oList').innerHTML='<div class="empty"><div class="em">🧵</div>No orders'+(LIST_PERSON||LIST_Q||LIST_FILT!=='All'?' match this filter.':' yet.'+(can('create_order')?' Spin up your first one.':''))+'</div>';return;}
     $('oList').innerHTML=os.map(orderCard).join('');
   });
 }
@@ -393,19 +407,74 @@ function orderCard(o){
     '<div class="prog"><i style="width:'+pct+'%"></i></div></div>';
 }
 
+function fabricSelect(){
+  var fs=FABRICS.filter(function(f){return f.active});
+  if(!fs.length) return '<input class="in" id="coFabric" placeholder="Fabric">';
+  return '<select class="in" id="coFabric"><option value="">— select fabric —</option>'+fs.map(function(f){return '<option>'+esc(f.name)+'</option>'}).join('')+'</select>';
+}
+function salesSelect(){
+  var sp=WORKERS.filter(function(w){return w.active && String(w.role).toLowerCase()==='sales person'});
+  if(!sp.length) return '<input class="in" id="coSales" value="'+esc(ME.name)+'">';
+  return '<select class="in" id="coSales">'+sp.map(function(w){return '<option'+(w.name===ME.name?' selected':'')+'>'+esc(w.name)+'</option>'}).join('')+'</select>';
+}
+function roleWorkerSelect(role){
+  var ws=WORKERS.filter(function(w){return w.active && String(w.role).toLowerCase()===role.toLowerCase()});
+  return '<select class="in coWk" data-role="'+esc(role)+'"><option value="">'+esc(role)+' — any / default</option>'+ws.map(function(w){return '<option>'+esc(w.name)+'</option>'}).join('')+'</select>';
+}
 function openCreateOrder(){
-  modal('New Order','<label class="f">Client name *</label><input class="in" id="coClient" placeholder="Customer name">'+
-    '<div style="height:10px"></div><div class="row"><div><label class="f">Mobile</label><input class="in" id="coMobile"></div><div><label class="f">Fabric</label><input class="in" id="coFabric"></div></div>'+
-    '<div style="height:10px"></div><label class="f">Sales Person</label><input class="in" id="coSales" value="'+esc(ME.name)+'">'+
+  modal('New Order',
+    '<label class="f">Client name *</label><input class="in" id="coClient" placeholder="Customer name">'+
+    '<div style="height:10px"></div><div class="row"><div><label class="f">Mobile</label><input class="in" id="coMobile"></div><div><label class="f">Sales Person</label>'+salesSelect()+'</div></div>'+
+    '<div style="height:10px"></div><label class="f">Fabric</label>'+fabricSelect()+
+    '<div class="sechead">Assignment</div>'+
+    '<label class="f">Assignment Type *</label>'+
+    '<select class="in" id="coAsgType" onchange="onAsgType()"><option value="">— choose —</option><option>All</option><option>Partial</option><option>Single</option></select>'+
+    '<div id="coAsgWrap" style="margin-top:10px"></div>'+
     '<div style="height:10px"></div><label class="f">Notes</label><textarea class="in" id="coNotes"></textarea>'+
-    '<div class="hint">Order snapshots the current active workflow. Later workflow edits won\'t touch it.</div>',
-    [{t:'Create Order',c:'btn',f:function(){
-      var client=$('coClient').value.trim(); if(!client){toast('Client name required','err');return;}
-      api({action:'createOrder',client:client,mobile:$('coMobile').value,fabric:$('coFabric').value,sales_person:$('coSales').value,notes:$('coNotes').value}).then(function(r){
-        if(!r.ok){toast(r.error||'error','err');return;}
-        closeModal();toast('Order '+r.order_id+' created ✅','ok');loadOrders();openOrder(r.order_id);
-      });
-    }}]);
+    '<div class="hint">Non-department steps (Master, Client Ready, Trial…) always follow, from the active workflow. Old orders never change on later edits.</div>',
+    [{t:'Create Order',c:'btn',f:submitOrder}]);
+}
+function onAsgType(){
+  var t=$('coAsgType').value, w=$('coAsgWrap'); w.innerHTML='';
+  if(t==='All'){
+    w.innerHTML='<div class="hint" style="margin-bottom:8px">Runs: Karigar → Tailor → Dyer</div>'+
+      '<label class="f">Karigar</label>'+roleWorkerSelect('Karigar')+
+      '<div style="height:8px"></div><label class="f">Tailor</label>'+roleWorkerSelect('Tailor')+
+      '<div style="height:8px"></div><label class="f">Dyer</label>'+roleWorkerSelect('Dyer');
+  } else if(t==='Partial'){
+    w.innerHTML='<label class="f">Pick pair</label><select class="in" id="coPair" onchange="onPair()"><option value="">— choose —</option>'+
+      '<option value="Karigar,Tailor">Karigar → Tailor</option><option value="Tailor,Dyer">Tailor → Dyer</option><option value="Dyer,Karigar">Dyer → Karigar</option></select><div id="coPairWk" style="margin-top:10px"></div>';
+  } else if(t==='Single'){
+    w.innerHTML='<label class="f">Pick department</label><select class="in" id="coSingle" onchange="onSingle()"><option value="">— choose —</option><option>Karigar</option><option>Tailor</option><option>Dyer</option></select><div id="coSingleWk" style="margin-top:10px"></div>';
+  }
+}
+function onPair(){
+  var v=$('coPair').value, w=$('coPairWk'); if(!v){w.innerHTML='';return;}
+  w.innerHTML=v.split(',').map(function(r){return '<label class="f">'+esc(r)+'</label>'+roleWorkerSelect(r)+'<div style="height:8px"></div>';}).join('');
+}
+function onSingle(){
+  var v=$('coSingle').value, w=$('coSingleWk'); if(!v){w.innerHTML='';return;}
+  w.innerHTML='<label class="f">'+esc(v)+'</label>'+roleWorkerSelect(v);
+}
+function collectAsg(){
+  var t=$('coAsgType').value;
+  var roles=[], workers={};
+  if(t==='All') roles=['Karigar','Tailor','Dyer'];
+  else if(t==='Partial'){ var pv=$('coPair')?$('coPair').value:''; if(!pv) return null; roles=pv.split(','); }
+  else if(t==='Single'){ var sv=$('coSingle')?$('coSingle').value:''; if(!sv) return null; roles=[sv]; }
+  else return null;
+  document.querySelectorAll('.coWk').forEach(function(el){ if(el.value) workers[el.getAttribute('data-role')]=el.value; });
+  return {assignment_type:t, roles:roles, workers:workers};
+}
+function submitOrder(){
+  var client=$('coClient').value.trim(); if(!client){toast('Client name required','err');return;}
+  var asg=collectAsg(); if(!asg){toast('Choose assignment type & department','err');return;}
+  var fabEl=$('coFabric'), salesEl=$('coSales');
+  api({action:'createOrder',client:client,mobile:$('coMobile').value,fabric:fabEl?fabEl.value:'',sales_person:salesEl?salesEl.value:ME.name,notes:$('coNotes').value,
+       assignment_type:asg.assignment_type,roles:asg.roles,workers:asg.workers}).then(function(r){
+    if(!r.ok){toast(r.error||'error','err');return;}
+    closeModal();toast('Order '+r.order_id+' created ✅','ok');loadOrders();openOrder(r.order_id);
+  });
 }
 
 /* ---- order detail ---- */
@@ -725,8 +794,24 @@ function renderSettings(){
     '<div class="sechead">Trial Management</div>'+
     '<label class="f">Maximum trial rounds</label><select class="in" id="setTrials" style="max-width:200px">'+[1,2,3,4,5].map(function(n){return '<option'+(String(n)===String(s.max_trial_rounds)?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'+
     '<div class="hint">Applies to new orders. On a "No" trial decision, the system auto-generates the next trial up to this cap.</div>'+
-    '<div style="height:16px"></div><button class="btn ok" onclick="saveSet()">Save Settings 💾</button></div>';
+    '<div style="height:16px"></div><button class="btn ok" onclick="saveSet()">Save Settings 💾</button></div>'+
+    '<div class="card" style="margin-top:14px"><div class="sechead">Fabrics (order-form dropdown)</div>'+
+    '<div class="row"><input class="in" id="fbNew" placeholder="Add fabric name"><button class="btn" style="flex:0 0 auto" onclick="addFabric()">+ Add</button></div>'+
+    '<div id="fbList" style="margin-top:10px"></div></div>';
+    drawFabrics();
   });
+}
+function drawFabrics(){
+  var el=$('fbList'); if(!el)return;
+  if(!FABRICS.length){el.innerHTML='<div class="hint">No fabrics yet. Add some — they show as a dropdown in the order form.</div>';return;}
+  el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px">'+FABRICS.map(function(f){return '<span class="pill p-Running" style="gap:8px">'+esc(f.name)+' <b style="cursor:pointer" onclick="delFabric(\''+f.fabric_id+'\')">✕</b></span>';}).join('')+'</div>';
+}
+function addFabric(){
+  var n=$('fbNew').value.trim(); if(!n){toast('Enter fabric name','err');return;}
+  api({action:'saveFabric',name:n}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} $('fbNew').value=''; apiS({action:'listFabrics'}).then(function(x){if(x.ok)FABRICS=x.fabrics; drawFabrics(); toast('Added ✅','ok');}); });
+}
+function delFabric(id){
+  api({action:'deleteFabric',fabric_id:id}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} apiS({action:'listFabrics'}).then(function(x){if(x.ok)FABRICS=x.fabrics; drawFabrics();}); });
 }
 function saveSet(){
   api({action:'saveSettings',settings:{store_name:$('setStore').value,timezone:$('setTz').value,working_days:$('setDays').value,status_settings:$('setStatus').value,max_trial_rounds:$('setTrials').value}}).then(function(r){
