@@ -2,709 +2,781 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Fashion Shop · New Job</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Ikxari FMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ============ TOKENS (light / professional) ============ */
 :root{
-  --bg:#f4f5f8; --card:#ffffff; --ink:#191b23; --muted:#6c7280;
-  --line:#e6e8ef; --line2:#eef0f5;
-  --accent:#6d28d9; --accent-ink:#5b21b6; --accent-soft:#f3eefc;
-  --ok:#16a34a; --ok-soft:#e9f8ef; --err:#dc2626; --err-soft:#fdecec;
-  --r:16px; --r-sm:12px; --shadow:0 1px 2px rgba(20,20,40,.05),0 8px 24px rgba(20,20,40,.06);
+  --bg:#0a0a14; --panel:rgba(16,16,28,.92); --panel2:rgba(22,22,38,.86);
+  --accent:#E0457B; --accent2:#ff77a9; --accentDim:rgba(224,69,123,.16);
+  --txt:#eef0f7; --muted:#9aa0b4; --brd:rgba(255,255,255,.09);
+  --ok:#37d399; --okbg:rgba(55,211,153,.14);
+  --warn:#ffb547; --warnbg:rgba(255,181,71,.14);
+  --err:#ff5d6c; --errbg:rgba(255,93,108,.14);
+  --info:#59a9ff; --infobg:rgba(89,169,255,.14);
+  --grey:#7a8194; --greybg:rgba(140,150,170,.14);
+  --orange:#ff8a3d; --orangebg:rgba(255,138,61,.14);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
-  font-family:'Jost',system-ui,sans-serif; background:var(--bg); color:var(--ink);
-  font-size:15.5px; line-height:1.45; -webkit-font-smoothing:antialiased;
-  min-height:100dvh;
+  font-family:'Jost',system-ui,sans-serif; background:var(--bg); color:var(--txt);
+  min-height:100dvh; overflow-x:hidden; font-size:15px;
 }
+body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(90px);z-index:0;opacity:.45;pointer-events:none}
+body::before{width:520px;height:520px;background:radial-gradient(circle,#E0457B,transparent 65%);top:-160px;left:-120px;animation:fl1 16s ease-in-out infinite}
+body::after{width:460px;height:460px;background:radial-gradient(circle,#6C5CE7,transparent 65%);bottom:-160px;right:-120px;animation:fl2 14s ease-in-out infinite}
+@keyframes fl1{50%{transform:translate(60px,50px)}}
+@keyframes fl2{50%{transform:translate(-50px,-40px)}}
+a{color:var(--accent2);text-decoration:none}
 button{font-family:inherit;cursor:pointer}
-input{font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:16px}
 
-/* ============ CONNECT BANNER ============ */
-#connBar{display:none;position:sticky;top:0;z-index:60;background:#fff4e5;
-  border-bottom:1px solid #f2d9a8;color:#8a5a00;padding:9px 16px;font-size:13.5px;
-  text-align:center}
-#connBar b{cursor:pointer;text-decoration:underline}
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.shim{font-size:30px;font-weight:700;letter-spacing:1px;background:linear-gradient(90deg,#3a3a52 25%,#fff 50%,#3a3a52 75%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shim 1.5s linear infinite}
+@keyframes shim{to{background-position:-200% center}}
+.loSub{color:var(--muted);font-size:13px}
+.hidden{display:none!important}
 
-/* ============ SHELL ============ */
-.shell{max-width:1040px;margin:0 auto;min-height:100dvh;background:transparent;
-  display:flex;flex-direction:column}
-.topbar{position:sticky;top:0;z-index:40;background:rgba(244,245,248,.9);
-  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
-  padding:14px 20px;display:flex;align-items:center;gap:12px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
-.brand .dot{width:30px;height:30px;border-radius:9px;background:var(--accent);
-  color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700}
-.ver{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:500}
+/* ---------- buttons ---------- */
+.btn{border:none;border-radius:12px;padding:11px 18px;font-weight:600;font-size:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:.15s;box-shadow:0 8px 22px rgba(224,69,123,.32)}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.ghost{background:transparent;border:1px solid var(--brd);color:var(--txt);box-shadow:none}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent2)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px;box-shadow:none}
+.btn.ok{background:linear-gradient(135deg,#2fb884,#37d399);box-shadow:0 8px 22px rgba(55,211,153,.3)}
+.btn.warn{background:linear-gradient(135deg,#e59426,#ffb547);box-shadow:none;color:#1a1200}
+.btn.danger{background:linear-gradient(135deg,#d8404f,#ff5d6c);box-shadow:none}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
-.content{flex:1;padding:20px 20px 130px;max-width:960px;margin:0 auto;width:100%}
+/* ---------- inputs ---------- */
+label.f{display:block;font-size:12.5px;color:var(--muted);margin:0 0 5px 2px;font-weight:500}
+.in,select.in,textarea.in{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:11px;padding:11px 13px;color:var(--txt);outline:none;transition:.15s}
+.in:focus{border-color:var(--accent);background:rgba(224,69,123,.06)}
+textarea.in{resize:vertical;min-height:64px}
+select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239aa0b4' d='M6 8 0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+.row{display:flex;gap:12px}.row>*{flex:1}
+.chkline{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:6px 0}
+.chkline input{width:18px;height:18px;accent-color:var(--accent)}
 
-/* ============ STEP INDICATOR ============ */
-.steps{display:flex;align-items:center;justify-content:center;gap:0;margin:6px 0 22px}
-.snode{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto;
-  width:98px;text-align:center}
-.sdot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
-  font-weight:700;font-size:14px;background:#fff;border:2px solid var(--line);
-  color:var(--muted);transition:.25s}
-.slabel{font-size:12px;color:var(--muted);font-weight:600;line-height:1.15}
-.sline{height:2px;background:var(--line);flex:1;max-width:70px;margin-bottom:22px}
-.snode.active .sdot{background:var(--accent);border-color:var(--accent);color:#fff;
-  box-shadow:0 0 0 4px var(--accent-soft)}
-.snode.active .slabel{color:var(--ink)}
-.snode.done .sdot{background:var(--ok);border-color:var(--ok);color:#fff}
-.snode.done .slabel{color:var(--ink)}
+/* ---------- auth ---------- */
+#authView{position:relative;z-index:1;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+.authCard{width:100%;max-width:920px;display:flex;background:var(--panel);backdrop-filter:blur(26px);border:1px solid var(--brd);border-radius:24px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)}
+.authL{flex:1;padding:44px 38px;background:linear-gradient(160deg,rgba(224,69,123,.22),rgba(108,92,231,.12));display:flex;flex-direction:column;justify-content:center;gap:20px}
+.authL h1{margin:0;font-size:30px;font-weight:700;letter-spacing:.5px}
+.authL .tag{color:var(--muted);font-size:14px;margin-top:-8px}
+.feat{display:flex;gap:12px;align-items:flex-start}
+.feat .ic{width:40px;height:40px;flex:none;border-radius:11px;background:var(--accentDim);display:flex;align-items:center;justify-content:center;font-size:18px}
+.feat b{font-size:14px;font-weight:600}.feat small{color:var(--muted);font-size:12.5px}
+.authR{width:44%;min-width:320px;padding:40px 34px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.authR h2{margin:0 0 4px}
+.pwrap{position:relative}.pwrap .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px}
+.swline{text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
+@media(max-width:820px){.authCard{flex-direction:column}.authR{width:100%;min-width:0}.authL{padding:32px 26px}}
 
-/* ============ CARD ============ */
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-  box-shadow:var(--shadow);padding:22px}
-.card h2{margin:0 0 4px;font-size:19px;font-weight:700}
-.card .sub{margin:0 0 18px;color:var(--muted);font-size:13.5px}
+/* ---------- app shell ---------- */
+#appView{position:relative;z-index:1;max-width:1120px;margin:0 auto;min-height:100dvh}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,10,20,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);padding:12px 18px;display:flex;align-items:center;gap:14px}
+.brand{font-weight:700;font-size:18px;white-space:nowrap}
+.brand span{color:var(--accent2)}
+.nav{display:flex;gap:7px;overflow-x:auto;flex:1;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.np{border:1px solid transparent;background:rgba(255,255,255,.04);color:var(--muted);padding:8px 14px;border-radius:11px;font-size:13.5px;font-weight:600;white-space:nowrap;transition:.15s}
+.np:hover{color:var(--txt)}
+.np.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 6px 18px rgba(224,69,123,.35)}
+.umenu{display:flex;align-items:center;gap:9px;white-space:nowrap}
+.uav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.content{padding:22px 18px 130px}
+.pageH{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.pageH h2{margin:0;font-size:22px}
+.pageH .sub{color:var(--muted);font-size:13px}
+.foot{text-align:center;color:var(--muted);font-size:12px;padding:14px}
 
-/* ============ FIELDS ============ */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.field{display:flex;flex-direction:column;gap:6px;margin-bottom:2px}
-.field label{font-size:13px;font-weight:600;color:#3b3f4a}
-.field label .req{color:var(--err)}
-.inp{height:48px;border:1.5px solid var(--line);border-radius:var(--r-sm);
-  padding:0 14px;font-size:15.5px;background:#fff;color:var(--ink);width:100%;
-  transition:border-color .15s,box-shadow .15s;outline:none}
-.inp::placeholder{color:#9aa0ad}
-.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.inp.bad{border-color:var(--err);box-shadow:0 0 0 3px var(--err-soft)}
+/* ---------- cards / stats ---------- */
+.card{background:var(--panel2);border:1px solid var(--brd);border-radius:18px;padding:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:18px}
+.stat{background:var(--panel2);border:1px solid var(--brd);border-radius:15px;padding:14px 15px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.stat:hover{transform:translateY(-2px);border-color:var(--accent)}
+.stat.on{border-color:var(--accent);background:var(--accentDim)}
+.stat .n{font-size:26px;font-weight:700;line-height:1}
+.stat .l{color:var(--muted);font-size:12.5px;margin-top:4px}
+.stat .bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--accent)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.tools .in{max-width:280px}
 
-/* ============ SEARCH SELECT ============ */
-.sel{position:relative}
-.sel-btn{height:48px;border:1.5px solid var(--line);border-radius:var(--r-sm);
-  padding:0 40px 0 14px;font-size:15.5px;background:#fff;color:var(--ink);width:100%;
-  text-align:left;position:relative;transition:border-color .15s,box-shadow .15s;
-  display:flex;align-items:center}
-.sel-btn.placeholder{color:#9aa0ad}
-.sel.open .sel-btn{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.sel-btn.bad{border-color:var(--err);box-shadow:0 0 0 3px var(--err-soft)}
-.sel-btn .chev{position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  color:var(--muted);pointer-events:none;transition:.2s}
-.sel.open .sel-btn .chev{transform:translateY(-50%) rotate(180deg)}
-.sel-menu{display:none;position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);
-  background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);
-  box-shadow:0 12px 32px rgba(20,20,40,.14);overflow:hidden}
-.sel.open .sel-menu{display:block}
-.sel-search{padding:10px}
-.sel-search input{width:100%;height:40px;border:1.5px solid var(--line);
-  border-radius:10px;padding:0 12px;font-size:14.5px;outline:none}
-.sel-search input:focus{border-color:var(--accent)}
-.sel-list{max-height:230px;overflow-y:auto;padding:4px}
-.sel-opt{padding:11px 12px;border-radius:9px;font-size:15px;cursor:pointer}
-.sel-opt:hover,.sel-opt.hl{background:var(--accent-soft);color:var(--accent-ink)}
-.sel-empty{padding:14px 12px;color:var(--muted);font-size:14px;text-align:center}
+/* ---------- order list ---------- */
+.olist{display:flex;flex-direction:column;gap:11px}
+.ocard{background:var(--panel2);border:1px solid var(--brd);border-radius:16px;padding:15px 16px;cursor:pointer;transition:.15s;animation:cin .35s cubic-bezier(.16,1,.3,1) both}
+.ocard:hover{border-color:var(--accent);transform:translateY(-1px)}
+@keyframes cin{from{opacity:0;transform:translateY(10px) scale(.99)}}
+.ohead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.oid{font-weight:700;font-size:15px}
+.oclient{color:var(--muted);font-size:13px;margin-top:2px}
+.ometa{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.prog{height:6px;border-radius:6px;background:rgba(255,255,255,.07);margin-top:11px;overflow:hidden}
+.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 
-/* ============ ASSIGNMENT CHOICE CARDS ============ */
-.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:6px}
-.choice{border:1.5px solid var(--line);border-radius:var(--r);padding:18px 16px;
-  background:#fff;text-align:left;transition:.18s;position:relative}
-.choice:hover{border-color:#cfc3f0}
-.choice.sel{border-color:var(--accent);background:var(--accent-soft);
-  box-shadow:0 0 0 3px var(--accent-soft)}
-.choice .ic{width:40px;height:40px;border-radius:11px;background:var(--accent-soft);
-  color:var(--accent);display:grid;place-items:center;font-size:19px;margin-bottom:12px}
-.choice.sel .ic{background:var(--accent);color:#fff}
-.choice .t{font-weight:700;font-size:15.5px;margin-bottom:3px}
-.choice .d{font-size:12.5px;color:var(--muted);line-height:1.35}
-.choice .tick{position:absolute;top:12px;right:12px;width:20px;height:20px;
-  border-radius:50%;background:var(--accent);color:#fff;display:none;
-  place-items:center;font-size:12px}
-.choice.sel .tick{display:grid}
+/* ---------- pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600}
+.p-Running{background:var(--infobg);color:var(--info)}
+.p-Completed{background:var(--okbg);color:var(--ok)}
+.p-Delayed{background:var(--errbg);color:var(--err)}
+.p-Stopped{background:var(--warnbg);color:var(--warn)}
+.p-Cancelled{background:var(--greybg);color:var(--grey)}
+.p-Pending{background:var(--greybg);color:var(--grey)}
+.p-Done{background:var(--okbg);color:var(--ok)}
+.p-Skipped{background:var(--orangebg);color:var(--orange)}
+.p-Late{background:var(--errbg);color:var(--err)}
 
-/* mini combo / dept cards */
-.minis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0 4px}
-.mini{border:1.5px solid var(--line);border-radius:var(--r-sm);padding:14px 12px;
-  background:#fff;text-align:center;font-weight:600;font-size:14.5px;transition:.16s}
-.mini:hover{border-color:#cfc3f0}
-.mini.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
-.mini small{display:block;font-weight:500;color:var(--muted);font-size:11.5px;margin-top:3px}
-.mini.sel small{color:var(--accent-ink)}
+/* ---------- step cards (order detail) ---------- */
+.fcard{display:flex;gap:13px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:14px;padding:13px 14px;border-left:4px solid var(--grey);margin-bottom:10px;animation:cin .3s both}
+.fcard.st-Running{border-left-color:var(--info)}
+.fcard.st-Delayed{border-left-color:var(--err)}
+.fcard.st-Done{border-left-color:var(--ok)}
+.fcard.st-Skipped{border-left-color:var(--orange)}
+.fcard.st-Pending{border-left-color:var(--grey);opacity:.85}
+.ftile{width:42px;height:42px;flex:none;border-radius:11px;background:var(--accentDim);display:flex;align-items:center;justify-content:center;font-size:19px}
+.fbody{flex:1;min-width:0}
+.fname{font-weight:600;font-size:15px}
+.fmeta{color:var(--muted);font-size:12.5px;margin-top:3px;display:flex;gap:12px;flex-wrap:wrap}
+.facts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.tatline{font-size:12px;margin-top:6px;color:var(--muted)}
+.tatline b{color:var(--txt)}
 
-/* section reveal */
-.reveal{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line)}
-.section-t{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
-  color:var(--muted);margin:0 0 14px}
+/* ---------- process builder ---------- */
+.flowview{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:18px;padding:16px;background:rgba(255,255,255,.02);border:1px dashed var(--brd);border-radius:16px;overflow-x:auto}
+.fnode{background:var(--panel2);border:1px solid var(--brd);border-radius:12px;padding:9px 16px;font-size:13.5px;font-weight:600;white-space:nowrap;max-width:100%}
+.fnode.dis{opacity:.4;text-decoration:line-through}
+.fnode.dec{border-color:var(--accent);background:var(--accentDim)}
+.fnode.start{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none}
+.farr{color:var(--muted);font-size:16px;line-height:1.1}
+.fbranch{font-size:11.5px;color:var(--muted);margin:1px 0}
 
-/* flow diagram */
-.flow{display:flex;flex-direction:column;align-items:center;gap:6px;
-  background:var(--accent-soft);border-radius:var(--r-sm);padding:16px;margin-bottom:18px}
-.flow .node{background:#fff;border:1.5px solid #ddd0f5;border-radius:10px;
-  padding:8px 22px;font-weight:600;font-size:14.5px;color:var(--accent-ink)}
-.flow .arr{color:var(--accent);font-size:16px;line-height:1}
+.builder{display:flex;flex-direction:column;gap:9px}
+.brow{display:flex;gap:11px;align-items:center;background:var(--panel2);border:1px solid var(--brd);border-radius:13px;padding:11px 13px}
+.brow.dis{opacity:.5}
+.bseq{width:26px;height:26px;flex:none;border-radius:8px;background:var(--accentDim);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.bmain{flex:1;min-width:0}
+.bname{font-weight:600}
+.bsub{color:var(--muted);font-size:12px;margin-top:2px}
+.bctl{display:flex;gap:5px;flex-none}
+.icb{width:30px;height:30px;border-radius:8px;border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.icb:hover{border-color:var(--accent);color:var(--accent2)}
+.icb:disabled{opacity:.3}
 
-/* ============ SUMMARY ============ */
-.sumhead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.sum{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2);
-  border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-top:6px}
-.sum .row{background:#fff;padding:12px 14px}
-.sum .row.full{grid-column:1/-1}
-.sum .k{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;
-  letter-spacing:.4px;margin-bottom:3px}
-.sum .v{font-size:15.5px;font-weight:600}
-.sum .v.flow-v{color:var(--accent-ink)}
-.wgroup{margin-top:14px;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
-.wrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line2)}
-.wrow:first-child{border-top:0}
-.wrow .seq{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);
-  color:var(--accent-ink);display:grid;place-items:center;font-size:12.5px;font-weight:700;flex:0 0 auto}
-.wrow .dept{font-size:12px;color:var(--muted);font-weight:600;width:64px;flex:0 0 auto}
-.wrow .name{font-weight:600}
+/* option editor */
+.opt{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.opt .in{padding:8px 10px}
 
-/* ============ BUTTONS / ACTION BAR ============ */
-.actions{display:flex;gap:12px;margin-top:22px;position:sticky;bottom:14px;z-index:20}
-.btn{height:50px;border-radius:var(--r-sm);border:1.5px solid var(--line);
-  background:#fff;color:var(--ink);font-weight:600;font-size:15.5px;padding:0 22px;
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1;
-  box-shadow:0 4px 14px rgba(20,20,40,.05)}
-.btn.ghost{flex:0 0 auto;min-width:96px;box-shadow:none}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;
-  box-shadow:0 6px 18px rgba(109,40,217,.28)}
-.btn.primary:hover{background:var(--accent-ink)}
-.btn:disabled{opacity:.6;cursor:not-allowed}
+/* ---------- table ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:9px 10px;border-bottom:1px solid var(--brd)}
+.tbl td{padding:10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
 
-/* ============ SUCCESS ============ */
-.success{text-align:center;padding:30px 22px}
-.success .badge{width:76px;height:76px;border-radius:50%;background:var(--ok-soft);
-  color:var(--ok);display:grid;place-items:center;font-size:38px;margin:0 auto 18px}
-.success h2{font-size:22px;margin:0 0 6px}
-.success .oid{display:inline-block;font-size:22px;font-weight:700;color:var(--accent-ink);
-  background:var(--accent-soft);padding:8px 20px;border-radius:12px;margin:8px 0 4px;
-  letter-spacing:.5px}
-.success .flowline{color:var(--muted);margin:14px 0 0;font-size:15px}
-.success .flowline b{color:var(--accent-ink)}
+/* ---------- modal ---------- */
+.mwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:9998;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px}
+.modal{background:var(--panel);backdrop-filter:blur(26px);border:1px solid var(--brd);border-radius:20px;width:90vw;max-width:640px;margin:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:cin .25s both;max-height:92dvh;display:flex;flex-direction:column}
+.modal.wide{max-width:820px}
+.mhead{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);position:sticky;top:0;background:var(--panel);border-radius:20px 20px 0 0}
+.mhead h3{margin:0;font-size:18px}
+.mx{width:32px;height:32px;border-radius:9px;border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:16px}
+.mbody{padding:18px 20px;overflow-y:auto}
+.mfoot{padding:14px 20px;border-top:1px solid var(--brd);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--panel);border-radius:0 0 20px 20px;flex-wrap:wrap}
+.confirm{max-width:420px}
+#confirmWrap{z-index:10000}
 
-/* ============ TOAST ============ */
-#toasts{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;
-  max-width:min(340px,calc(100vw - 32px))}
-.toast{background:#fff;border:1px solid var(--line);border-left:4px solid var(--muted);
-  border-radius:12px;padding:12px 14px;box-shadow:0 12px 30px rgba(20,20,40,.16);
-  font-size:14px;animation:tin .25s ease}
-.toast.ok{border-left-color:var(--ok)} .toast.err{border-left-color:var(--err)}
-@keyframes tin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+/* ---------- toast ---------- */
+#toasts{position:fixed;top:16px;right:16px;z-index:10001;display:flex;flex-direction:column;gap:9px}
+.toast{background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--brd);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;font-size:13.5px;box-shadow:0 16px 40px rgba(0,0,0,.5);animation:tin .25s both;max-width:340px}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}
+@keyframes tin{from{opacity:0;transform:translateX(30px)}}
 
-/* ============ MODAL ============ */
-.mask{display:none;position:fixed;inset:0;z-index:9000;background:rgba(20,20,40,.45);
-  align-items:center;justify-content:center;padding:18px}
-.mask.on{display:flex}
-.modal{background:#fff;border-radius:var(--r);max-width:420px;width:100%;padding:22px;
-  box-shadow:0 30px 70px rgba(20,20,40,.3)}
-.modal h3{margin:0 0 6px;font-size:18px}
-.modal p{margin:0 0 14px;color:var(--muted);font-size:14px}
-
-.hide{display:none!important}
-.fade{animation:fu .28s ease}
-@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-/* ============ RESPONSIVE ============ */
-@media(max-width:720px){
-  .content{padding:16px 14px 120px}
-  .grid2{grid-template-columns:1fr}
-  .choices{grid-template-columns:1fr}
-  .choice{display:flex;align-items:center;gap:14px;padding:16px}
-  .choice .ic{margin-bottom:0}
-  .choice .tick{top:50%;transform:translateY(-50%)}
-  .minis{grid-template-columns:1fr}
-  .mini{text-align:left}
-  .sum{grid-template-columns:1fr}
-  .steps{gap:0}
-  .snode{width:auto;flex:1}
-  .sline{max-width:34px;margin:0 2px 22px}
-  .slabel{font-size:11px}
-}
-@media(max-width:380px){ body{font-size:15px} .card{padding:18px 15px} }
+.empty{text-align:center;color:var(--muted);padding:44px 16px}
+.empty .em{font-size:40px;margin-bottom:8px}
+.badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-left:5px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.sechead{font-size:13px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}.row{flex-direction:column}}
+#urlBanner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9997;background:var(--errbg);color:var(--err);text-align:center;padding:9px;font-size:13px;border-top:1px solid var(--err)}
+#urlBanner a{color:var(--err);font-weight:700;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
 
-<div id="connBar">⚠️ Can't reach the server. <b id="connFix">Set API URL</b></div>
+<div id="loader"><div class="shim">Ikxari FMS</div><div class="loSub">loading workspace…</div></div>
 
-<div class="shell">
+<!-- (login system removed) -->
+
+<!-- ================= APP ================= -->
+<div id="appView" class="hidden">
   <div class="topbar">
-    <div class="brand"><span class="dot">F</span>Fashion Shop</div>
-    <span class="ver" id="verTag">v1.0.0</span>
-  </div>
-
-  <div class="content">
-
-    <!-- STEP INDICATOR -->
-    <div class="steps" id="stepBar">
-      <div class="snode active" data-s="1"><div class="sdot">1</div><div class="slabel">Order Details</div></div>
-      <div class="sline"></div>
-      <div class="snode" data-s="2"><div class="sdot">2</div><div class="slabel">Assign Work</div></div>
-      <div class="sline"></div>
-      <div class="snode" data-s="3"><div class="sdot">3</div><div class="slabel">Confirm</div></div>
+    <div class="brand">Ikxari <span>FMS</span></div>
+    <div class="nav" id="nav"></div>
+    <div class="umenu">
+      <div class="uav" id="uav">?</div>
+      <button class="icb" title="Change name" onclick="signout()">⏻</button>
     </div>
-
-    <!-- ===== STEP 1 : ORDER DETAILS ===== -->
-    <section id="step1" class="fade">
-      <div class="card">
-        <h2>Order Details</h2>
-        <p class="sub">Enter the client and fabric details to start a new job.</p>
-
-        <div class="grid2">
-          <div class="field">
-            <label>Client Name <span class="req">*</span></label>
-            <input id="clientName" class="inp" type="text" placeholder="e.g. Rahul Sharma" autocomplete="off">
-          </div>
-          <div class="field">
-            <label>Mobile No. <span class="req">*</span></label>
-            <input id="mobile" class="inp" type="tel" inputmode="numeric" placeholder="10-digit number" autocomplete="off">
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div class="field">
-            <label>Sales Person <span class="req">*</span></label>
-            <div id="sel_salesPerson"></div>
-          </div>
-          <div class="field">
-            <label>Fabric <span class="req">*</span></label>
-            <div id="sel_fabric"></div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="btn primary" onclick="toStep2()">Next → Assign Work</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== STEP 2 : ASSIGN WORK ===== -->
-    <section id="step2" class="hide">
-      <div class="card">
-        <h2>Assign Work</h2>
-        <p class="sub">Choose how this job flows between departments.</p>
-
-        <div class="choices">
-          <button class="choice" data-type="ALL" onclick="pickType('ALL')">
-            <span class="tick">✓</span>
-            <div class="ic">⇄</div>
-            <div class="t">Assign All</div>
-            <div class="d">Karigar → Tailor → Dyer</div>
-          </button>
-          <button class="choice" data-type="PARTIAL" onclick="pickType('PARTIAL')">
-            <span class="tick">✓</span>
-            <div class="ic">◫</div>
-            <div class="t">Assign Partial</div>
-            <div class="d">Choose any 2 departments</div>
-          </button>
-          <button class="choice" data-type="SINGLE" onclick="pickType('SINGLE')">
-            <span class="tick">✓</span>
-            <div class="ic">◍</div>
-            <div class="t">Assign Single</div>
-            <div class="d">Assign to one department</div>
-          </button>
-        </div>
-
-        <!-- ALL -->
-        <div id="panelALL" class="reveal hide">
-          <div class="flow">
-            <span class="node">Karigar</span><span class="arr">↓</span>
-            <span class="node">Tailor</span><span class="arr">↓</span>
-            <span class="node">Dyer</span>
-          </div>
-          <div class="field"><label>Select Karigar <span class="req">*</span></label><div id="all_Karigar"></div></div>
-          <div class="field"><label>Select Tailor <span class="req">*</span></label><div id="all_Tailor"></div></div>
-          <div class="field"><label>Select Dyer <span class="req">*</span></label><div id="all_Dyer"></div></div>
-        </div>
-
-        <!-- PARTIAL -->
-        <div id="panelPARTIAL" class="reveal hide">
-          <p class="section-t">Pick a combination</p>
-          <div class="minis">
-            <button class="mini" data-combo="KAR_TAI" onclick="pickCombo('KAR_TAI')">Karigar → Tailor<small>cut &amp; stitch</small></button>
-            <button class="mini" data-combo="TAI_DYE" onclick="pickCombo('TAI_DYE')">Tailor → Dyer<small>stitch &amp; dye</small></button>
-            <button class="mini" data-combo="DYE_KAR" onclick="pickCombo('DYE_KAR')">Dyer → Karigar<small>dye &amp; finish</small></button>
-          </div>
-          <div id="comboFields" class="hide" style="margin-top:16px"></div>
-        </div>
-
-        <!-- SINGLE -->
-        <div id="panelSINGLE" class="reveal hide">
-          <p class="section-t">Assign to one department</p>
-          <div class="minis">
-            <button class="mini" data-single="Karigar" onclick="pickSingle('Karigar')">Karigar</button>
-            <button class="mini" data-single="Tailor" onclick="pickSingle('Tailor')">Tailor</button>
-            <button class="mini" data-single="Dyer" onclick="pickSingle('Dyer')">Dyer</button>
-          </div>
-          <div id="singleField" class="hide" style="margin-top:16px"></div>
-        </div>
-
-        <div class="actions">
-          <button class="btn ghost" onclick="toStep(1)">← Back</button>
-          <button class="btn primary" onclick="toConfirm()">Review Order</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== STEP 3 : CONFIRM ===== -->
-    <section id="step3" class="hide">
-      <div class="card">
-        <div class="sumhead"><h2 style="margin:0">Order Summary</h2></div>
-        <p class="sub">Check everything, then create the job.</p>
-        <div id="summary"></div>
-        <div class="actions">
-          <button class="btn ghost" onclick="toStep(2)">← Edit</button>
-          <button id="confirmBtn" class="btn primary" onclick="confirmCreate()">Confirm &amp; Create Job</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== SUCCESS ===== -->
-    <section id="stepDone" class="hide">
-      <div class="card success">
-        <div class="badge">✓</div>
-        <h2>Job Created Successfully</h2>
-        <div class="oid" id="doneId">FJOB-0000</div>
-        <p class="flowline">Workflow: <b id="doneFlow"></b></p>
-        <div class="actions" style="position:static;margin-top:26px">
-          <button class="btn ghost" onclick="viewJob()">View Job</button>
-          <button class="btn primary" onclick="newJob()">＋ Create New Job</button>
-        </div>
-      </div>
-    </section>
-
   </div>
+  <div class="content" id="content"></div>
+  <div class="foot" id="foot">Ikxari · Fashion Management System · v1.0.0</div>
 </div>
 
-<!-- TOASTS -->
+<div id="modalRoot"></div>
+<div id="confirmRoot"></div>
 <div id="toasts"></div>
-
-<!-- VIEW JOB MODAL -->
-<div class="mask" id="viewMask" onclick="if(event.target===this)closeView()">
-  <div class="modal" style="max-width:460px">
-    <h3 id="vTitle">Job</h3>
-    <p id="vMeta" style="margin-bottom:10px"></p>
-    <div id="vSteps"></div>
-    <div class="actions" style="position:static;margin-top:18px">
-      <button class="btn primary" onclick="closeView()">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- SET URL MODAL -->
-<div class="mask" id="urlMask" onclick="if(event.target===this)closeUrl()">
-  <div class="modal">
-    <h3>Set API URL</h3>
-    <p>Paste your Apps Script Web App URL (ends with <code>/exec</code>).</p>
-    <input id="urlInput" class="inp" placeholder="https://script.google.com/macros/s/…/exec" style="margin-bottom:14px">
-    <div class="actions" style="position:static">
-      <button class="btn ghost" onclick="closeUrl()">Cancel</button>
-      <button class="btn primary" onclick="saveUrl()">Save &amp; Reload</button>
-    </div>
-  </div>
-</div>
+<div id="urlBanner">⚠️ Can't reach the server. <a onclick="askUrl()">Set API URL</a></div>
 
 <script>
-/* ================= CONFIG ================= */
-/* ↓↓↓ PASTE your deployed /exec URL here once (or use "Set API URL" in the app) ↓↓↓ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbyz3fEv-b2GgCO_5iTsDrmKgBWa73k6rRpYYbhSe8xnZVFAOtZXB7a7E6V4QXN7tJuRZg/exec';
-var API = (function(){ try{ return localStorage.getItem('fswf_api') || API_DEFAULT; }catch(_){ return API_DEFAULT; } })();
-function apiOk(u){ return /^https:\/\/script\.google\.com\/(a\/)?macros\//.test(u||'') && /\/exec$/.test(u||''); }
+/* ============ CONFIG ============ */
+var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbyUflG-6ET6gPyMAN7cHYCDQIINmTvYGjMyaV0j9GSYxMMWaAdhCuatclxru3JkbPLZqw/exec';
+var API = localStorage.getItem('ikx_api') || API_DEFAULT;
+var ACTOR = localStorage.getItem('ikx_name') || '';
+var ME = null, MEPERM = {};
+var WORKERS=[], ROLES=[], SETTINGS={};
+var DRAFT=[];            // process builder working copy
+var CUR_ORDER=null;      // open order detail
+var CUR_STEPS=[];
+var LIST_FILT='All', LIST_Q='';
+var TICK=null;
 
-/* ================= STATE ================= */
-var MASTERS = { salesPersons:[], karigar:[], tailor:[], dyer:[], fabric:[] };
-var DEPT_KEY = { Karigar:'karigar', Tailor:'tailor', Dyer:'dyer' };
-var FORM = { clientName:'', mobile:'', salesPerson:'', fabric:'', assignType:'', combo:'', single:'', people:{} };
-var LAST = null;          // last created job result
-var submitting = false;   // duplicate guard
-var CUR_STEP = 1;
+var PAGES = [
+  {id:'orders', label:'Orders', perm:null},
+  {id:'tasks',  label:'My Tasks', perm:null},
+  {id:'builder',label:'Process Builder', perm:'config'},
+  {id:'workers',label:'Workers', perm:'config'},
+  {id:'roles',  label:'Roles', perm:'config'},
+  {id:'settings',label:'Settings', perm:'config'},
+  {id:'changelog',label:'Change Log', perm:'config'}
+];
 
-/* ================= HELPERS ================= */
-function $(id){ return document.getElementById(id); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
-  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function toast(msg,kind){
-  var t=document.createElement('div'); t.className='toast '+(kind||'');
-  t.textContent=msg; $('toasts').appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateX(20px)';
-    setTimeout(function(){ t.remove(); },250); }, 3200);
-}
+/* ============ helpers ============ */
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function tog(id,el){var i=$(id);i.type=i.type==='password'?'text':'password';el.textContent=i.type==='password'?'👁':'🙈'}
+function toast(msg,kind){var t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.textContent=msg;$('toasts').appendChild(t);setTimeout(function(){t.style.opacity=0;t.style.transform='translateX(30px)';setTimeout(function(){t.remove()},250)},3200)}
+function can(k){return ME && (ME.role==='Admin' || (MEPERM&&MEPERM[k]))}
 
-/* POST text/plain (no CORS preflight); body = JSON */
-function api(payload){
-  return fetch(API, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(payload) })
-    .then(function(r){ return r.text(); })
+function fmt(ts){ if(!ts) return '—'; var d=new Date(Number(ts)); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit',timeZone:'Asia/Kolkata'}); }
+function fmtDT(ts){ if(!ts) return '—'; var d=new Date(Number(ts)); return d.toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}); }
+function due(ts){ if(!ts) return ''; var diff=Number(ts)-Date.now(); var late=diff<0; var a=Math.abs(diff); var m=Math.floor(a/60000),h=Math.floor(m/60),d=Math.floor(h/24); var txt=d>0?d+'d '+(h%24)+'h':h>0?h+'h '+(m%60)+'m':m+'m'; return late?'⚠ '+txt+' late':'⏱ '+txt+' left'; }
+
+/* ============ API ============ */
+function apiCall(p,silent){
+  return new Promise(function(res){
+    p.actor=ACTOR;
+    fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)})
+    .then(function(r){return r.text()})
     .then(function(t){
-      var j; try{ j=JSON.parse(t); }catch(e){ throw new Error('Bad server reply (check deployment access = Anyone).'); }
-      return j;
-    });
+      $('urlBanner').style.display='none';
+      var j; try{j=JSON.parse(t)}catch(e){ toast('Server returned HTML — check deployment access = Anyone','err'); res({ok:false,error:'bad response'}); return; }
+      res(j);
+    })
+    .catch(function(e){ if(!silent){$('urlBanner').style.display='block';} res({ok:false,error:'network'}); });
+  });
+}
+function api(p){return apiCall(p,false)}
+function apiS(p){return apiCall(p,true)}
+
+/* ============ boot (no login) ============ */
+window.addEventListener('DOMContentLoaded',function(){ boot(); });
+function adminAll(){ return {config:1,view_all:1,create_order:1,complete_task:1,update_trial:1,update_delivery:1,manage_team:1}; }
+function boot(){
+  apiS({action:'__ping'}).then(function(r){
+    $('loader').classList.add('hidden');
+    if(!r || !r.ok){ $('urlBanner').style.display='block'; }
+    ME={name:ACTOR||'User',role:'Admin'}; MEPERM=adminAll();
+    if(!ACTOR){ askName(function(){ ME.name=ACTOR; showApp(); }); }
+    else showApp();
+  });
+}
+function askName(cb){
+  modal('Welcome to Ikxari FMS',
+    '<label class="f">Your name</label><input class="in" id="nmIn" placeholder="e.g. Sam">'+
+    '<div class="hint">Just tags who did what in the activity log. No password.</div>',
+    [{t:'Continue →',c:'btn',f:function(){ var v=$('nmIn').value.trim(); if(!v){toast('Enter your name','err');return;} ACTOR=v; localStorage.setItem('ikx_name',v); closeModal(); cb(); }}]);
+}
+function signout(){ confirmBox('Change name?','Enter a different name for the activity log.',function(){ localStorage.removeItem('ikx_name'); location.reload(); }); }
+
+/* ============ app shell ============ */
+function showApp(){
+  $('appView').classList.remove('hidden');
+  $('uav').textContent=(ME.name||'?').charAt(0).toUpperCase();
+  buildNav();
+  Promise.all([apiS({action:'listWorkers'}),apiS({action:'listRoles'}),apiS({action:'getSettings'})]).then(function(a){
+    if(a[0].ok)WORKERS=a[0].workers; if(a[1].ok)ROLES=a[1].roles; if(a[2].ok)SETTINGS=a[2].settings;
+    go('orders');
+  });
+}
+function buildNav(){
+  var n=$('nav'); n.innerHTML='';
+  PAGES.forEach(function(p){
+    if(p.perm && !can(p.perm)) return;
+    var b=document.createElement('button'); b.className='np'; b.id='nav_'+p.id; b.textContent=p.label;
+    b.onclick=function(){go(p.id)}; n.appendChild(b);
+  });
+}
+function go(page){
+  document.querySelectorAll('.np').forEach(function(x){x.classList.remove('on')});
+  var nb=$('nav_'+page); if(nb)nb.classList.add('on');
+  if(TICK){clearInterval(TICK);TICK=null;}
+  if(page==='orders')   renderOrders();
+  else if(page==='tasks') renderTasks();
+  else if(page==='builder') renderBuilder();
+  else if(page==='workers') renderWorkers();
+  else if(page==='roles') renderRoles();
+  else if(page==='settings') renderSettings();
+  else if(page==='changelog') renderChangelog();
+  else if(page==='team') renderTeam();
 }
 
-/* ================= SEARCH SELECT ================= */
-/* buildSelect(mountId, optionsArrayGetter, placeholder, onPick) */
-function buildSelect(mountId, getOpts, placeholder, onPick){
-  var mount=$(mountId); if(!mount) return;
-  mount.innerHTML =
-    '<div class="sel">'+
-      '<button type="button" class="sel-btn placeholder"><span class="sel-lbl">'+esc(placeholder)+'</span><span class="chev">▾</span></button>'+
-      '<div class="sel-menu">'+
-        '<div class="sel-search"><input type="text" placeholder="Search…"></div>'+
-        '<div class="sel-list"></div>'+
-      '</div>'+
-    '</div>';
-  var sel=mount.querySelector('.sel'),
-      btn=mount.querySelector('.sel-btn'),
-      lbl=mount.querySelector('.sel-lbl'),
-      search=mount.querySelector('.sel-search input'),
-      list=mount.querySelector('.sel-list');
-  var state={ value:'', hl:-1, filtered:[] };
+/* ============ ORDERS ============ */
+function renderOrders(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Orders</h2><div class="sub">Every order runs the workflow it was created under</div></div>'+
+    (can('create_order')?'<button class="btn" onclick="openCreateOrder()">+ New Order</button>':'')+'</div>'+
+    '<div class="stats" id="oStats"></div>'+
+    '<div class="tools"><input class="in" id="oSearch" placeholder="Search order / client / mobile…" value="'+esc(LIST_Q)+'"></div>'+
+    '<div class="olist" id="oList"><div class="empty">Loading…</div></div>';
+  $('oSearch').addEventListener('input',function(){LIST_Q=this.value;loadOrders();});
+  loadOrders();
+}
+function loadOrders(){
+  api({action:'listOrders',status:LIST_FILT,q:LIST_Q}).then(function(r){
+    if(!r.ok){$('oList').innerHTML='<div class="empty">'+esc(r.error||'error')+'</div>';return;}
+    var s=r.stats||{};
+    var cards=[['All',s.All||0],['Running',s.Running||0],['Delayed',s.Delayed||0],['Completed',s.Completed||0],['Stopped',s.Stopped||0],['Cancelled',s.Cancelled||0]];
+    $('oStats').innerHTML=cards.map(function(c){
+      return '<div class="stat'+(LIST_FILT===c[0]?' on':'')+'" onclick="setFilt(\''+c[0]+'\')"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div><div class="bar" style="background:'+statColor(c[0])+'"></div></div>';
+    }).join('');
+    var os=r.orders||[];
+    if(!os.length){$('oList').innerHTML='<div class="empty"><div class="em">🧵</div>No orders yet.'+(can('create_order')?' Spin up your first one.':'')+'</div>';return;}
+    $('oList').innerHTML=os.map(orderCard).join('');
+  });
+}
+function statColor(s){return {All:'var(--accent)',Running:'var(--info)',Delayed:'var(--err)',Completed:'var(--ok)',Stopped:'var(--warn)',Cancelled:'var(--grey)'}[s]||'var(--accent)';}
+function setFilt(f){LIST_FILT=f;loadOrders();}
+function orderCard(o){
+  var pct=o.total?Math.round(o.done/o.total*100):0;
+  var st=o.delayed&&o.status==='Running'?'Delayed':o.status;
+  var cur=o.current?('<span>▶ '+esc(o.current.name)+' · '+esc(o.current.role||'—')+'</span>'+(o.current.due_ts?'<span style="color:'+(Number(o.current.due_ts)<Date.now()?'var(--err)':'var(--muted)')+'">'+due(o.current.due_ts)+'</span>':'')):'<span>—</span>';
+  return '<div class="ocard" onclick="openOrder(\''+o.order_id+'\')">'+
+    '<div class="ohead"><div><div class="oid">'+esc(o.order_id)+'</div><div class="oclient">'+esc(o.client||'No client')+(o.fabric?' · '+esc(o.fabric):'')+'</div></div>'+
+    '<span class="pill p-'+st+'">'+st+'</span></div>'+
+    '<div class="ometa">'+cur+(o.trial_round?'<span>🔁 Trial '+(o.trial_round+1)+'/'+o.max_trials+'</span>':'')+'<span>'+o.done+'/'+o.total+' steps</span></div>'+
+    '<div class="prog"><i style="width:'+pct+'%"></i></div></div>';
+}
 
-  function render(q){
-    var opts=getOpts()||[]; q=(q||'').toLowerCase();
-    state.filtered = q ? opts.filter(function(o){ return o.toLowerCase().indexOf(q)>=0; }) : opts.slice();
-    if(!state.filtered.length){
-      list.innerHTML = '<div class="sel-empty">'+(opts.length?'No match':'Nothing available')+'</div>'; return;
+function openCreateOrder(){
+  modal('New Order','<label class="f">Client name *</label><input class="in" id="coClient" placeholder="Customer name">'+
+    '<div style="height:10px"></div><div class="row"><div><label class="f">Mobile</label><input class="in" id="coMobile"></div><div><label class="f">Fabric</label><input class="in" id="coFabric"></div></div>'+
+    '<div style="height:10px"></div><label class="f">Sales Person</label><input class="in" id="coSales" value="'+esc(ME.name)+'">'+
+    '<div style="height:10px"></div><label class="f">Notes</label><textarea class="in" id="coNotes"></textarea>'+
+    '<div class="hint">Order snapshots the current active workflow. Later workflow edits won\'t touch it.</div>',
+    [{t:'Create Order',c:'btn',f:function(){
+      var client=$('coClient').value.trim(); if(!client){toast('Client name required','err');return;}
+      api({action:'createOrder',client:client,mobile:$('coMobile').value,fabric:$('coFabric').value,sales_person:$('coSales').value,notes:$('coNotes').value}).then(function(r){
+        if(!r.ok){toast(r.error||'error','err');return;}
+        closeModal();toast('Order '+r.order_id+' created ✅','ok');loadOrders();openOrder(r.order_id);
+      });
+    }}]);
+}
+
+/* ---- order detail ---- */
+function openOrder(id){
+  api({action:'getOrder',order_id:id}).then(function(r){
+    if(!r.ok){toast(r.error||'error','err');return;}
+    CUR_ORDER=r.order; CUR_STEPS=r.steps;
+    drawOrder(r);
+    if(TICK)clearInterval(TICK);
+    TICK=setInterval(function(){ document.querySelectorAll('[data-due]').forEach(function(el){ el.textContent=due(el.getAttribute('data-due')); }); },1000);
+  });
+}
+function drawOrder(r){
+  var o=r.order, steps=r.steps, his=r.history||[];
+  var pct=o.total?Math.round(o.done/o.total*100):0;
+  var st=o.status;
+  var body='<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center">'+
+    '<div><div class="oclient">'+esc(o.client||'—')+(o.mobile?' · '+esc(o.mobile):'')+'</div>'+
+    '<div class="hint">'+esc(o.fabric||'')+' · by '+esc(o.sales_person||o.created_by)+' · '+fmt(o.created_ts)+'</div></div>'+
+    '<span class="pill p-'+st+'">'+st+'</span></div>'+
+    '<div class="hint" style="margin-top:6px">Workflow: <b style="color:var(--txt)">'+esc(o.version_name)+'</b>'+(o.trial_round?' · Trial '+(o.trial_round+1)+' of max '+o.max_trials:'')+'</div>'+
+    '<div class="prog" style="margin:10px 0 16px"><i style="width:'+pct+'%"></i></div>';
+
+  body+=steps.map(function(s){ return stepCard(o,s); }).join('');
+
+  body+='<div class="sechead">Activity</div><div style="max-height:180px;overflow:auto">'+
+    (his.length?his.map(function(h){return '<div style="font-size:12.5px;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">🕘 <b style="color:var(--txt)">'+esc(h.who)+'</b> · '+esc(h.action)+(h.detail?' — '+esc(h.detail):'')+' <span style="opacity:.6">'+fmtDT(h.ts)+'</span></div>';}).join(''):'<div class="hint">No activity yet.</div>')+'</div>';
+
+  var foot=[];
+  if(can('config') && (st==='Running')) foot.push({t:'Cancel Order',c:'btn ghost',f:function(){ confirmBox('Cancel this order?','It will be marked Cancelled.',function(){ api({action:'cancelOrder',order_id:o.order_id}).then(function(x){ if(x.ok){toast('Order cancelled','ok');closeModal();loadOrders();} }); }); }});
+  foot.push({t:'Close',c:'btn ghost',f:closeModal});
+
+  modal(esc(o.order_id), body, foot, true);
+}
+function tatText(s){
+  var cur = s.ovr_tat_value!=null ? (s.ovr_tat_value+' '+s.ovr_tat_unit) : (s.def_tat_value+' '+s.def_tat_unit);
+  var h='Default TAT: <b>'+s.def_tat_value+' '+esc(s.def_tat_unit)+'</b>';
+  if(s.ovr_tat_value!=null) h+=' · Override: <b style="color:var(--accent2)">'+s.ovr_tat_value+' '+esc(s.ovr_tat_unit)+'</b> · Current: <b>'+esc(cur)+'</b>';
+  return h;
+}
+function stepIcon(t){return {'Decision':'❓','Action':'⚙️','Worker Task':'🧵','Information/Notification':'🔔','Optional':'➕','Mandatory':'📌'}[t]||'🧵';}
+function stepCard(o,s){
+  var active=(s.status==='Running'||s.status==='Delayed');
+  var acts='';
+  if(o.status==='Running' && active){
+    if(s.is_decision){
+      acts=(s.options||[]).map(function(op){
+        var cls=op.label.toLowerCase()==='yes'?'btn ok sm':op.label.toLowerCase()==='no'?'btn danger sm':'btn sm';
+        return can('complete_task')?'<button class="'+cls+'" onclick="decide(\''+o.order_id+'\','+s.seq+',\''+esc(op.label)+'\')">'+esc(op.label)+'</button>':'';
+      }).join('');
+    } else if(can('complete_task')){
+      acts='<button class="btn ok sm" onclick="doneStep(\''+o.order_id+'\','+s.seq+')">Mark Done ✅</button>';
     }
-    list.innerHTML = state.filtered.map(function(o,i){
-      return '<div class="sel-opt'+(i===state.hl?' hl':'')+'" data-i="'+i+'">'+esc(o)+'</div>'; }).join('');
+    if(!s.mandatory && can('complete_task')) acts+='<button class="btn ghost sm" onclick="skip(\''+o.order_id+'\','+s.seq+')">Skip</button>';
+    if(can('config')) acts+='<button class="btn ghost sm" onclick="tatOverride(\''+o.order_id+'\','+s.seq+')">TAT</button>';
   }
-  function open(){ sel.classList.add('open'); state.hl=-1; render(''); search.value=''; setTimeout(function(){ search.focus(); },30); }
-  function close(){ sel.classList.remove('open'); }
-  function choose(v){
-    state.value=v; lbl.textContent=v; btn.classList.remove('placeholder'); btn.classList.remove('bad');
-    close(); if(onPick) onPick(v);
-  }
+  var meta=[];
+  meta.push('👤 '+esc(s.assign_worker||s.assign_role||'—'));
+  meta.push('🏷 '+esc(s.step_type));
+  if(s.decision_answer) meta.push('✔ '+esc(s.decision_answer));
+  if(s.due_ts && active) meta.push('<span data-due="'+s.due_ts+'" style="color:'+(Number(s.due_ts)<Date.now()?'var(--err)':'var(--muted)')+'">'+due(s.due_ts)+'</span>');
+  if(s.done_ts && s.status==='Done') meta.push('✅ '+fmtDT(s.done_ts)+(s.done_by?' · '+esc(s.done_by):''));
+  var stCls=s.status;
+  return '<div class="fcard st-'+stCls+'">'+
+    '<div class="ftile">'+stepIcon(s.step_type)+'</div>'+
+    '<div class="fbody"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">'+
+    '<div class="fname">'+esc(s.step_name)+(s.is_final?' 🏁':'')+(s.is_trial?' 🔁':'')+'</div><span class="pill p-'+stCls+'">'+stCls+'</span></div>'+
+    '<div class="fmeta">'+meta.join('')+'</div>'+
+    (active?'<div class="tatline">'+tatText(s)+'</div>':'')+
+    (s.instructions?'<div class="hint">📝 '+esc(s.instructions)+'</div>':'')+
+    (acts?'<div class="facts">'+acts+'</div>':'')+
+    '</div></div>';
+}
+function doneStep(id,seq){ api({action:'completeStep',order_id:id,seq:seq}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast(r.order_completed?'Order completed 🎉':'Step done ✅','ok'); openOrder(id); loadOrders(); }); }
+function decide(id,seq,opt){ api({action:'decideStep',order_id:id,seq:seq,option:opt}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast(r.order_completed?'Order confirmed 🎉':r.stopped?'Order stopped':r.trial?('Trial '+r.trial+' started'):'Recorded ✅','ok'); openOrder(id); loadOrders(); }); }
+function skip(id,seq){ confirmBox('Skip this optional step?','It will be recorded as Skipped (not counted as pending/late).',function(){ api({action:'skipStep',order_id:id,seq:seq}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast('Step skipped','ok'); openOrder(id); loadOrders(); }); }); }
+function tatOverride(id,seq){
+  var s=null; CUR_STEPS.forEach(function(x){if(x.seq===seq)s=x;}); if(!s)return;
+  modal('TAT Override — '+esc(s.step_name),
+    '<div class="hint" style="margin-bottom:12px">Default: <b style="color:var(--txt)">'+s.def_tat_value+' '+esc(s.def_tat_unit)+'</b>. This override applies only to this order.</div>'+
+    '<div class="row"><div><label class="f">New TAT value</label><input class="in" id="ovVal" type="number" min="1" value="'+(s.ovr_tat_value!=null?s.ovr_tat_value:s.def_tat_value)+'"></div>'+
+    '<div><label class="f">Unit</label>'+unitSelect('ovUnit',s.ovr_tat_unit||s.def_tat_unit)+'</div></div>',
+    [{t:'Save Override',c:'btn',f:function(){
+      api({action:'setStepTatOverride',order_id:id,seq:seq,tat_value:$('ovVal').value,tat_unit:$('ovUnit').value}).then(function(r){
+        if(!r.ok){toast(r.error,'err');return;} closeModal();toast('TAT updated for this order','ok');openOrder(id);
+      });
+    }},{t:'Cancel',c:'btn ghost',f:closeModal}], false, 'confirmRoot');
+}
 
-  btn.addEventListener('click', function(e){ e.stopPropagation(); sel.classList.contains('open')?close():open(); });
-  search.addEventListener('input', function(){ state.hl=-1; render(this.value); });
-  search.addEventListener('keydown', function(e){
-    if(e.key==='ArrowDown'){ e.preventDefault(); state.hl=Math.min(state.hl+1,state.filtered.length-1); render(search.value); }
-    else if(e.key==='ArrowUp'){ e.preventDefault(); state.hl=Math.max(state.hl-1,0); render(search.value); }
-    else if(e.key==='Enter'){ e.preventDefault(); if(state.filtered[state.hl]) choose(state.filtered[state.hl]); }
-    else if(e.key==='Escape'){ close(); }
+/* ============ MY TASKS ============ */
+function renderTasks(){
+  $('content').innerHTML='<div class="pageH"><div><h2>My Tasks</h2><div class="sub">Every step currently waiting across active orders</div></div></div><div id="tList"><div class="empty">Loading…</div></div>';
+  api({action:'myTasks'}).then(function(r){
+    if(!r.ok){$('tList').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
+    var t=r.tasks||[];
+    if(!t.length){$('tList').innerHTML='<div class="empty"><div class="em">🎉</div>All clear. Nothing is waiting.</div>';return;}
+    $('tList').innerHTML='<div class="olist">'+t.map(function(s){
+      var acts='';
+      if(can('complete_task')){
+        if(s.is_decision){ acts=(s.options||[]).map(function(op){var cls=op.label.toLowerCase()==='yes'?'btn ok sm':op.label.toLowerCase()==='no'?'btn danger sm':'btn sm';return '<button class="'+cls+'" onclick="event.stopPropagation();decide(\''+s.order_id+'\','+s.seq+',\''+esc(op.label)+'\');setTimeout(renderTasks,600)">'+esc(op.label)+'</button>';}).join(''); }
+        else acts='<button class="btn ok sm" onclick="event.stopPropagation();doneStep(\''+s.order_id+'\','+s.seq+');setTimeout(renderTasks,600)">Done ✅</button>';
+      }
+      return '<div class="ocard" onclick="openOrder(\''+s.order_id+'\')"><div class="ohead"><div><div class="oid">'+esc(s.step_name)+(s.is_decision?' ❓':'')+'</div><div class="oclient">'+esc(s.order_id)+' · '+esc(s.client||'')+'</div></div><span class="pill p-'+(s.delayed?'Delayed':'Running')+'">'+(s.delayed?'Delayed':'Running')+'</span></div>'+
+      '<div class="ometa"><span>👤 '+esc(s.assignee)+'</span>'+(s.due_ts?'<span data-due="'+s.due_ts+'" style="color:'+(Number(s.due_ts)<Date.now()?'var(--err)':'var(--muted)')+'">'+due(s.due_ts)+'</span>':'')+'</div>'+
+      (acts?'<div class="facts">'+acts+'</div>':'')+'</div>';
+    }).join('')+'</div>';
+    if(TICK)clearInterval(TICK);
+    TICK=setInterval(function(){document.querySelectorAll('[data-due]').forEach(function(el){el.textContent=due(el.getAttribute('data-due'));});},1000);
   });
-  list.addEventListener('click', function(e){
-    var o=e.target.closest('.sel-opt'); if(!o) return; choose(state.filtered[+o.dataset.i]); });
-
-  return {
-    get value(){ return state.value; },
-    reset:function(){ state.value=''; lbl.textContent=placeholder; btn.classList.add('placeholder'); },
-    markBad:function(){ btn.classList.add('bad'); },
-    el:sel
-  };
-}
-/* close any open select on outside click */
-document.addEventListener('click', function(e){
-  document.querySelectorAll('.sel.open').forEach(function(s){ if(!s.contains(e.target)) s.classList.remove('open'); });
-});
-
-/* select instances */
-var SEL={};
-function buildStep1Selects(){
-  SEL.salesPerson = buildSelect('sel_salesPerson', function(){ return MASTERS.salesPersons; },
-    'Select sales person', function(v){ FORM.salesPerson=v; });
-  SEL.fabric = buildSelect('sel_fabric', function(){ return MASTERS.fabric; },
-    'Select fabric', function(v){ FORM.fabric=v; });
 }
 
-/* ================= STEP NAV ================= */
-function toStep(n){
-  CUR_STEP=n;
-  ['step1','step2','step3','stepDone'].forEach(function(id){ $(id).classList.add('hide'); });
-  var map={1:'step1',2:'step2',3:'step3',4:'stepDone'};
-  var el=$(map[n]); el.classList.remove('hide'); el.classList.remove('fade'); void el.offsetWidth; el.classList.add('fade');
-  // step bar
-  document.querySelectorAll('#stepBar .snode').forEach(function(node){
-    var s=+node.dataset.s; node.classList.remove('active','done');
-    if(n<=3){ if(s<n) node.classList.add('done'); else if(s===n) node.classList.add('active'); }
-    else { node.classList.add('done'); }
+/* ============ PROCESS BUILDER ============ */
+function unitSelect(id,val){ return '<select class="in" id="'+id+'">'+['Minutes','Hours','Days','Weeks'].map(function(u){return '<option'+(u===val?' selected':'')+'>'+u+'</option>'}).join('')+'</select>'; }
+function typeSelect(id,val){ return '<select class="in" id="'+id+'" onchange="onTypeChange()">'+['Worker Task','Action','Decision','Information/Notification','Mandatory','Optional'].map(function(u){return '<option'+(u===val?' selected':'')+'>'+u+'</option>'}).join('')+'</select>'; }
+function roleOptions(sel){ var rs=ROLES.filter(function(r){return r.active}); if(!rs.length)rs=[{role_name:'Karigar'},{role_name:'Tailor'},{role_name:'Dyer'},{role_name:'Master'},{role_name:'Sales Person'},{role_name:'Other'}]; return rs.map(function(r){return '<option'+(r.role_name===sel?' selected':'')+'>'+esc(r.role_name)+'</option>'}).join(''); }
+function workerOptions(sel){ var ws=WORKERS.filter(function(w){return w.active}); return '<option value="">— select worker —</option>'+ws.map(function(w){return '<option value="'+esc(w.name)+'"'+(w.name===sel?' selected':'')+'>'+esc(w.name)+' ('+esc(w.role)+')</option>'}).join(''); }
+
+function renderBuilder(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Process Builder</h2><div class="sub">Design the workflow — no coding. Publish creates a new version; old orders stay untouched.</div></div></div><div id="bWrap"><div class="empty">Loading…</div></div>';
+  api({action:'getWorkflow'}).then(function(r){
+    if(!r.ok){$('bWrap').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
+    if(!r.version){
+      $('bWrap').innerHTML='<div class="card" style="text-align:center"><div class="em" style="font-size:38px">🧩</div><p>No workflow yet. Start with the default Ikxari flow (Karigar → Tailor → Dyer → … → Trial), then edit freely.</p><button class="btn" onclick="seedWF()">Create Default Workflow</button><div class="hint" style="margin-top:8px">or build from scratch:</div><button class="btn ghost" style="margin-top:8px" onclick="DRAFT=[];drawBuilder(null)">Blank Workflow</button></div>';
+      return;
+    }
+    DRAFT=r.steps.map(cloneStep);
+    _VER=r.version;
+    drawBuilder(r.version);
   });
-  window.scrollTo({top:0,behavior:'smooth'});
 }
+function cloneStep(s){ return {step_name:s.step_name,step_type:s.step_type,assign_type:s.assign_type,assign_role:s.assign_role,assign_worker:s.assign_worker,tat_value:s.tat_value,tat_unit:s.tat_unit,instructions:s.instructions,mandatory:s.mandatory,enabled:s.enabled,is_decision:s.is_decision,options:(s.options||[]).map(function(o){return{label:o.label,action:o.action,target_seq:o.target_seq}}),is_trial:s.is_trial,is_final:s.is_final}; }
+function seedWF(){ api({action:'seedDefaults'}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast('Default workflow created ✅','ok'); apiS({action:'listRoles'}).then(function(x){if(x.ok)ROLES=x.roles;}); renderBuilder(); }); }
 
-/* ---- STEP 1 → 2 ---- */
-function toStep2(){
-  var ok=true;
-  var cn=$('clientName'), mb=$('mobile');
-  FORM.clientName=cn.value.trim(); FORM.mobile=mb.value.trim();
-  cn.classList.remove('bad'); mb.classList.remove('bad');
-  if(!FORM.clientName){ cn.classList.add('bad'); ok=false; }
-  var digits=FORM.mobile.replace(/\D/g,'');
-  if(digits.length<7 || digits.length>15){ mb.classList.add('bad'); ok=false; }
-  if(!FORM.salesPerson){ SEL.salesPerson && SEL.salesPerson.markBad(); ok=false; }
-  if(!FORM.fabric){ SEL.fabric && SEL.fabric.markBad(); ok=false; }
-  if(!ok){ toast('Fill all required fields','err'); return; }
-  toStep(2);
-}
-
-/* ---- STEP 2 : assignment ---- */
-function pickType(type){
-  FORM.assignType=type; FORM.combo=''; FORM.single=''; FORM.people={};
-  document.querySelectorAll('.choice').forEach(function(c){ c.classList.toggle('sel', c.dataset.type===type); });
-  ['ALL','PARTIAL','SINGLE'].forEach(function(t){ $('panel'+t).classList.toggle('hide', t!==type); });
-  if(type==='ALL') buildAllSelects();
-  if(type==='PARTIAL'){ $('comboFields').classList.add('hide'); document.querySelectorAll('#panelPARTIAL .mini').forEach(function(m){m.classList.remove('sel');}); }
-  if(type==='SINGLE'){ $('singleField').classList.add('hide'); document.querySelectorAll('#panelSINGLE .mini').forEach(function(m){m.classList.remove('sel');}); }
-}
-
-function optsForDept(dept){ return MASTERS[DEPT_KEY[dept]] || []; }
-
-var ALLSEL={};
-function buildAllSelects(){
-  ALLSEL={};
-  ['Karigar','Tailor','Dyer'].forEach(function(d){
-    ALLSEL[d]=buildSelect('all_'+d, function(){ return optsForDept(d); }, 'Select '+d,
-      function(v){ FORM.people[d]=v; });
+function drawBuilder(ver){
+  var flow='<div class="flowview"><div class="fnode start">Order Created</div><div class="farr">↓</div>';
+  DRAFT.forEach(function(s,i){
+    var cls='fnode'+(!s.enabled?' dis':'')+(s.is_decision?' dec':'');
+    flow+='<div class="'+cls+'">'+esc(s.step_name||'(unnamed)')+(s.is_final?' 🏁':'')+'</div>';
+    if(s.is_decision && s.options && s.options.length){
+      flow+='<div class="fbranch">'+s.options.map(function(o){return esc(o.label)+'→'+actLabel(o)}).join(' · ')+'</div>';
+    }
+    if(i<DRAFT.length-1) flow+='<div class="farr">↓</div>';
   });
-  // keep any previously chosen person
-  FORM.people={};
-}
+  flow+='</div>';
 
-var COMBO_MAP={ KAR_TAI:['Karigar','Tailor'], TAI_DYE:['Tailor','Dyer'], DYE_KAR:['Dyer','Karigar'] };
-var COMBOSEL={};
-function pickCombo(combo){
-  FORM.combo=combo; FORM.people={};
-  document.querySelectorAll('#panelPARTIAL .mini').forEach(function(m){ m.classList.toggle('sel', m.dataset.combo===combo); });
-  var depts=COMBO_MAP[combo];
-  var box=$('comboFields'); box.classList.remove('hide');
-  box.innerHTML = depts.map(function(d,i){
-    return '<div class="field"><label>Select '+esc(d)+' <span class="req">*</span></label><div id="combo_'+d+'"></div></div>'+
-      (i===0?'<div class="flow" style="padding:8px 12px;margin:2px 0 14px"><span class="arr">↓</span></div>':'');
+  var rows=DRAFT.map(function(s,i){
+    var sub=[s.step_type,(s.assign_type==='Worker'?('👤 '+(s.assign_worker||'?')):('🏷 '+(s.assign_role||'?'))),'⏱ '+s.tat_value+' '+s.tat_unit];
+    if(!s.mandatory)sub.push('optional'); if(s.is_final)sub.push('final');
+    return '<div class="brow'+(!s.enabled?' dis':'')+'"><div class="bseq">'+(i+1)+'</div>'+
+      '<div class="bmain"><div class="bname">'+esc(s.step_name||'(unnamed)')+(s.is_decision?' ❓':'')+'</div><div class="bsub">'+sub.map(esc).join(' · ')+'</div></div>'+
+      '<div class="bctl">'+
+      '<button class="icb" title="Up" onclick="mv('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button>'+
+      '<button class="icb" title="Down" onclick="mv('+i+',1)" '+(i===DRAFT.length-1?'disabled':'')+'>↓</button>'+
+      '<button class="icb" title="Edit" onclick="editStep('+i+')">✎</button>'+
+      '<button class="icb" title="'+(s.enabled?'Disable':'Enable')+'" onclick="toggleStep('+i+')">'+(s.enabled?'⏸':'▶')+'</button>'+
+      '<button class="icb" title="Delete" onclick="delStep('+i+')">🗑</button>'+
+      '</div></div>';
   }).join('');
-  COMBOSEL={};
-  depts.forEach(function(d){
-    COMBOSEL[d]=buildSelect('combo_'+d, function(){ return optsForDept(d); }, 'Select '+d,
-      function(v){ FORM.people[d]=v; });
-  });
-}
 
-var SINGLESEL=null;
-function pickSingle(dept){
-  FORM.single=dept; FORM.people={};
-  document.querySelectorAll('#panelSINGLE .mini').forEach(function(m){ m.classList.toggle('sel', m.dataset.single===dept); });
-  var box=$('singleField'); box.classList.remove('hide');
-  box.innerHTML='<div class="field"><label>Select '+esc(dept)+' <span class="req">*</span></label><div id="single_'+dept+'"></div></div>';
-  SINGLESEL=buildSelect('single_'+dept, function(){ return optsForDept(dept); }, 'Select '+dept,
-    function(v){ FORM.people[dept]=v; });
+  $('bWrap').innerHTML=flow+
+    '<div class="tools"><button class="btn" onclick="editStep(-1)">+ Add Step</button>'+
+    '<button class="btn ok" onclick="publishWF()">Publish Changes 💾</button>'+
+    (ver?'<span class="hint" style="margin-left:auto">Active: <b style="color:var(--txt)">'+esc(ver.version_name)+'</b></span>':'')+'</div>'+
+    '<div class="builder">'+(rows||'<div class="empty">No steps. Add your first.</div>')+'</div>';
 }
+function actLabel(o){ return {Next:'next',Jump:'step '+o.target_seq,Complete:'Confirm',Stop:'Stop',NextTrial:'next trial'}[o.action]||o.action; }
+function mv(i,d){ var j=i+d; if(j<0||j>=DRAFT.length)return; var t=DRAFT[i];DRAFT[i]=DRAFT[j];DRAFT[j]=t; drawBuilder(_ver()); }
+var _VER=null; function _ver(){return _VER;}
+function toggleStep(i){ DRAFT[i].enabled=!DRAFT[i].enabled; drawBuilder(_ver()); }
+function delStep(i){ confirmBox('Remove step?','"'+esc(DRAFT[i].step_name)+'" will be removed from the workflow draft.',function(){ DRAFT.splice(i,1); drawBuilder(_ver()); }); }
 
-/* ---- STEP 2 → 3 ---- */
-function flowDepts(){
-  if(FORM.assignType==='ALL') return ['Karigar','Tailor','Dyer'];
-  if(FORM.assignType==='PARTIAL') return COMBO_MAP[FORM.combo]||[];
-  if(FORM.assignType==='SINGLE') return FORM.single?[FORM.single]:[];
-  return [];
-}
-function toConfirm(){
-  if(!FORM.assignType){ toast('Choose an assignment type','err'); return; }
-  if(FORM.assignType==='PARTIAL' && !FORM.combo){ toast('Pick a combination','err'); return; }
-  if(FORM.assignType==='SINGLE' && !FORM.single){ toast('Pick a department','err'); return; }
-  var depts=flowDepts();
-  if(!depts.length){ toast('Invalid selection','err'); return; }
-  for(var i=0;i<depts.length;i++){
-    if(!FORM.people[depts[i]]){ toast('Select '+depts[i],'err'); return; }
-  }
-  renderSummary(depts);
-  toStep(3);
-}
-
-function typeLabel(){ return FORM.assignType==='ALL'?'Assign All':FORM.assignType==='PARTIAL'?'Assign Partial':'Assign Single'; }
-
-function renderSummary(depts){
-  var flow=depts.join(' → ');
-  var rows=
-    '<div class="sum">'+
-      '<div class="row"><div class="k">Client</div><div class="v">'+esc(FORM.clientName)+'</div></div>'+
-      '<div class="row"><div class="k">Mobile</div><div class="v">'+esc(FORM.mobile)+'</div></div>'+
-      '<div class="row"><div class="k">Sales Person</div><div class="v">'+esc(FORM.salesPerson)+'</div></div>'+
-      '<div class="row"><div class="k">Fabric</div><div class="v">'+esc(FORM.fabric)+'</div></div>'+
-      '<div class="row full"><div class="k">Assignment</div><div class="v">'+typeLabel()+'</div></div>'+
-      '<div class="row full"><div class="k">Workflow</div><div class="v flow-v">'+esc(flow)+'</div></div>'+
+var EDIT_I=-1;
+function editStep(i){
+  EDIT_I=i;
+  var s = i>=0?DRAFT[i]:{step_name:'',step_type:'Worker Task',assign_type:'Role',assign_role:(ROLES[0]?ROLES[0].role_name:'Karigar'),assign_worker:'',tat_value:1,tat_unit:'Days',instructions:'',mandatory:true,enabled:true,is_decision:false,options:[],is_trial:false,is_final:false};
+  var body='<label class="f">Step name *</label><input class="in" id="stName" value="'+esc(s.step_name)+'">'+
+    '<div style="height:10px"></div><div class="row"><div><label class="f">Step type</label>'+typeSelect('stType',s.step_type)+'</div>'+
+    '<div><label class="f">Assign by</label><select class="in" id="stAssignType" onchange="onAssignChange()"><option'+(s.assign_type==='Role'?' selected':'')+'>Role</option><option'+(s.assign_type==='Worker'?' selected':'')+'>Worker</option></select></div></div>'+
+    '<div style="height:10px"></div><div id="assignWrap"></div>'+
+    '<div style="height:10px"></div><div class="row"><div><label class="f">TAT value</label><input class="in" id="stTatV" type="number" min="0" value="'+s.tat_value+'"></div><div><label class="f">TAT unit</label>'+unitSelect('stTatU',s.tat_unit)+'</div></div>'+
+    '<div style="height:10px"></div><label class="f">Instructions</label><textarea class="in" id="stInstr">'+esc(s.instructions)+'</textarea>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">'+
+    '<label class="chkline"><input type="checkbox" id="stMand" '+(s.mandatory?'checked':'')+'> Mandatory</label>'+
+    '<label class="chkline"><input type="checkbox" id="stFinal" '+(s.is_final?'checked':'')+'> Final step (completes order)</label>'+
+    '<label class="chkline"><input type="checkbox" id="stTrial" '+(s.is_trial?'checked':'')+'> Trial decision</label>'+
     '</div>'+
-    '<div class="wgroup">'+ depts.map(function(d,i){
-      return '<div class="wrow"><span class="seq">'+(i+1)+'</span><span class="dept">'+esc(d)+'</span><span class="name">'+esc(FORM.people[d])+'</span></div>';
-    }).join('') +'</div>';
-  $('summary').innerHTML=rows;
+    '<div id="decWrap"></div>';
+  modal(i>=0?'Edit Step':'Add Step', body, [
+    {t:'Save Step',c:'btn',f:saveStepDraft},{t:'Cancel',c:'btn ghost',f:closeModal}
+  ], false);
+  // init dynamic bits
+  window.__editOpts = (s.options||[]).map(function(o){return{label:o.label,action:o.action||'Next',target_seq:o.target_seq||0}});
+  onAssignChange(s.assign_role,s.assign_worker); onTypeChange();
 }
-
-/* ---- STEP 3 : create ---- */
-function confirmCreate(){
-  if(submitting) return;
-  if(!apiOk(API)){ toast('Set the API URL first','err'); openUrl(); return; }
-  submitting=true;
-  var btn=$('confirmBtn'); btn.disabled=true; var old=btn.textContent; btn.textContent='Creating Job…';
-
-  var payload={
-    action:'createJob',
-    clientName:FORM.clientName, mobile:FORM.mobile,
-    salesPerson:FORM.salesPerson, fabric:FORM.fabric,
-    assignType:FORM.assignType, combo:FORM.combo, single:FORM.single,
-    people:FORM.people
+function onTypeChange(){
+  var t=$('stType')?$('stType').value:'';
+  var isDec = t==='Decision';
+  // syncing mandatory checkbox for Optional type
+  if(t==='Optional' && $('stMand')) $('stMand').checked=false;
+  if(t==='Mandatory' && $('stMand')) $('stMand').checked=true;
+  if($('decWrap')) drawDecEditor(isDec);
+}
+function onAssignChange(role,worker){
+  var t=$('stAssignType')?$('stAssignType').value:'Role';
+  var w=$('assignWrap'); if(!w)return;
+  if(t==='Worker') w.innerHTML='<label class="f">Worker</label><select class="in" id="stWorker">'+workerOptions(worker||'')+'</select>'+(WORKERS.filter(function(x){return x.active}).length?'':'<div class="hint">No workers yet — add some in the Workers tab.</div>');
+  else w.innerHTML='<label class="f">Role</label><select class="in" id="stRole">'+roleOptions(role||'')+'</select>';
+}
+function drawDecEditor(show){
+  var w=$('decWrap'); if(!w)return;
+  if(!show){ w.innerHTML=''; return; }
+  var opts=window.__editOpts||[];
+  var seqOpts=DRAFT.map(function(s,i){return '<option value="'+(i+1)+'">step '+(i+1)+' · '+esc(s.step_name||'?')+'</option>'}).join('');
+  w.innerHTML='<div class="sechead">Decision Options</div><div class="hint" style="margin-bottom:8px">Each option points somewhere. Actions: Next step · Jump to step · Complete order · Stop order · Next trial.</div><div id="optList"></div><button class="btn ghost sm" onclick="addOpt()">+ Add Option</button>';
+  drawOpts();
+  function drawOpts(){
+    $('optList').innerHTML=(window.__editOpts||[]).map(function(o,i){
+      var acts=['Next','Jump','Complete','Stop','NextTrial'];
+      return '<div class="opt"><input class="in" style="flex:1.2" value="'+esc(o.label)+'" oninput="optSet('+i+',\'label\',this.value)" placeholder="Label e.g. Yes">'+
+        '<select class="in" style="flex:1" onchange="optSet('+i+',\'action\',this.value)">'+acts.map(function(a){return '<option'+(a===o.action?' selected':'')+'>'+a+'</option>'}).join('')+'</select>'+
+        '<select class="in" style="flex:1" onchange="optSet('+i+',\'target_seq\',this.value)" '+(o.action==='Jump'?'':'disabled')+'><option value="0">—</option>'+seqOpts.replace('value="'+o.target_seq+'"','value="'+o.target_seq+'" selected')+'</select>'+
+        '<button class="icb" onclick="optDel('+i+')">🗑</button></div>';
+    }).join('');
+  }
+  window.__drawOpts=drawOpts;
+}
+function addOpt(){ window.__editOpts=window.__editOpts||[]; window.__editOpts.push({label:'',action:'Next',target_seq:0}); window.__drawOpts(); }
+function optDel(i){ window.__editOpts.splice(i,1); window.__drawOpts(); }
+function optSet(i,k,v){ window.__editOpts[i][k]= (k==='target_seq'?Number(v):v); if(k==='action') window.__drawOpts(); }
+function saveStepDraft(){
+  var name=$('stName').value.trim(); if(!name){toast('Step name required','err');return;}
+  var type=$('stType').value;
+  var isDec = type==='Decision';
+  var at=$('stAssignType').value;
+  var s={
+    step_name:name, step_type:type, assign_type:at,
+    assign_role: at==='Role'?($('stRole')?$('stRole').value:''):'',
+    assign_worker: at==='Worker'?($('stWorker')?$('stWorker').value:''):'',
+    tat_value:Number($('stTatV').value)||0, tat_unit:$('stTatU').value,
+    instructions:$('stInstr').value,
+    mandatory: type==='Optional'?false:$('stMand').checked,
+    enabled: EDIT_I>=0?DRAFT[EDIT_I].enabled:true,
+    is_decision:isDec, options: isDec?(window.__editOpts||[]).filter(function(o){return o.label.trim()}):[],
+    is_trial:$('stTrial').checked, is_final:$('stFinal').checked
   };
-  api(payload).then(function(res){
-    if(!res.ok){ throw new Error(res.error||'Failed to create job'); }
-    LAST=res;
-    $('doneId').textContent=res.orderId;
-    $('doneFlow').textContent=res.workflow;
-    toStep(4);
-    toast('Job '+res.orderId+' created','ok');
-  }).catch(function(err){
-    toast(err.message||'Something went wrong','err');
-  }).finally(function(){
-    submitting=false; btn.disabled=false; btn.textContent=old;
+  if(isDec && !s.options.length){toast('Decision step needs at least one option','err');return;}
+  if(EDIT_I>=0) DRAFT[EDIT_I]=s; else DRAFT.push(s);
+  closeModal(); drawBuilder(_ver());
+}
+function publishWF(){
+  if(!DRAFT.length){toast('Add at least one step','err');return;}
+  modal('Publish Workflow','<label class="f">Version name</label><input class="in" id="wfVName" placeholder="e.g. Version 2 — added Finishing">'+
+    '<div style="height:10px"></div><label class="f">Change summary</label><textarea class="in" id="wfVSum" placeholder="What changed & why"></textarea>'+
+    '<div class="hint">A new version is created. Existing orders keep their old version — only new orders use this one.</div>',
+    [{t:'Publish',c:'btn ok',f:function(){
+      api({action:'publishWorkflow',steps:DRAFT,version_name:$('wfVName').value,change_summary:$('wfVSum').value}).then(function(r){
+        if(!r.ok){toast(r.error,'err');return;} closeModal();toast('Published '+r.version+' ✅','ok');renderBuilder();
+      });
+    }},{t:'Cancel',c:'btn ghost',f:closeModal}]);
+}
+
+/* ============ WORKERS ============ */
+function renderWorkers(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Workers</h2><div class="sub">Worker master — assign steps by role or specific worker</div></div><button class="btn" onclick="editWorker(null)">+ Add Worker</button></div><div class="card" id="wkCard"><div class="empty">Loading…</div></div>';
+  api({action:'listWorkers'}).then(function(r){
+    if(r.ok)WORKERS=r.workers;
+    if(!WORKERS.length){$('wkCard').innerHTML='<div class="empty"><div class="em">🧑‍🔧</div>No workers yet.</div>';return;}
+    $('wkCard').innerHTML='<table class="tbl"><tr><th>Name</th><th>Role</th><th>Phone</th><th>Status</th><th></th></tr>'+
+      WORKERS.map(function(w){return '<tr><td><b>'+esc(w.name)+'</b></td><td>'+esc(w.role||'—')+'</td><td>'+esc(w.phone||'—')+'</td><td><span class="pill p-'+(w.active?'Done':'Cancelled')+'">'+(w.active?'Active':'Inactive')+'</span></td>'+
+      '<td style="text-align:right"><button class="icb" onclick="editWorker(\''+w.worker_id+'\')">✎</button> <button class="icb" onclick="delWorker(\''+w.worker_id+'\')">🗑</button></td></tr>';}).join('')+'</table>';
+  });
+}
+function editWorker(id){
+  var w=id?WORKERS.filter(function(x){return x.worker_id===id})[0]:{name:'',role:(ROLES[0]?ROLES[0].role_name:''),phone:'',active:true};
+  modal(id?'Edit Worker':'Add Worker',
+    '<label class="f">Name *</label><input class="in" id="wkName" value="'+esc(w.name)+'">'+
+    '<div style="height:10px"></div><label class="f">Role</label><select class="in" id="wkRole">'+roleOptions(w.role)+'</select>'+
+    '<div style="height:10px"></div><label class="f">Phone</label><input class="in" id="wkPhone" value="'+esc(w.phone||'')+'">'+
+    '<div style="height:6px"></div><label class="chkline"><input type="checkbox" id="wkActive" '+(w.active?'checked':'')+'> Active</label>',
+    [{t:'Save',c:'btn',f:function(){
+      var name=$('wkName').value.trim(); if(!name){toast('Name required','err');return;}
+      api({action:'saveWorker',worker_id:id||'',name:name,role:$('wkRole').value,phone:$('wkPhone').value,active:$('wkActive').checked}).then(function(r){
+        if(!r.ok){toast(r.error,'err');return;} closeModal();toast('Saved ✅','ok');renderWorkers();
+      });
+    }},{t:'Cancel',c:'btn ghost',f:closeModal}]);
+}
+function delWorker(id){ confirmBox('Delete worker?','This removes them from the master.',function(){ api({action:'deleteWorker',worker_id:id}).then(function(r){ if(r.ok){toast('Deleted','ok');renderWorkers();} }); }); }
+
+/* ============ ROLES ============ */
+function renderRoles(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Roles</h2><div class="sub">Roles used for step assignment</div></div><button class="btn" onclick="editRole(null)">+ Add Role</button></div><div class="card" id="rlCard"><div class="empty">Loading…</div></div>';
+  api({action:'listRoles'}).then(function(r){
+    if(r.ok)ROLES=r.roles;
+    if(!ROLES.length){$('rlCard').innerHTML='<div class="empty"><div class="em">🏷</div>No roles yet.</div>';return;}
+    $('rlCard').innerHTML='<table class="tbl"><tr><th>Role</th><th>Status</th><th></th></tr>'+
+      ROLES.map(function(r){return '<tr><td><b>'+esc(r.role_name)+'</b></td><td><span class="pill p-'+(r.active?'Done':'Cancelled')+'">'+(r.active?'Active':'Inactive')+'</span></td>'+
+      '<td style="text-align:right"><button class="icb" onclick="editRole(\''+r.role_id+'\')">✎</button> <button class="icb" onclick="delRole(\''+r.role_id+'\')">🗑</button></td></tr>';}).join('')+'</table>';
+  });
+}
+function editRole(id){
+  var r=id?ROLES.filter(function(x){return x.role_id===id})[0]:{role_name:'',active:true};
+  modal(id?'Edit Role':'Add Role','<label class="f">Role name *</label><input class="in" id="rlName" value="'+esc(r.role_name)+'"><div style="height:6px"></div><label class="chkline"><input type="checkbox" id="rlActive" '+(r.active?'checked':'')+'> Active</label>',
+    [{t:'Save',c:'btn',f:function(){var n=$('rlName').value.trim();if(!n){toast('Name required','err');return;}api({action:'saveRole',role_id:id||'',role_name:n,active:$('rlActive').checked}).then(function(x){if(!x.ok){toast(x.error,'err');return;}closeModal();toast('Saved ✅','ok');renderRoles();});}},{t:'Cancel',c:'btn ghost',f:closeModal}]);
+}
+function delRole(id){ confirmBox('Delete role?','',function(){ api({action:'deleteRole',role_id:id}).then(function(r){if(r.ok){toast('Deleted','ok');renderRoles();}}); }); }
+
+/* ============ SETTINGS ============ */
+function renderSettings(){
+  api({action:'getSettings'}).then(function(r){
+    if(r.ok)SETTINGS=r.settings; var s=SETTINGS;
+    $('content').innerHTML='<div class="pageH"><div><h2>Settings</h2><div class="sub">System, trial &amp; TAT defaults</div></div></div>'+
+    '<div class="card"><div class="sechead">System</div>'+
+    '<div class="grid2"><div><label class="f">Store name</label><input class="in" id="setStore" value="'+esc(s.store_name||'')+'"></div>'+
+    '<div><label class="f">Timezone</label><input class="in" id="setTz" value="'+esc(s.timezone||'Asia/Kolkata')+'"></div></div>'+
+    '<div style="height:10px"></div><label class="f">Working days</label><input class="in" id="setDays" value="'+esc(s.working_days||'')+'">'+
+    '<div style="height:10px"></div><label class="f">Order statuses</label><input class="in" id="setStatus" value="'+esc(s.status_settings||'')+'">'+
+    '<div class="sechead">Trial Management</div>'+
+    '<label class="f">Maximum trial rounds</label><select class="in" id="setTrials" style="max-width:200px">'+[1,2,3,4,5].map(function(n){return '<option'+(String(n)===String(s.max_trial_rounds)?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'+
+    '<div class="hint">Applies to new orders. On a "No" trial decision, the system auto-generates the next trial up to this cap.</div>'+
+    '<div style="height:16px"></div><button class="btn ok" onclick="saveSet()">Save Settings 💾</button></div>';
+  });
+}
+function saveSet(){
+  api({action:'saveSettings',settings:{store_name:$('setStore').value,timezone:$('setTz').value,working_days:$('setDays').value,status_settings:$('setStatus').value,max_trial_rounds:$('setTrials').value}}).then(function(r){
+    if(!r.ok){toast(r.error,'err');return;} SETTINGS=r.settings; toast('Settings saved ✅','ok');
   });
 }
 
-/* ---- SUCCESS actions ---- */
-function newJob(){
-  FORM={ clientName:'', mobile:'', salesPerson:'', fabric:'', assignType:'', combo:'', single:'', people:{} };
-  $('clientName').value=''; $('mobile').value='';
-  SEL.salesPerson && SEL.salesPerson.reset(); SEL.fabric && SEL.fabric.reset();
-  document.querySelectorAll('.choice').forEach(function(c){ c.classList.remove('sel'); });
-  ['ALL','PARTIAL','SINGLE'].forEach(function(t){ $('panel'+t).classList.add('hide'); });
-  $('comboFields').classList.add('hide'); $('singleField').classList.add('hide');
-  toStep(1);
-}
-function viewJob(){
-  if(!LAST) return;
-  $('vTitle').textContent=LAST.orderId;
-  $('vMeta').innerHTML='<b>'+esc(LAST.client)+'</b> · '+esc(LAST.mobile)+'<br>'+
-    esc(LAST.fabric)+' · '+esc(LAST.assignType)+' · <span style="color:var(--muted)">Status: Pending</span>';
-  $('vSteps').innerHTML='<div class="wgroup">'+ (LAST.steps||[]).map(function(s,i){
-    return '<div class="wrow"><span class="seq">'+(i+1)+'</span><span class="dept">'+esc(s.dept)+'</span><span class="name">'+esc(s.person)+'</span></div>';
-  }).join('') +'</div>';
-  $('viewMask').classList.add('on');
-}
-function closeView(){ $('viewMask').classList.remove('on'); }
-
-/* ================= SET URL ================= */
-function openUrl(){ $('urlInput').value=(apiOk(API)?API:''); $('urlMask').classList.add('on'); }
-function closeUrl(){ $('urlMask').classList.remove('on'); }
-function saveUrl(){
-  var u=$('urlInput').value.trim();
-  if(!apiOk(u)){ toast('That is not a valid /exec URL','err'); return; }
-  try{ localStorage.setItem('fswf_api',u); }catch(_){}
-  location.reload();
-}
-$('connFix').addEventListener('click', openUrl);
-
-/* ================= BOOT ================= */
-function loadMasters(){
-  if(!apiOk(API)){ $('connBar').style.display='block'; toast('Set your API URL to load data','err'); return; }
-  api({action:'getMasters'}).then(function(res){
-    if(!res.ok) throw new Error(res.error||'load failed');
-    MASTERS.salesPersons=res.salesPersons||[]; MASTERS.karigar=res.karigar||[];
-    MASTERS.tailor=res.tailor||[]; MASTERS.dyer=res.dyer||[]; MASTERS.fabric=res.fabric||[];
-    if(res.version) $('verTag').textContent='v'+res.version;
-    $('connBar').style.display='none';
-  }).catch(function(err){
-    $('connBar').style.display='block';
-    toast('Connection failed — '+(err.message||''),'err');
+/* ============ CHANGE LOG ============ */
+function renderChangelog(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Change Log</h2><div class="sub">Workflow versions & every change</div></div></div><div id="clVers"></div><div class="card" id="clCard" style="margin-top:14px"><div class="empty">Loading…</div></div>';
+  Promise.all([api({action:'listVersions'}),api({action:'listChangeLog'})]).then(function(a){
+    var vers=a[0].ok?a[0].versions:[], log=a[1].ok?a[1].log:[];
+    $('clVers').innerHTML='<div class="olist">'+(vers.length?vers.map(function(v){return '<div class="ocard" style="cursor:default"><div class="ohead"><div><div class="oid">'+esc(v.version_name)+(v.active?' <span class="pill p-Done">Active</span>':'')+'</div><div class="oclient">'+esc(v.change_summary||'')+'</div></div></div><div class="ometa"><span>👤 '+esc(v.created_by||'—')+'</span><span>'+fmtDT(v.created_ts)+'</span><span>'+esc(v.version_id)+'</span></div></div>';}).join(''):'<div class="empty">No versions yet.</div>')+'</div>';
+    if(!log.length){$('clCard').innerHTML='<div class="empty">No changes logged yet.</div>';return;}
+    $('clCard').innerHTML='<table class="tbl"><tr><th>When</th><th>Type</th><th>Step</th><th>Old → New</th><th>By</th></tr>'+
+      log.map(function(c){return '<tr><td>'+fmtDT(c.changed_at)+'</td><td><span class="pill p-Running">'+esc(c.change_type)+'</span></td><td>'+esc(c.step)+'</td><td>'+esc(c.old_value)+' → '+esc(c.new_value)+'</td><td>'+esc(c.changed_by)+'</td></tr>';}).join('')+'</table>';
   });
 }
-buildStep1Selects();
-loadMasters();
+
+/* ============ TEAM ============ */
+function renderTeam(){
+  $('content').innerHTML='<div class="pageH"><div><h2>Team</h2><div class="sub">Approve users, set roles &amp; permissions</div></div></div><div class="card" id="tmCard"><div class="empty">Loading…</div></div>';
+  api({action:'listUsers'}).then(function(r){
+    if(!r.ok){$('tmCard').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
+    var us=r.users||[];
+    $('tmCard').innerHTML='<table class="tbl"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr>'+
+      us.map(function(u){
+        var act='';
+        if(u.status==='Pending') act+='<button class="btn ok sm" onclick="approve(\''+u.user_id+'\')">Approve</button> ';
+        act+='<button class="icb" title="Permissions" onclick="editPerms(\''+u.user_id+'\')">🔑</button> ';
+        if(u.user_id!==ME.user_id) act+='<button class="icb" onclick="delUser(\''+u.user_id+'\')">🗑</button>';
+        return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+
+          '<select class="in" style="padding:6px 8px" onchange="setRole(\''+u.user_id+'\',this.value)"><option'+(u.role==='Admin'?' selected':'')+'>Admin</option><option'+(u.role==='Staff'?' selected':'')+'>Staff</option></select></td>'+
+          '<td><span class="pill p-'+(u.status==='Active'?'Done':u.status==='Pending'?'Running':'Cancelled')+'">'+esc(u.status)+'</span></td>'+
+          '<td style="text-align:right;white-space:nowrap">'+act+'</td></tr>';
+      }).join('')+'</table>';
+    window.__users=us;
+  });
+}
+function approve(id){ api({action:'approveUser',user_id:id,role:'Staff'}).then(function(r){if(r.ok){toast('Approved ✅','ok');renderTeam();}else toast(r.error,'err');}); }
+function setRole(id,role){ api({action:'setUserRole',user_id:id,role:role}).then(function(r){if(r.ok)toast('Role updated','ok');else toast(r.error,'err');}); }
+function delUser(id){ confirmBox('Remove user?','',function(){ api({action:'deleteUser',user_id:id}).then(function(r){if(r.ok){toast('Removed','ok');renderTeam();}else toast(r.error,'err');}); }); }
+function editPerms(id){
+  var u=(window.__users||[]).filter(function(x){return x.user_id===id})[0]; if(!u)return;
+  var p=u.perms||{};
+  var keys=[['create_order','Create orders'],['complete_task','Complete tasks'],['update_trial','Update trial status'],['update_delivery','Update delivery'],['config','Configure workflow / TAT / settings'],['manage_team','Manage team'],['view_all','View all orders']];
+  modal('Permissions — '+esc(u.name), (u.role==='Admin'?'<div class="hint" style="margin-bottom:10px">Admins have all permissions.</div>':'')+
+    keys.map(function(k){return '<label class="chkline"><input type="checkbox" id="pm_'+k[0]+'" '+((u.role==='Admin'||p[k[0]])?'checked':'')+' '+(u.role==='Admin'?'disabled':'')+'> '+k[1]+'</label>';}).join(''),
+    [{t:'Save',c:'btn',f:function(){
+      var np={}; keys.forEach(function(k){np[k[0]]=$('pm_'+k[0]).checked;});
+      api({action:'setUserPerms',user_id:id,perms:np}).then(function(r){if(r.ok){toast('Permissions saved ✅','ok');closeModal();renderTeam();}else toast(r.error,'err');});
+    }},{t:'Cancel',c:'btn ghost',f:closeModal}]);
+}
+
+/* ============ MODAL / CONFIRM ============ */
+function modal(title, bodyHtml, buttons, tall, root){
+  root=root||'modalRoot';
+  var foot=(buttons||[]).map(function(b,i){return '<button class="'+(b.c||'btn')+'" id="__mb'+i+'">'+esc(b.t)+'</button>';}).join('');
+  $(root).innerHTML='<div class="mwrap" onclick="if(event.target===this)closeModal(\''+root+'\')"><div class="modal'+(tall?'':'')+'"><div class="mhead"><h3>'+title+'</h3><button class="mx" onclick="closeModal(\''+root+'\')">✕</button></div><div class="mbody">'+bodyHtml+'</div>'+(foot?'<div class="mfoot">'+foot+'</div>':'')+'</div></div>';
+  (buttons||[]).forEach(function(b,i){ $('__mb'+i).onclick=b.f; });
+}
+function closeModal(root){ $(root||'modalRoot').innerHTML=''; if((root||'modalRoot')==='confirmRoot')return; }
+function confirmBox(title,msg,onYes){
+  $('confirmRoot').innerHTML='<div class="mwrap" id="cfWrap" style="z-index:10000" onclick="if(event.target===this)$(\'confirmRoot\').innerHTML=\'\'"><div class="modal confirm"><div class="mhead"><h3>'+esc(title)+'</h3></div><div class="mbody">'+esc(msg||'')+'</div><div class="mfoot"><button class="btn ghost" onclick="$(\'confirmRoot\').innerHTML=\'\'">Cancel</button><button class="btn danger" id="cfYes">Confirm</button></div></div></div>';
+  $('cfYes').onclick=function(){ $('confirmRoot').innerHTML=''; onYes(); };
+}
+
+/* ============ API URL ============ */
+function askUrl(){
+  modal('Set API URL','<label class="f">Web App /exec URL</label><input class="in" id="apiUrl" value="'+esc(API)+'" placeholder="https://script.google.com/macros/s/…/exec"><div class="hint">Paste your deployed Apps Script web app URL.</div>',
+    [{t:'Save & Reload',c:'btn',f:function(){var u=$('apiUrl').value.trim();if(!/\/exec$/.test(u)){toast('URL must end with /exec','err');return;}localStorage.setItem('ikx_api',u);location.reload();}},{t:'Cancel',c:'btn ghost',f:closeModal}]);
+}
 </script>
 </body>
 </html>
