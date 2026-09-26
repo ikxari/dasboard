@@ -538,7 +538,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbw7ZYdkiSLsq7c2lzzx3w8VW33YBPYJ2xT4sgzT_0mYxk3jjGxjj3xqRP8r8AOwTeVM/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbwYA52UTwEY_pAyPrmWJPYd45InjTLIasE7g_iqRqRtLh9Ac0QVyd0eGx-iPRD85NrO/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -903,8 +903,8 @@ function orderCard(o){
   return '<div class="rowcard">'+
     '<span class="id">'+esc(o.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(o.clientName)+' · <span style="color:var(--muted);font-weight:600">'+esc(o.mobile)+'</span></div>'+
-      '<div class="meta">'+esc(o.productSummary||'—')+
-        (o.workerSummary?'<br>👤 '+esc(o.workerSummary):'')+
+      '<div class="meta">'+esc(o.productSummary||'—').replace(/\n/g,' · ')+
+        (o.workerSummary?'<br>👤 '+esc(o.workerSummary).replace(/\n/g,' · '):'')+
         '<br>📅 '+esc(o.dateOrder)+(o.salesPerson?' · 🧑‍💼 '+esc(o.salesPerson):'')+' · Qty '+esc(o.totalQty)+
         (o.advancePaid==='Yes'?' · 💰 Adv ₹'+esc(o.advanceAmount||'0'):'')+'</div></div>'+
     '<div class="side">'+src+
@@ -929,7 +929,7 @@ function openDetail(orderId){
     $('md-title').textContent='Order '+o.orderId;
     var kv='<div class="kv">'+
       row('Client',o.clientName)+row('Mobile',o.mobile)+row('Sales Person',o.salesPerson||'—')+
-      row('Workers',o.workerSummary||'—')+
+      row('Workers',(o.workerSummary?esc(o.workerSummary).replace(/\n/g,'<br>'):'—'))+
       row('Date',o.dateOrder)+row('Total Qty',o.totalQty)+row('Source',o.source)+
       (o.pendingId?row('From Pending',o.pendingId):'')+row('Status',o.status)+
       (o.measurementUrl?row('Measurement','<a class="link" target="_blank" href="'+esc(o.measurementUrl)+'">Open ↗</a>'):'')+
