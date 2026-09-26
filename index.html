@@ -1,1164 +1,1030 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Ikxari FMS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <base target="_top">
+  <meta charset="utf-8">
+<!-- CSS.html — Ikxari · Order Management. Wheat+white theme, Jost, professional. -->
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap');
+
 :root{
-  --bg:#0a0a14; --panel:rgba(16,16,28,.92); --panel2:rgba(22,22,38,.86);
-  --accent:#E0457B; --accent2:#ff77a9; --accentDim:rgba(224,69,123,.16);
-  --txt:#eef0f7; --muted:#9aa0b4; --brd:rgba(255,255,255,.09);
-  --ok:#37d399; --okbg:rgba(55,211,153,.14);
-  --warn:#ffb547; --warnbg:rgba(255,181,71,.14);
-  --err:#ff5d6c; --errbg:rgba(255,93,108,.14);
-  --info:#59a9ff; --infobg:rgba(89,169,255,.14);
-  --grey:#7a8194; --greybg:rgba(140,150,170,.14);
-  --orange:#ff8a3d; --orangebg:rgba(255,138,61,.14);
+  --wheat-1:#F6ECD4; --wheat-2:#EFE1C0; --paper:#ffffff;
+  --gold:#C9A227; --gold-2:#E7C873; --gold-ink:#3a2e00;
+  --ink:#1f2430; --ink-2:#3a4150; --muted:#6b7280; --line:rgba(31,36,48,.10);
+  --card:#ffffff; --card-2:#fbf7ee;
+  --ok:#2e7d32; --ok-bg:#e7f4e8; --warn:#b57f00; --warn-bg:#fdf3dc;
+  --err:#c62828; --err-bg:#fbe6e6; --info:#8a6d1f; --info-bg:#f6edd4;
+  --r:16px; --r-sm:11px; --shadow:0 14px 40px rgba(90,70,20,.10);
+  --shadow-sm:0 4px 14px rgba(90,70,20,.08);
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+*{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  font-family:'Jost',system-ui,sans-serif; background:var(--bg); color:var(--txt);
-  min-height:100dvh; overflow-x:hidden; font-size:15px;
+  font-family:'Jost',system-ui,Arial,sans-serif; color:var(--ink);
+  background:linear-gradient(180deg,#ffffff 0%,#FCF7EC 100%);
+  min-height:100dvh; -webkit-font-smoothing:antialiased; position:relative; overflow-x:hidden;
 }
-body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(90px);z-index:0;opacity:.45;pointer-events:none}
-body::before{width:520px;height:520px;background:radial-gradient(circle,#E0457B,transparent 65%);top:-160px;left:-120px;animation:fl1 16s ease-in-out infinite}
-body::after{width:460px;height:460px;background:radial-gradient(circle,#6C5CE7,transparent 65%);bottom:-160px;right:-120px;animation:fl2 14s ease-in-out infinite}
-@keyframes fl1{50%{transform:translate(60px,50px)}}
-@keyframes fl2{50%{transform:translate(-50px,-40px)}}
-a{color:var(--accent2);text-decoration:none}
-button{font-family:inherit;cursor:pointer}
-input,select,textarea{font-family:inherit;font-size:16px}
+/* subtle background circles (kept minimal / off for a clean white+wheat look) */
+.blob{display:none}
+.blob.b1{width:420px;height:420px;background:#f0d99a;top:-120px;right:-90px}
+.blob.b2{width:360px;height:360px;background:#efe7d0;bottom:-140px;left:-100px}
+.blob.b3{width:300px;height:300px;background:#f7e8b8;top:40%;left:55%;opacity:.35}
 
-/* ---------- loader ---------- */
-#loader{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
-.shim{font-size:30px;font-weight:700;letter-spacing:1px;background:linear-gradient(90deg,#3a3a52 25%,#fff 50%,#3a3a52 75%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shim 1.5s linear infinite}
-@keyframes shim{to{background-position:-200% center}}
-.loSub{color:var(--muted);font-size:13px}
-.hidden{display:none!important}
+/* shell */
+.wrap{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:18px 16px 90px}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 2px 16px}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto}
+.brand .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--gold-2),var(--gold));color:var(--gold-ink);font-weight:700;font-size:18px;box-shadow:var(--shadow-sm)}
+.brand h1{font-size:18px;font-weight:700;margin:0;line-height:1.1}
+.brand .sub{font-size:12px;color:var(--muted);font-weight:500}
 
-/* ---------- buttons ---------- */
-.btn{border:none;border-radius:12px;padding:11px 18px;font-weight:600;font-size:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:.15s;box-shadow:0 8px 22px rgba(224,69,123,.32)}
-.btn:hover{transform:translateY(-1px)}
-.btn:active{transform:translateY(0)}
-.btn.ghost{background:transparent;border:1px solid var(--brd);color:var(--txt);box-shadow:none}
-.btn.ghost:hover{border-color:var(--accent);color:var(--accent2)}
-.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px;box-shadow:none}
-.btn.ok{background:linear-gradient(135deg,#2fb884,#37d399);box-shadow:0 8px 22px rgba(55,211,153,.3)}
-.btn.warn{background:linear-gradient(135deg,#e59426,#ffb547);box-shadow:none;color:#1a1200}
-.btn.danger{background:linear-gradient(135deg,#d8404f,#ff5d6c);box-shadow:none}
-.btn.block{width:100%}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn.loading{color:transparent!important;pointer-events:none;position:relative}
-.btn.loading::after{content:"";position:absolute;width:16px;height:16px;top:50%;left:50%;margin:-8px 0 0 -8px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.bell{position:relative;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
+  background:var(--paper);display:grid;place-items:center;cursor:pointer;font-size:18px;box-shadow:var(--shadow-sm)}
+.bell:hover{background:var(--card-2)}
+.bell .dot{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:20px;
+  background:var(--err);color:#fff;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center}
+.bell .dot.on{display:flex}
 
-/* ---------- inputs ---------- */
-label.f{display:block;font-size:12.5px;color:var(--muted);margin:0 0 5px 2px;font-weight:500}
-.in,select.in,textarea.in{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:11px;padding:11px 13px;color:var(--txt);outline:none;transition:.15s}
-.in:focus{border-color:var(--accent);background:rgba(224,69,123,.06)}
-textarea.in{resize:vertical;min-height:64px}
-select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239aa0b4' d='M6 8 0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
-.in option, select.in option, select option{background:#17172b;color:#eef0f7}
-select.in optgroup{background:#17172b;color:#9aa0b4}
-.row{display:flex;gap:12px}.row>*{flex:1}
-.chkline{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:6px 0}
-.chkline input{width:18px;height:18px;accent-color:var(--accent)}
+/* nav — right slide-in drawer */
+.ham{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--paper);
+  display:grid;place-items:center;cursor:pointer;font-size:20px;box-shadow:var(--shadow-sm);flex:none}
+.ham:hover{background:var(--card-2)}
+.navbd{position:fixed;inset:0;background:rgba(40,32,10,.38);z-index:9996;opacity:0;visibility:hidden;transition:.25s}
+.navbd.open{opacity:1;visibility:visible}
+.nav{position:fixed;top:0;right:0;height:100dvh;width:min(300px,84vw);z-index:9997;
+  background:var(--paper);border-left:1px solid var(--line);box-shadow:-18px 0 50px rgba(60,45,10,.22);
+  display:flex;flex-direction:column;gap:9px;padding:16px;
+  transform:translateX(105%);transition:transform .28s cubic-bezier(.16,1,.3,1)}
+.nav.open{transform:translateX(0)}
+.nav-h{display:flex;align-items:center;margin-bottom:6px}
+.nav-h span{flex:1;font-weight:700;font-size:15px}
+.navx{background:none;border:none;font-size:19px;cursor:pointer;color:var(--muted);line-height:1}
+.nav button[data-sec]{width:100%;text-align:left;justify-content:flex-start;border:1px solid var(--line);
+  background:var(--paper);color:var(--ink-2);padding:12px 14px;border-radius:11px;font-family:inherit;
+  font-weight:600;font-size:15px;cursor:pointer;transition:.15s}
+.nav button[data-sec]:hover{background:var(--card-2)}
+.nav button[data-sec].active{background:linear-gradient(135deg,var(--gold-2),var(--gold));color:var(--gold-ink);
+  border-color:transparent;box-shadow:0 6px 16px rgba(201,162,39,.30)}
 
-/* ---------- auth ---------- */
-#authView{position:relative;z-index:1;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
-.authCard{width:100%;max-width:920px;display:flex;background:var(--panel);backdrop-filter:blur(26px);border:1px solid var(--brd);border-radius:24px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)}
-.authL{flex:1;padding:44px 38px;background:linear-gradient(160deg,rgba(224,69,123,.22),rgba(108,92,231,.12));display:flex;flex-direction:column;justify-content:center;gap:20px}
-.authL h1{margin:0;font-size:30px;font-weight:700;letter-spacing:.5px}
-.authL .tag{color:var(--muted);font-size:14px;margin-top:-8px}
-.feat{display:flex;gap:12px;align-items:flex-start}
-.feat .ic{width:40px;height:40px;flex:none;border-radius:11px;background:var(--accentDim);display:flex;align-items:center;justify-content:center;font-size:18px}
-.feat b{font-size:14px;font-weight:600}.feat small{color:var(--muted);font-size:12.5px}
-.authR{width:44%;min-width:320px;padding:40px 34px;display:flex;flex-direction:column;justify-content:center;gap:14px}
-.authR h2{margin:0 0 4px}
-.pwrap{position:relative}.pwrap .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px}
-.swline{text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
-@media(max-width:820px){.authCard{flex-direction:column}.authR{width:100%;min-width:0}.authL{padding:32px 26px}}
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+.card + .card{margin-top:16px}
+.card h2{margin:0 0 3px;font-size:17px;font-weight:700}
+.card .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
 
-/* ---------- app shell ---------- */
-#appView{position:relative;z-index:1;max-width:1120px;margin:0 auto;min-height:100dvh}
-.topbar{position:sticky;top:0;z-index:50;background:rgba(10,10,20,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);padding:12px 18px;display:flex;align-items:center;gap:14px}
-.brand{font-weight:700;font-size:18px;white-space:nowrap}
-.brand span{color:var(--accent2)}
-.nav{display:flex;gap:7px;overflow-x:auto;flex:1;scrollbar-width:none}
-.nav::-webkit-scrollbar{display:none}
-.np{border:1px solid transparent;background:rgba(255,255,255,.04);color:var(--muted);padding:8px 14px;border-radius:11px;font-size:13.5px;font-weight:600;white-space:nowrap;transition:.15s}
-.np:hover{color:var(--txt)}
-.np.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 6px 18px rgba(224,69,123,.35)}
-.umenu{display:flex;align-items:center;gap:9px;white-space:nowrap}
-.uav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
-.content{padding:22px 18px 130px}
-.pageH{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.pageH h2{margin:0;font-size:22px}
-.pageH .sub{color:var(--muted);font-size:13px}
-.foot{text-align:center;color:var(--muted);font-size:12px;padding:14px}
-
-/* ---------- cards / stats ---------- */
-.card{background:var(--panel2);border:1px solid var(--brd);border-radius:18px;padding:18px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:18px}
-.stat{background:var(--panel2);border:1px solid var(--brd);border-radius:15px;padding:14px 15px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
-.stat:hover{transform:translateY(-2px);border-color:var(--accent)}
-.stat.on{border-color:var(--accent);background:var(--accentDim)}
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
 .stat .n{font-size:26px;font-weight:700;line-height:1}
-.stat .l{color:var(--muted);font-size:12.5px;margin-top:4px}
-.stat .bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--accent)}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
-.tools .in{max-width:280px}
+.stat .l{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:5px}
+.stat .bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--gold)}
+.stat.warn .bar{background:var(--warn)} .stat.err .bar{background:var(--err)} .stat.ok .bar{background:var(--ok)}
 
-/* ---------- order list ---------- */
-.olist{display:flex;flex-direction:column;gap:11px}
-.ocard{background:var(--panel2);border:1px solid var(--brd);border-radius:16px;padding:15px 16px;cursor:pointer;transition:.15s;animation:cin .35s cubic-bezier(.16,1,.3,1) both}
-.ocard:hover{border-color:var(--accent);transform:translateY(-1px)}
-@keyframes cin{from{opacity:0;transform:translateY(10px) scale(.99)}}
-.ohead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.oid{font-weight:700;font-size:15px}
-.oclient{color:var(--muted);font-size:13px;margin-top:2px}
-.ometa{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
-.prog{height:6px;border-radius:6px;background:rgba(255,255,255,.07);margin-top:11px;overflow:hidden}
-.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+/* forms */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;font-weight:600;color:var(--ink-2)}
+.field .req{color:var(--err)}
+input,select,textarea{font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;outline:none;transition:.15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.16)}
+input.bad,select.bad{border-color:var(--err);box-shadow:0 0 0 3px rgba(198,40,40,.12)}
+textarea{resize:vertical;min-height:64px}
+.readonly{background:var(--card-2);color:var(--muted);font-weight:600}
 
-/* ---------- pills ---------- */
-.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600}
-.p-Running{background:var(--infobg);color:var(--info)}
-.p-Completed{background:var(--okbg);color:var(--ok)}
-.p-Delayed{background:var(--errbg);color:var(--err)}
-.p-Stopped{background:var(--warnbg);color:var(--warn)}
-.p-Cancelled{background:var(--greybg);color:var(--grey)}
-.p-Pending{background:var(--greybg);color:var(--grey)}
-.p-Done{background:var(--okbg);color:var(--ok)}
-.p-Skipped{background:var(--orangebg);color:var(--orange)}
-.p-Late{background:var(--errbg);color:var(--err)}
+/* buttons */
+.btn{font-family:inherit;font-weight:700;font-size:14.5px;border:none;border-radius:var(--r-sm);
+  padding:11px 18px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn.primary{background:linear-gradient(135deg,var(--gold-2),var(--gold));color:var(--gold-ink);box-shadow:0 6px 16px rgba(201,162,39,.28)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.03)}
+.btn.ghost{background:var(--paper);color:var(--ink-2);border:1px solid var(--line)}
+.btn.ghost:hover:not(:disabled){background:var(--card-2)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.danger{background:var(--err);color:#fff}
+.btn.sm{padding:8px 13px;font-size:13px;border-radius:9px}
+.btn.block{width:100%}
+.btn .spin{width:15px;height:15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;display:none}
+.btn.loading .spin{display:inline-block}
 
-/* ---------- step cards (order detail) ---------- */
-.fcard{display:flex;gap:13px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:14px;padding:13px 14px;border-left:4px solid var(--grey);margin-bottom:10px;animation:cin .3s both}
-.fcard.st-Running{border-left-color:var(--info)}
-.fcard.st-Delayed{border-left-color:var(--err)}
-.fcard.st-Done{border-left-color:var(--ok)}
-.fcard.st-Skipped{border-left-color:var(--orange)}
-.fcard.st-Pending{border-left-color:var(--grey);opacity:.85}
-.ftile{width:42px;height:42px;flex:none;border-radius:11px;background:var(--accentDim);display:flex;align-items:center;justify-content:center;font-size:19px}
-.fbody{flex:1;min-width:0}
-.fname{font-weight:600;font-size:15px}
-.fmeta{color:var(--muted);font-size:12.5px;margin-top:3px;display:flex;gap:12px;flex-wrap:wrap}
-.facts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
-.tatline{font-size:12px;margin-top:6px;color:var(--muted)}
-.tatline b{color:var(--txt)}
+/* item rows (products) */
+.items{display:flex;flex-direction:column;gap:12px}
+.item{border:1px solid var(--line);border-radius:13px;padding:13px;background:var(--card-2)}
+.item .head{display:flex;gap:10px;align-items:flex-end}
+.item .head .field{flex:1;margin:0}
+.item .head .qty{max-width:120px}
+.item .rm{background:var(--err-bg);color:var(--err);border:none;border-radius:9px;width:40px;height:42px;cursor:pointer;font-size:16px;flex:none}
+.item .workers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:11px}
+.item .workers .field{margin:0}
+.item .workers label{font-size:12px;color:var(--muted)}
 
-/* ---------- process builder ---------- */
-.flowview{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:18px;padding:16px;background:rgba(255,255,255,.02);border:1px dashed var(--brd);border-radius:16px;overflow-x:auto}
-.fnode{background:var(--panel2);border:1px solid var(--brd);border-radius:12px;padding:9px 16px;font-size:13.5px;font-weight:600;white-space:nowrap;max-width:100%}
-.fnode.dis{opacity:.4;text-decoration:line-through}
-.fnode.dec{border-color:var(--accent);background:var(--accentDim)}
-.fnode.start{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none}
-.farr{color:var(--muted);font-size:16px;line-height:1.1}
-.fbranch{font-size:11.5px;color:var(--muted);margin:1px 0}
+/* upload */
+.uploader{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.thumb{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid var(--line);display:none}
+.thumb.on{display:block}
+.file-name{font-size:13px;color:var(--muted)}
 
-.builder{display:flex;flex-direction:column;gap:9px}
-.brow{display:flex;gap:11px;align-items:center;background:var(--panel2);border:1px solid var(--brd);border-radius:13px;padding:11px 13px}
-.brow.dis{opacity:.5}
-.bseq{width:26px;height:26px;flex:none;border-radius:8px;background:var(--accentDim);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-.bmain{flex:1;min-width:0}
-.bname{font-weight:600}
-.bsub{color:var(--muted);font-size:12px;margin-top:2px}
-.bctl{display:flex;gap:5px;flex-none}
-.icb{width:30px;height:30px;border-radius:8px;border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:.15s}
-.icb:hover{border-color:var(--accent);color:var(--accent2)}
-.icb:disabled{opacity:.3}
+/* toolbar (search + filters) */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.toolbar input,.toolbar select{max-width:220px}
+.toolbar .search{flex:1;min-width:180px;max-width:none}
 
-/* option editor */
-.opt{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.opt .in{padding:8px 10px}
+/* list rows */
+.list{display:flex;flex-direction:column;gap:11px}
+.rowcard{border:1px solid var(--line);border-radius:13px;padding:14px;background:var(--card);box-shadow:var(--shadow-sm);
+  display:flex;gap:14px;align-items:flex-start;animation:cardIn .28s ease both}
+.rowcard .id{font-weight:700;font-size:14px;color:var(--gold-ink);background:var(--info-bg);padding:3px 9px;border-radius:8px;white-space:nowrap}
+.rowcard .main{flex:1;min-width:0}
+.rowcard .name{font-weight:700;font-size:15px}
+.rowcard .meta{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5;word-break:break-word}
+.rowcard .side{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
+.rowcard .acts{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 
-/* ---------- table ---------- */
-.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
-.tbl th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:9px 10px;border-bottom:1px solid var(--brd)}
-.tbl td{padding:10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
-.tbl tr:hover td{background:rgba(255,255,255,.02)}
+/* badges */
+.badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge.open{background:var(--info-bg);color:var(--info)}
+.badge.pending{background:var(--warn-bg);color:var(--warn)}
+.badge.kept{background:#eef;color:#4a4aa0}
+.badge.conv{background:var(--ok-bg);color:var(--ok)}
+.badge.due{background:var(--warn-bg);color:var(--warn)}
+.badge.over{background:var(--err-bg);color:var(--err)}
+.badge.src{background:var(--card-2);color:var(--muted)}
 
-/* ---------- order workspace (command center) ---------- */
-.wsWrap{position:fixed;inset:0;background:rgba(5,5,12,.72);backdrop-filter:blur(9px);z-index:9998;display:flex;align-items:center;justify-content:center;padding:2vh 2.5vw;animation:wsfade .22s ease}
-@keyframes wsfade{from{opacity:0}}
-.workspace{width:95vw;max-width:1560px;height:90vh;background:linear-gradient(180deg,rgba(22,20,34,.97),rgba(13,13,24,.97));backdrop-filter:blur(28px);border:1px solid var(--brd);border-radius:20px;box-shadow:0 50px 130px rgba(0,0,0,.78);display:flex;flex-direction:column;overflow:hidden;animation:cin .3s cubic-bezier(.16,1,.3,1) both}
-.wsHead{display:flex;align-items:center;gap:14px;padding:16px 26px;border-bottom:1px solid var(--brd);background:rgba(255,255,255,.025)}
-.wsHead .wid{font-size:22px;font-weight:700;letter-spacing:.3px}
-.wsHead .wsp{flex:1}
-.wsBody{flex:1;overflow-y:auto;padding:22px 26px 34px}
-.wsBody::-webkit-scrollbar{width:9px}
-.wsBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:8px}
-.wsBody::-webkit-scrollbar-track{background:transparent}
-.wsSpin{width:44px;height:44px;border:3px solid rgba(255,255,255,.14);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:60px auto}
-.wsSum{display:flex;flex-wrap:wrap;gap:26px;align-items:center;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:16px;padding:16px 22px;margin-bottom:22px}
-.kv{display:flex;flex-direction:column;gap:3px;min-width:90px}
-.kv b{font-size:15px;font-weight:600}
-.kv small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
-.kv.grow{flex:1;min-width:200px}
-.wsSec{font-size:12px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin:24px 0 14px;display:flex;align-items:center;gap:10px}
-.wsSec:first-child{margin-top:4px}
-.wsSec .ln{flex:1;height:1px;background:var(--brd)}
-.ws .fcard{padding:15px 18px;margin-bottom:11px}
-.ws .ftile{width:46px;height:46px;font-size:21px}
-.ws .fname{font-size:16px}
-/* audit log */
-.log{border:1px solid var(--brd);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02)}
-.logrow{display:flex;gap:14px;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.05);align-items:flex-start}
-.logrow:last-child{border-bottom:none}
-.logrow:hover{background:rgba(255,255,255,.02)}
-.logdot{width:34px;height:34px;flex:none;border-radius:50%;background:var(--accentDim);display:flex;align-items:center;justify-content:center;font-size:15px}
-.logmain{flex:1;min-width:0}
-.logmain b{font-size:14px;font-weight:600}
-.logmain .act{color:var(--muted);font-size:13px;margin-top:1px}
-.logtime{color:var(--muted);font-size:12px;text-align:right;white-space:nowrap;flex:none;line-height:1.5}
-.logtime .d{color:var(--txt);font-weight:500}
-@media(max-width:1024px){.workspace{width:96vw;height:92vh}.wsBody{padding:18px 18px 28px}.wsHead{padding:14px 18px}}
-@media(max-width:640px){
-  .wsWrap{padding:0}
-  .workspace{width:100vw;height:100dvh;max-width:none;border-radius:0;border:none}
-  .wsSum{gap:14px;padding:14px}
-  .ws .fcard{flex-direction:column}
-  .ws .fcard .ftile{width:40px;height:40px}
-  .logtime{text-align:left}
-  .logrow{flex-wrap:wrap}
+.link{color:var(--gold-ink);font-weight:600;text-decoration:none;border-bottom:1px dashed var(--gold)}
+.empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:14px}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(40,32,10,.42);z-index:9998;display:none;
+  align-items:flex-start;justify-content:center;overflow-y:auto;padding:26px 14px}
+.modal.on{display:flex}
+.modal .box{background:var(--paper);border-radius:18px;max-width:640px;width:100%;margin:auto;
+  box-shadow:0 30px 80px rgba(60,45,10,.34);animation:cardIn .25s ease both;max-height:92dvh;display:flex;flex-direction:column}
+.modal .mhead{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal .mhead h3{margin:0;font-size:16px;flex:1}
+.modal .mbody{padding:18px 20px;overflow-y:auto}
+.modal .mfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;
+  position:sticky;bottom:0;background:var(--paper)}
+.x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
+.confirm .box{max-width:400px}
+.confirm .mbody{font-size:14.5px;color:var(--ink-2)}
+
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:14px}
+.kv .k{color:var(--muted);font-weight:500}
+.kv .v{font-weight:600;word-break:break-word}
+.detail-items{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.detail-items .di{padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.detail-items .di b{font-weight:700}
+.detail-items .di small{color:var(--muted)}
+
+/* toast */
+.toasts{position:fixed;top:16px;right:16px;z-index:10001;display:flex;flex-direction:column;gap:9px}
+.toast{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:11px;
+  padding:12px 15px;box-shadow:var(--shadow);font-size:14px;max-width:330px;animation:slideIn .25s ease both}
+.toast.ok{border-left-color:var(--ok)} .toast.err{border-left-color:var(--err)}
+
+/* global loader */
+.loader{position:fixed;inset:0;background:rgba(251,247,238,.72);z-index:10000;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.loader.on{display:flex}
+.loader .ring{width:44px;height:44px;border:4px solid rgba(201,162,39,.28);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite}
+.loader .txt{font-weight:600;color:var(--ink-2);font-size:14px}
+
+/* boot screen */
+.boot{position:fixed;inset:0;background:linear-gradient(160deg,var(--wheat-1),#fff);z-index:10002;display:flex;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.boot .logo{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-size:26px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold-2),var(--gold));color:var(--gold-ink);box-shadow:var(--shadow)}
+.boot .nm{font-weight:700;font-size:16px;letter-spacing:.3px}
+.boot .ring{width:30px;height:30px;border:3px solid rgba(201,162,39,.3);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite}
+
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px}
+.hide{display:none!important}
+
+/* responsive */
+@media(max-width:820px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .row{grid-template-columns:1fr}
+  .item .workers{grid-template-columns:1fr}
+  .item .head{flex-wrap:wrap}
+  .item .head .qty{max-width:none;flex:1}
+  .rowcard{flex-direction:column}
+  .rowcard .side{align-items:flex-start;width:100%}
+  .rowcard .acts{justify-content:flex-start}
+  .toolbar input,.toolbar select{max-width:none;width:100%}
 }
-
-/* ---------- modal ---------- */
-.mwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:9998;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px}
-.modal{background:var(--panel);backdrop-filter:blur(26px);border:1px solid var(--brd);border-radius:20px;width:90vw;max-width:640px;margin:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:cin .25s both;max-height:92dvh;display:flex;flex-direction:column}
-.modal.wide{max-width:820px}
-.mhead{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);position:sticky;top:0;background:var(--panel);border-radius:20px 20px 0 0}
-.mhead h3{margin:0;font-size:18px}
-.mx{width:32px;height:32px;border-radius:9px;border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:16px}
-.mbody{padding:18px 20px;overflow-y:auto}
-.mfoot{padding:14px 20px;border-top:1px solid var(--brd);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--panel);border-radius:0 0 20px 20px;flex-wrap:wrap}
-.confirm{max-width:420px}
-#confirmWrap{z-index:10000}
-
-/* ---------- toast ---------- */
-#toasts{position:fixed;top:16px;right:16px;z-index:10001;display:flex;flex-direction:column;gap:9px}
-.toast{background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--brd);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;font-size:13.5px;box-shadow:0 16px 40px rgba(0,0,0,.5);animation:tin .25s both;max-width:340px}
-.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}
-@keyframes tin{from{opacity:0;transform:translateX(30px)}}
-
-.empty{text-align:center;color:var(--muted);padding:44px 16px}
-.empty .em{font-size:40px;margin-bottom:8px}
-.badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-left:5px}
-.hint{font-size:12px;color:var(--muted);margin-top:4px}
-.sechead{font-size:13px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:560px){.grid2{grid-template-columns:1fr}.row{flex-direction:column}}
-#urlBanner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9997;background:var(--errbg);color:var(--err);text-align:center;padding:9px;font-size:13px;border-top:1px solid var(--err)}
-#urlBanner a{color:var(--err);font-weight:700;text-decoration:underline;cursor:pointer}
-
-/* ---------- mobile ---------- */
-@media(max-width:640px){
-  body{font-size:14.5px}
-  .topbar{padding:10px 12px;gap:10px}
-  .brand{font-size:16px}
-  .content{padding:16px 12px 120px}
-  .pageH{align-items:flex-start}
-  .pageH h2{font-size:19px}
-  .pageH .btn{width:100%}
-  .stats{grid-template-columns:repeat(2,1fr);gap:9px}
-  .stat .n{font-size:22px}
-  .tools{gap:8px}
-  .tools .in,.tools select.in{max-width:none;width:100%;flex:1 1 100%}
-  .tools .btn{flex:1 1 100%}
-  .card{padding:14px;overflow-x:auto}
-  .tbl{min-width:560px}
-  .ocard{padding:13px}
-  .ometa{gap:8px}
-  .modal{width:94vw;max-width:none}
-  .mbody{padding:16px}
-  .mfoot{flex-direction:column-reverse}
-  .mfoot .btn{width:100%}
-  .row{flex-direction:column;gap:10px}
-  .grid2{grid-template-columns:1fr}
-  .flowview{padding:12px}
-  .brow{flex-wrap:wrap}
-  .bctl{width:100%;justify-content:flex-end}
-  .np{padding:8px 12px;font-size:13px}
-  .facts .btn{flex:1}
-}
-@media(max-width:400px){
+@media(max-width:480px){
   .stats{grid-template-columns:1fr 1fr}
-  .brand{font-size:15px}
+  .brand h1{font-size:16px}
+  .wrap{padding:14px 12px 90px}
 }
 </style>
+
 </head>
 <body>
 
-<div id="loader"><div class="shim">Ikxari FMS</div><div class="loSub">loading workspace…</div></div>
-
-<!-- (login system removed) -->
-
-<!-- ================= APP ================= -->
-<div id="appView" class="hidden">
-  <div class="topbar">
-    <div class="brand">Ikxari <span>FMS</span></div>
-    <div class="nav" id="nav"></div>
-    <div class="umenu">
-      <div class="uav" id="uav">?</div>
-      <button class="icb" id="admBtn" title="Admin" onclick="adminToggle()">🔓</button>
-      <button class="icb" title="Change name" onclick="signout()">⏻</button>
-    </div>
-  </div>
-  <div class="content" id="content"></div>
-  <div class="foot" id="foot">Ikxari · Fashion Management System · v1.0.0</div>
+<!-- boot -->
+<div class="boot" id="boot">
+  <div class="logo">Ik</div>
+  <div class="nm">Ikxari · Order Management</div>
+  <div class="ring"></div>
 </div>
 
-<div id="modalRoot"></div>
-<div id="wsRoot"></div>
-<div id="confirmRoot"></div>
-<div id="toasts"></div>
-<div id="urlBanner">⚠️ Can't reach the server. <a onclick="askUrl()">Set API URL</a></div>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <button class="ham" id="ham" onclick="toggleNav()" title="Menu">☰</button>
+    <div class="brand">
+      <div class="logo">Ik</div>
+      <div>
+        <h1>Ikxari</h1>
+        <div class="sub">Order Management</div>
+      </div>
+    </div>
+    <div class="bell" id="bell" onclick="go('notify')" title="Notifications">
+      🔔<span class="dot" id="bellDot">0</span>
+    </div>
+  </div>
+
+  <div class="navbd" id="navbd" onclick="closeNav()"></div>
+  <div class="nav" id="nav">
+    <div class="nav-h"><span>Menu</span><button class="navx" onclick="closeNav()">✕</button></div>
+    <button data-sec="dashboard" onclick="go('dashboard')">Dashboard</button>
+    <button data-sec="new" onclick="go('new')">＋ New Order</button>
+    <button data-sec="pending" onclick="go('pending')">Pending Orders</button>
+    <button data-sec="orders" onclick="go('orders')">Main Orders</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <section id="sec-dashboard" class="sec">
+    <div class="stats" id="stats">
+      <div class="stat"><div class="n" id="s-today">0</div><div class="l">Today's Orders</div><div class="bar"></div></div>
+      <div class="stat"><div class="n" id="s-pending">0</div><div class="l">Total Pending</div><div class="bar"></div></div>
+      <div class="stat warn"><div class="n" id="s-due">0</div><div class="l">Due Today</div><div class="bar"></div></div>
+      <div class="stat err"><div class="n" id="s-over">0</div><div class="l">Overdue</div><div class="bar"></div></div>
+      <div class="stat ok"><div class="n" id="s-conv">0</div><div class="l">Converted Today</div><div class="bar"></div></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>Quick actions</h2>
+      <p class="hint">Jump straight into the work.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" onclick="go('new')">＋ Create New Order</button>
+        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Enquiry</button>
+        <button class="btn ghost" onclick="go('orders')">View Main Orders</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW ORDER -->
+  <section id="sec-new" class="sec hide">
+    <div class="card">
+      <h2>New Order</h2>
+      <p class="hint">Order ID and date are generated automatically.</p>
+      <form id="orderForm" onsubmit="return false">
+        <div class="row">
+          <div class="field"><label>Order ID</label><input id="o-id" class="readonly" value="Auto-generated" readonly></div>
+          <div class="field"><label>Date Order</label><input id="o-date" class="readonly" readonly></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Client Name <span class="req">*</span></label><input id="o-client" placeholder="e.g. Rahul Das" autocomplete="off"></div>
+          <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="o-mobile" placeholder="10-digit mobile" inputmode="numeric" maxlength="10" autocomplete="off"></div>
+        </div>
+        <div class="field" style="max-width:50%"><label>Sales Person</label><input id="o-sales" list="dlSales" placeholder="Search / select" autocomplete="off"></div>
+
+        <div class="field">
+          <label>Product Details <span class="req">*</span></label>
+          <div class="items" id="o-items"></div>
+          <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem()">＋ Add Product</button>
+        </div>
+
+        <div class="field">
+          <label>Measurement / Design Image</label>
+          <div class="uploader">
+            <button type="button" class="btn ghost sm" onclick="pickImg('o')">📎 Upload Image</button>
+            <img class="thumb" id="o-thumb">
+            <span class="file-name" id="o-fname">JPG, PNG or WEBP</span>
+            <input type="file" id="o-file" accept="image/png,image/jpeg,image/webp" class="hide" onchange="onImg('o')">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button class="btn primary" id="o-submit" onclick="submitOrder()"><span class="spin"></span><span class="lbl">Create Order</span></button>
+          <button class="btn ghost" type="button" onclick="resetOrderForm()">Reset</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- PENDING -->
+  <section id="sec-pending" class="sec hide">
+    <div class="card hide" id="pendingCard">
+      <div style="display:flex;align-items:center"><h2 style="flex:1">New Pending Enquiry</h2>
+        <button class="x" onclick="closePendingForm()">✕</button></div>
+      <p class="hint">Pending ID is generated automatically when saved.</p>
+      <form id="pendingForm" onsubmit="return false">
+        <div class="row">
+          <div class="field"><label>Customer Name <span class="req">*</span></label><input id="p-name" placeholder="e.g. Rahul Das" autocomplete="off"></div>
+          <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="p-mobile" placeholder="10-digit mobile" inputmode="numeric" maxlength="10" autocomplete="off"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Fabric / Product Details</label><input id="p-fabric" placeholder="e.g. Cotton Blouse" autocomplete="off"></div>
+          <div class="field"><label>Quantity</label><input id="p-qty" placeholder="e.g. 2 Pc" autocomplete="off"></div>
+        </div>
+        <div class="field"><label>Product Description</label><textarea id="p-desc" placeholder="e.g. Blue blouse with specific design"></textarea></div>
+        <div class="row">
+          <div class="field"><label>Remarks</label><input id="p-remarks" placeholder="e.g. Wants delivery before festival" autocomplete="off"></div>
+          <div class="field"><label>Expected Delivery Date</label><input type="date" id="p-exp"></div>
+        </div>
+        <div class="field">
+          <label>Reference Image</label>
+          <div class="uploader">
+            <button type="button" class="btn ghost sm" onclick="pickImg('p')">📎 Upload Image</button>
+            <img class="thumb" id="p-thumb">
+            <span class="file-name" id="p-fname">JPG, PNG or WEBP</span>
+            <input type="file" id="p-file" accept="image/png,image/jpeg,image/webp" class="hide" onchange="onImg('p')">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button class="btn primary" id="p-submit" onclick="submitPending()"><span class="spin"></span><span class="lbl">Save Pending</span></button>
+          <button class="btn ghost" type="button" onclick="resetPendingForm()">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;margin-bottom:14px">
+        <h2 style="flex:1;margin:0">Pending Orders</h2>
+        <button class="btn primary sm" onclick="openPendingForm()">＋ New Pending</button>
+      </div>
+      <div class="toolbar">
+        <input class="search" id="pf-search" placeholder="Search id, customer, mobile, product…" oninput="debounced(renderPending)">
+        <select id="pf-status" onchange="renderPending()">
+          <option value="">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Due">Due / Overdue</option>
+          <option value="Kept Pending">Kept Pending</option>
+          <option value="Converted">Converted</option>
+        </select>
+      </div>
+      <div class="list" id="pendingList"><div class="empty">Loading…</div></div>
+    </div>
+  </section>
+
+  <!-- MAIN ORDERS -->
+  <section id="sec-orders" class="sec hide">
+    <div class="card">
+      <h2 style="margin-bottom:14px">Main Orders</h2>
+      <div class="toolbar">
+        <input class="search" id="of-search" placeholder="Search id, client, mobile, product, sales, worker…" oninput="debounced(renderOrders)">
+        <select id="of-sales" onchange="renderOrders()"><option value="">All Sales</option></select>
+        <select id="of-source" onchange="renderOrders()">
+          <option value="">All Sources</option>
+          <option value="Direct Order">Direct Order</option>
+          <option value="Converted from Pending">Converted</option>
+        </select>
+        <input type="date" id="of-from" onchange="renderOrders()" title="From date">
+        <input type="date" id="of-to" onchange="renderOrders()" title="To date">
+      </div>
+      <div class="list" id="ordersList"><div class="empty">Loading…</div></div>
+    </div>
+  </section>
+
+  <!-- NOTIFICATIONS -->
+  <section id="sec-notify" class="sec hide">
+    <div class="card">
+      <h2 style="margin-bottom:4px">Pending Orders Due</h2>
+      <p class="hint">These enquiries have reached their expected date. Send to Main Order or keep pending.</p>
+      <div class="list" id="notifyList"><div class="empty">Loading…</div></div>
+    </div>
+  </section>
+
+  <div class="footer" id="foot">Ikxari · Order Management</div>
+</div>
+
+<!-- datalists -->
+<datalist id="dlSales"></datalist>
+<datalist id="dlTailor"></datalist>
+<datalist id="dlDyer"></datalist>
+<datalist id="dlKarigar"></datalist>
+
+<!-- DETAIL / EDIT ORDER modal -->
+<div class="modal" id="mDetail">
+  <div class="box"><div class="mhead"><h3 id="md-title">Order</h3><button class="x" onclick="closeModal('mDetail')">✕</button></div>
+    <div class="mbody" id="md-body"></div>
+    <div class="mfoot" id="md-foot"></div>
+  </div>
+</div>
+
+<!-- EDIT ORDER modal -->
+<div class="modal" id="mEdit">
+  <div class="box"><div class="mhead"><h3>Edit Order <span id="e-id"></span></h3><button class="x" onclick="closeModal('mEdit')">✕</button></div>
+    <div class="mbody">
+      <div class="row">
+        <div class="field"><label>Client Name <span class="req">*</span></label><input id="e-client"></div>
+        <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="e-mobile" maxlength="10" inputmode="numeric"></div>
+      </div>
+      <div class="field" style="max-width:50%"><label>Sales Person</label><input id="e-sales" list="dlSales"></div>
+      <div class="field"><label>Product Details</label><div class="items" id="e-items"></div>
+        <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem('e')">＋ Add Product</button></div>
+      <div class="field"><label>Replace Image (optional)</label>
+        <div class="uploader"><button type="button" class="btn ghost sm" onclick="pickImg('e')">📎 Upload Image</button>
+          <img class="thumb" id="e-thumb"><span class="file-name" id="e-fname">Keep existing</span>
+          <input type="file" id="e-file" accept="image/png,image/jpeg,image/webp" class="hide" onchange="onImg('e')"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn ghost" onclick="closeModal('mEdit')">Cancel</button>
+      <button class="btn primary" id="e-submit" onclick="submitEditOrder()"><span class="spin"></span><span class="lbl">Save Changes</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PENDING modal -->
+<div class="modal" id="mPend">
+  <div class="box"><div class="mhead"><h3>Edit Pending <span id="pe-id"></span></h3><button class="x" onclick="closeModal('mPend')">✕</button></div>
+    <div class="mbody">
+      <div class="row">
+        <div class="field"><label>Customer Name <span class="req">*</span></label><input id="pe-name"></div>
+        <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="pe-mobile" maxlength="10" inputmode="numeric"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Fabric / Product Details</label><input id="pe-fabric"></div>
+        <div class="field"><label>Quantity</label><input id="pe-qty"></div>
+      </div>
+      <div class="field"><label>Product Description</label><textarea id="pe-desc"></textarea></div>
+      <div class="row">
+        <div class="field"><label>Remarks</label><input id="pe-remarks"></div>
+        <div class="field"><label>Expected Delivery Date</label><input type="date" id="pe-exp"></div>
+      </div>
+      <div class="field"><label>Replace Image (optional)</label>
+        <div class="uploader"><button type="button" class="btn ghost sm" onclick="pickImg('pe')">📎 Upload Image</button>
+          <img class="thumb" id="pe-thumb"><span class="file-name" id="pe-fname">Keep existing</span>
+          <input type="file" id="pe-file" accept="image/png,image/jpeg,image/webp" class="hide" onchange="onImg('pe')"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn ghost" onclick="closeModal('mPend')">Cancel</button>
+      <button class="btn primary" id="pe-submit" onclick="submitEditPending()"><span class="spin"></span><span class="lbl">Save Changes</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM modal -->
+<div class="modal confirm" id="mConfirm" style="z-index:10000">
+  <div class="box"><div class="mhead"><h3 id="c-title">Confirm</h3><button class="x" onclick="closeModal('mConfirm')">✕</button></div>
+    <div class="mbody" id="c-body"></div>
+    <div class="mfoot"><button class="btn ghost" onclick="closeModal('mConfirm')">Cancel</button>
+      <button class="btn primary" id="c-ok"><span class="spin"></span><span class="lbl">Confirm</span></button></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<div class="loader" id="loader"><div class="ring"></div><div class="txt" id="loaderTxt">Loading…</div></div>
 
 <script>
-/* ============ CONFIG ============ */
-var API_DEFAULT = 'https://script.google.com/macros/s/AKfycbxH8xaJTHSQRqeF7Gwp2W2KGTiEAtFikjFBj_kCoKD77M0YzWe3UAQtj9xevP0NFMjFhA/exec';
-var API = localStorage.getItem('ikx_api') || API_DEFAULT;
-var ACTOR = localStorage.getItem('ikx_name') || '';
-var ISADMIN = localStorage.getItem('ikx_admin')==='1';
-var ME = null, MEPERM = {};
-var WORKERS=[], ROLES=[], FABRICS=[], SETTINGS={};
-var DRAFT=[];            // process builder working copy
-var CUR_ORDER=null;      // open order detail
-var CUR_STEPS=[];
-var LIST_FILT='All', LIST_Q='', LIST_PERSON='';
-var TICK=null;
-var LASTBTN=null;
-document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.btn'); if(b) LASTBTN=b; },true);
+  /* ============================================================
+   *  CONFIG — to host this single file OUTSIDE Apps Script
+   *  (GitHub Pages / any web host), paste your GAS Web App
+   *  /exec URL below. Leave blank when this file is served by
+   *  Apps Script itself (Deploy → Web app, or the menu dialogs).
+   * ============================================================ */
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbzz73Y56n9w3Y4c-KY1LQp52SIkSIG6XuGgbasVYXcpsHgQswXhNZ2jyJA__VZk92t3/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
-var PAGES = [
-  {id:'orders', label:'Orders', perm:null},
-  {id:'tasks',  label:'My Tasks', perm:null},
-  {id:'followups',label:'Follow-ups', perm:null},
-  {id:'reports',label:'Reports', perm:null},
-  {id:'builder',label:'Process Builder', perm:'config'},
-  {id:'workers',label:'Workers', perm:'config'},
-  {id:'roles',  label:'Roles', perm:'config'},
-  {id:'settings',label:'Settings', perm:'config'},
-  {id:'changelog',label:'Change Log', perm:'config'}
-];
-
-/* ============ helpers ============ */
-function $(id){return document.getElementById(id)}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function tog(id,el){var i=$(id);i.type=i.type==='password'?'text':'password';el.textContent=i.type==='password'?'👁':'🙈'}
-function toast(msg,kind){var t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.textContent=msg;$('toasts').appendChild(t);setTimeout(function(){t.style.opacity=0;t.style.transform='translateX(30px)';setTimeout(function(){t.remove()},250)},3200)}
-function can(k){return ME && (ME.role==='Admin' || (MEPERM&&MEPERM[k]))}
-
-function fmt(ts){ if(!ts) return '—'; var d=new Date(Number(ts)); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit',timeZone:'Asia/Kolkata'}); }
-function fmtDT(ts){ if(!ts) return '—'; var d=new Date(Number(ts)); return d.toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'}); }
-function due(ts){ if(!ts) return ''; var diff=Number(ts)-Date.now(); var late=diff<0; var a=Math.abs(diff); var m=Math.floor(a/60000),h=Math.floor(m/60),d=Math.floor(h/24); var txt=d>0?d+'d '+(h%24)+'h':h>0?h+'h '+(m%60)+'m':m+'m'; return late?'⚠ '+txt+' late':'⏱ '+txt+' left'; }
-
-/* ============ API ============ */
-function apiCall(p,silent){
-  var btn = (!silent) ? LASTBTN : null; LASTBTN=null;
-  if(btn){ btn.classList.add('loading'); btn.disabled=true; }
-  function clr(){ if(btn){ btn.classList.remove('loading'); btn.disabled=false; } }
-  return new Promise(function(res){
-    p.actor=ACTOR;
-    fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)})
-    .then(function(r){return r.text()})
-    .then(function(t){
-      clr(); $('urlBanner').style.display='none';
-      var j; try{j=JSON.parse(t)}catch(e){ toast('Server returned HTML — check deployment access = Anyone','err'); res({ok:false,error:'bad response'}); return; }
-      res(j);
-    })
-    .catch(function(e){ clr(); if(!silent){$('urlBanner').style.display='block';} res({ok:false,error:'network'}); });
-  });
-}
-function api(p){return apiCall(p,false)}
-function apiS(p){return apiCall(p,true)}
-
-/* ============ boot (no login, soft admin gate) ============ */
-window.addEventListener('DOMContentLoaded',function(){ boot(); });
-function basePerms(){ return {create_order:1,complete_task:1,update_trial:1,update_delivery:1,view_all:1}; }
-function applyPerms(){ MEPERM=basePerms(); if(ISADMIN){ MEPERM.config=1; MEPERM.manage_team=1; } if(ME) ME.role=ISADMIN?'Admin':'Staff'; }
-function boot(){
-  // API URL not set yet → don't spew errors, just ask for it
-  if(!API || API==='PASTE_YOUR_WEB_APP_EXEC_URL_HERE' || !/\/exec$/.test(API)){
-    $('loader').classList.add('hidden'); askUrl(); return;
-  }
-  apiS({action:'__ping'}).then(function(r){
-    $('loader').classList.add('hidden');
-    if(!r || !r.ok){ $('urlBanner').style.display='block'; }
-    ME={name:ACTOR||'User',role:ISADMIN?'Admin':'Staff'}; applyPerms();
-    if(!ACTOR){ askName(function(){ ME.name=ACTOR; showApp(); }); }
-    else showApp();
-  });
-}
-function askName(cb){
-  modal('Welcome to Ikxari FMS',
-    '<label class="f">Your name</label><input class="in" id="nmIn" placeholder="e.g. Sam">'+
-    '<div class="hint">Just tags who did what in the activity log. No password.</div>',
-    [{t:'Continue →',c:'btn',f:function(){ var v=$('nmIn').value.trim(); if(!v){toast('Enter your name','err');return;} ACTOR=v; localStorage.setItem('ikx_name',v); closeModal(); cb(); }}]);
-}
-function adminToggle(){
-  if(ISADMIN){
-    confirmBox('Lock admin?','Config pages will be hidden again.',function(){ ISADMIN=false; localStorage.removeItem('ikx_admin'); applyPerms(); buildNav(); toast('Admin locked 🔒','ok'); go('orders'); });
-    return;
-  }
-  modal('Admin Access',
-    '<label class="f">Admin password</label><div class="pwrap"><input class="in" id="admPw" type="password" placeholder="••••••" onkeydown="if(event.key===\'Enter\')admUnlock()"><span class="eye" onclick="tog(\'admPw\',this)">👁</span></div>'+
-    '<div class="hint">Unlocks Process Builder, Workers, Roles, Settings & Change Log.</div>',
-    [{t:'Unlock 🔓',c:'btn',f:admUnlock}]);
-}
-function admUnlock(){
-  if($('admPw').value==='11102000'){ ISADMIN=true; localStorage.setItem('ikx_admin','1'); applyPerms(); buildNav(); closeModal(); toast('Admin unlocked 🔓','ok'); go('builder'); }
-  else toast('Wrong password','err');
-}
-function signout(){ confirmBox('Change name?','Enter a different name for the activity log.',function(){ localStorage.removeItem('ikx_name'); location.reload(); }); }
-
-/* ============ app shell ============ */
-function showApp(){
-  $('appView').classList.remove('hidden');
-  $('uav').textContent=(ME.name||'?').charAt(0).toUpperCase();
-  buildNav();
-  // instant render from cache, then refresh masters in ONE call
-  try{ var c=JSON.parse(localStorage.getItem('ikx_masters')||'{}'); if(c.workers){WORKERS=c.workers;ROLES=c.roles||[];FABRICS=c.fabrics||[];SETTINGS=c.settings||{};} }catch(e){}
-  go('orders');
-  apiS({action:'bootstrap'}).then(function(r){
-    if(r&&r.ok){ WORKERS=r.workers||[]; ROLES=r.roles||[]; FABRICS=r.fabrics||[]; SETTINGS=r.settings||{};
-      try{ localStorage.setItem('ikx_masters',JSON.stringify({workers:WORKERS,roles:ROLES,fabrics:FABRICS,settings:SETTINGS})); }catch(e){} }
-  });
-}
-function buildNav(){
-  var ab=$('admBtn'); if(ab){ ab.textContent=ISADMIN?'🔒':'🔓'; ab.title=ISADMIN?'Lock admin':'Admin access'; }
-  var n=$('nav'); n.innerHTML='';
-  PAGES.forEach(function(p){
-    if(p.perm && !can(p.perm)) return;
-    var b=document.createElement('button'); b.className='np'; b.id='nav_'+p.id; b.textContent=p.label;
-    b.onclick=function(){go(p.id)}; n.appendChild(b);
-  });
-}
-function go(page){
-  document.querySelectorAll('.np').forEach(function(x){x.classList.remove('on')});
-  var nb=$('nav_'+page); if(nb)nb.classList.add('on');
-  if(TICK){clearInterval(TICK);TICK=null;}
-  if(page==='orders')   renderOrders();
-  else if(page==='tasks') renderTasks();
-  else if(page==='followups') renderFollowups();
-  else if(page==='reports') renderReports();
-  else if(page==='builder') renderBuilder();
-  else if(page==='workers') renderWorkers();
-  else if(page==='roles') renderRoles();
-  else if(page==='settings') renderSettings();
-  else if(page==='changelog') renderChangelog();
-  else if(page==='team') renderTeam();
-}
-
-/* ============ ORDERS ============ */
-function renderOrders(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Orders</h2><div class="sub">Every order runs the workflow it was created under</div></div>'+
-    (can('create_order')?'<button class="btn" onclick="openCreateOrder()">+ New Order</button>':'')+'</div>'+
-    '<div class="stats" id="oStats"></div>'+
-    '<div class="tools"><input class="in" id="oSearch" placeholder="Search order / client / mobile…" value="'+esc(LIST_Q)+'">'+
-    '<select class="in" id="oPerson" style="max-width:220px"></select></div>'+
-    '<div class="olist" id="oList"><div class="empty">Loading…</div></div>';
-  $('oSearch').addEventListener('input',function(){LIST_Q=this.value;loadOrders();});
-  var ppl=[], seen={};
-  WORKERS.forEach(function(w){ if(w.active && !seen[w.name]){seen[w.name]=1; ppl.push(w.name+' ('+(w.role||'—')+')|'+w.name);} });
-  ROLES.filter(function(r){return r.active}).forEach(function(r){ if(!seen['role:'+r.role_name]){seen['role:'+r.role_name]=1; ppl.push('Role: '+r.role_name+'|'+r.role_name);} });
-  $('oPerson').innerHTML='<option value="">👥 Filter by person / role…</option>'+ppl.map(function(x){var pr=x.split('|');return '<option value="'+esc(pr[1])+'"'+(pr[1]===LIST_PERSON?' selected':'')+'>'+esc(pr[0])+'</option>';}).join('');
-  $('oPerson').addEventListener('change',function(){LIST_PERSON=this.value;loadOrders();});
-  loadOrders();
-}
-function loadOrders(){
-  api({action:'listOrders',status:LIST_FILT,q:LIST_Q,person:LIST_PERSON}).then(function(r){
-    if(!r.ok){$('oList').innerHTML='<div class="empty">'+esc(r.error||'error')+'</div>';return;}
-    var s=r.stats||{};
-    var cards=[['All',s.All||0],['Running',s.Running||0],['Delayed',s.Delayed||0],['Completed',s.Completed||0],['Stopped',s.Stopped||0],['Cancelled',s.Cancelled||0]];
-    $('oStats').innerHTML=cards.map(function(c){
-      return '<div class="stat'+(LIST_FILT===c[0]?' on':'')+'" onclick="setFilt(\''+c[0]+'\')"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div><div class="bar" style="background:'+statColor(c[0])+'"></div></div>';
-    }).join('');
-    var os=r.orders||[];
-    if(!os.length){$('oList').innerHTML='<div class="empty"><div class="em">🧵</div>No orders'+(LIST_PERSON||LIST_Q||LIST_FILT!=='All'?' match this filter.':' yet.'+(can('create_order')?' Spin up your first one.':''))+'</div>';return;}
-    $('oList').innerHTML=os.map(orderCard).join('');
-  });
-}
-function statColor(s){return {All:'var(--accent)',Running:'var(--info)',Delayed:'var(--err)',Completed:'var(--ok)',Stopped:'var(--warn)',Cancelled:'var(--grey)'}[s]||'var(--accent)';}
-function setFilt(f){LIST_FILT=f;loadOrders();}
-function orderCard(o){
-  var pct=o.total?Math.round(o.done/o.total*100):0;
-  var st=o.delayed&&o.status==='Running'?'Delayed':o.status;
-  var cur=o.current?('<span>▶ '+esc(o.current.name)+' · '+esc(o.current.role||'—')+'</span>'+(o.current.due_ts?'<span style="color:'+(Number(o.current.due_ts)<Date.now()?'var(--err)':'var(--muted)')+'">'+due(o.current.due_ts)+'</span>':'')):'<span>—</span>';
-  return '<div class="ocard" onclick="openOrder(\''+o.order_id+'\')">'+
-    '<div class="ohead"><div><div class="oid">'+esc(o.order_id)+'</div><div class="oclient">'+esc(o.client||'No client')+(o.fabric?' · '+esc(o.fabric):'')+'</div></div>'+
-    '<span class="pill p-'+st+'">'+st+'</span></div>'+
-    '<div class="ometa">'+cur+(o.trial_round?'<span>🔁 Trial '+(o.trial_round+1)+'/'+o.max_trials+'</span>':'')+'<span>'+o.done+'/'+o.total+' steps</span>'+(o.due>0?'<span style="color:var(--err)">₹'+o.due+' due</span>':'')+'</div>'+
-    '<div class="prog"><i style="width:'+pct+'%"></i></div></div>';
-}
-
-function fabricSelect(){
-  var fs=FABRICS.filter(function(f){return f.active});
-  if(!fs.length) return '<input class="in" id="coFabric" placeholder="Fabric">';
-  return '<select class="in" id="coFabric"><option value="">— select fabric —</option>'+fs.map(function(f){return '<option>'+esc(f.name)+'</option>'}).join('')+'</select>';
-}
-function salesSelect(){
-  var sp=WORKERS.filter(function(w){return w.active && String(w.role).toLowerCase()==='sales person'});
-  if(!sp.length) return '<input class="in" id="coSales" value="'+esc(ME.name)+'">';
-  return '<select class="in" id="coSales">'+sp.map(function(w){return '<option'+(w.name===ME.name?' selected':'')+'>'+esc(w.name)+'</option>'}).join('')+'</select>';
-}
-function roleWorkerSelect(role){
-  var ws=WORKERS.filter(function(w){return w.active && String(w.role).toLowerCase()===role.toLowerCase()});
-  return '<select class="in coWk" data-role="'+esc(role)+'"><option value="">'+esc(role)+' — any / default</option>'+ws.map(function(w){return '<option>'+esc(w.name)+'</option>'}).join('')+'</select>';
-}
-var PENDING_DESIGN=null;
-function openCreateOrder(){
-  PENDING_DESIGN=null;
-  modal('New Order',
-    '<label class="f">Client name *</label><input class="in" id="coClient" placeholder="Customer name">'+
-    '<div style="height:10px"></div><div class="row"><div><label class="f">Mobile</label><input class="in" id="coMobile"></div><div><label class="f">Sales Person</label>'+salesSelect()+'</div></div>'+
-    '<div style="height:10px"></div><label class="f">Fabric</label>'+fabricSelect()+
-    '<div style="height:10px"></div><label class="f">Product Description</label><textarea class="in" id="coDesc" placeholder="Item, style, colour…"></textarea>'+
-    '<div style="height:10px"></div><label class="f">Measurement</label><textarea class="in" id="coMeas" placeholder="Chest 38, Length 42…"></textarea>'+
-    '<div style="height:10px"></div><label class="f">Design Image</label><div class="row"><button type="button" class="btn ghost" onclick="pickDesign()">📎 Choose Image</button><div id="coDesignName" class="hint" style="align-self:center;flex:2"></div></div><input type="file" id="coDesignFile" accept="image/*" style="display:none" onchange="onDesignPick(this)">'+
-    '<div class="sechead">Billing</div>'+
-    '<div class="row"><div><label class="f">Total Bill (₹)</label><input class="in" id="coBill" type="number" min="0" placeholder="optional"></div>'+
-    '<div><label class="f">Advance (₹)</label><input class="in" id="coAdv" type="number" min="0" placeholder="0"></div>'+
-    '<div><label class="f">Advance Mode</label>'+modeSelect('coAdvMode')+'</div></div>'+
-    '<div class="sechead">Assignment</div>'+
-    '<label class="f">Assignment Type *</label>'+
-    '<select class="in" id="coAsgType" onchange="onAsgType()"><option value="">— choose —</option><option>All</option><option>Partial</option><option>Single</option></select>'+
-    '<div id="coAsgWrap" style="margin-top:10px"></div>'+
-    '<div style="height:10px"></div><label class="f">Notes</label><textarea class="in" id="coNotes"></textarea>'+
-    '<div class="hint">Non-department steps (Master, Client Ready, Trial…) always follow. Old orders never change on later edits.</div>',
-    [{t:'Create Order',c:'btn',f:submitOrder}]);
-}
-function modeSelect(id,sel){ return '<select class="in" id="'+id+'">'+['Cash','UPI','Card','Bank','Other'].map(function(m){return '<option'+(m===sel?' selected':'')+'>'+m+'</option>'}).join('')+'</select>'; }
-function pickDesign(){ $('coDesignFile').click(); }
-function onDesignPick(el){
-  var f=el.files[0]; if(!f){PENDING_DESIGN=null;$('coDesignName').textContent='';return;}
-  if(f.size>4*1024*1024){toast('Image too big (max 4MB)','err');el.value='';return;}
-  var r=new FileReader(); r.onload=function(){ PENDING_DESIGN={filename:f.name,dataUrl:r.result}; $('coDesignName').textContent=f.name; }; r.readAsDataURL(f);
-}
-function onAsgType(){
-  var t=$('coAsgType').value, w=$('coAsgWrap'); w.innerHTML='';
-  if(t==='All'){
-    w.innerHTML='<div class="hint" style="margin-bottom:8px">Runs: Karigar → Tailor → Dyer</div>'+
-      '<label class="f">Karigar</label>'+roleWorkerSelect('Karigar')+
-      '<div style="height:8px"></div><label class="f">Tailor</label>'+roleWorkerSelect('Tailor')+
-      '<div style="height:8px"></div><label class="f">Dyer</label>'+roleWorkerSelect('Dyer');
-  } else if(t==='Partial'){
-    w.innerHTML='<label class="f">Pick pair</label><select class="in" id="coPair" onchange="onPair()"><option value="">— choose —</option>'+
-      '<option value="Karigar,Tailor">Karigar → Tailor</option><option value="Tailor,Dyer">Tailor → Dyer</option><option value="Dyer,Karigar">Dyer → Karigar</option></select><div id="coPairWk" style="margin-top:10px"></div>';
-  } else if(t==='Single'){
-    w.innerHTML='<label class="f">Pick department</label><select class="in" id="coSingle" onchange="onSingle()"><option value="">— choose —</option><option>Karigar</option><option>Tailor</option><option>Dyer</option></select><div id="coSingleWk" style="margin-top:10px"></div>';
-  }
-}
-function onPair(){
-  var v=$('coPair').value, w=$('coPairWk'); if(!v){w.innerHTML='';return;}
-  w.innerHTML=v.split(',').map(function(r){return '<label class="f">'+esc(r)+'</label>'+roleWorkerSelect(r)+'<div style="height:8px"></div>';}).join('');
-}
-function onSingle(){
-  var v=$('coSingle').value, w=$('coSingleWk'); if(!v){w.innerHTML='';return;}
-  w.innerHTML='<label class="f">'+esc(v)+'</label>'+roleWorkerSelect(v);
-}
-function collectAsg(){
-  var t=$('coAsgType').value;
-  var roles=[], workers={};
-  if(t==='All') roles=['Karigar','Tailor','Dyer'];
-  else if(t==='Partial'){ var pv=$('coPair')?$('coPair').value:''; if(!pv) return null; roles=pv.split(','); }
-  else if(t==='Single'){ var sv=$('coSingle')?$('coSingle').value:''; if(!sv) return null; roles=[sv]; }
-  else return null;
-  document.querySelectorAll('.coWk').forEach(function(el){ if(el.value) workers[el.getAttribute('data-role')]=el.value; });
-  return {assignment_type:t, roles:roles, workers:workers};
-}
-function submitOrder(){
-  var client=$('coClient').value.trim(); if(!client){toast('Client name required','err');return;}
-  var asg=collectAsg(); if(!asg){toast('Choose assignment type & department','err');return;}
-  var fabEl=$('coFabric'), salesEl=$('coSales');
-  api({action:'createOrder',client:client,mobile:$('coMobile').value,fabric:fabEl?fabEl.value:'',sales_person:salesEl?salesEl.value:ME.name,
-       product_desc:$('coDesc').value,measurement:$('coMeas').value,total_bill:$('coBill').value,advance:$('coAdv').value,advance_mode:$('coAdvMode').value,
-       notes:$('coNotes').value,assignment_type:asg.assignment_type,roles:asg.roles,workers:asg.workers}).then(function(r){
-    if(!r.ok){toast(r.error||'error','err');return;}
-    closeModal();toast('Order '+r.order_id+' created ✅','ok');loadOrders();openOrder(r.order_id);
-    if(PENDING_DESIGN){ var d=PENDING_DESIGN; PENDING_DESIGN=null; apiS({action:'uploadDesign',order_id:r.order_id,filename:d.filename,dataUrl:d.dataUrl}).then(function(x){ if(x.ok){toast('Design uploaded','ok'); if(CUR_ORDER&&CUR_ORDER.order_id===r.order_id)openOrder(r.order_id);} else toast(x.error||'design upload failed','err'); }); }
-  });
-}
-
-/* ---- order detail ---- */
-function showWsLoading(id){
-  $('wsRoot').innerHTML='<div class="wsWrap ws" onclick="if(event.target===this)closeWorkspace()"><div class="workspace">'+
-    '<div class="wsHead"><div class="wid">'+esc(id)+'</div><div class="wsp"></div><button class="mx" onclick="closeWorkspace()">✕</button></div>'+
-    '<div class="wsBody"><div class="wsSpin"></div><div class="empty" style="padding:0">Loading order…</div></div></div></div>';
-}
-function openOrder(id){
-  showWsLoading(id);
-  api({action:'getOrder',order_id:id}).then(function(r){
-    if(!r.ok){toast(r.error||'error','err'); closeWorkspace(); return;}
-    CUR_ORDER=r.order; CUR_STEPS=r.steps;
-    drawOrder(r);
-    if(TICK)clearInterval(TICK);
-    TICK=setInterval(function(){ document.querySelectorAll('[data-due]').forEach(function(el){ el.textContent=due(el.getAttribute('data-due')); }); },1000);
-  });
-}
-function drawOrder(r){
-  var o=r.order, steps=r.steps, his=r.history||[];
-  var pct=o.total?Math.round(o.done/o.total*100):0;
-  var st=o.status;
-
-  var cancelBtn = (can('config') && st==='Running')
-    ? '<button class="btn ghost sm" onclick="wsCancel(\''+o.order_id+'\')">Cancel Order</button>' : '';
-
-  // summary bar
-  var sum='<div class="wsSum">'+
-    '<div class="kv"><small>Client</small><b>'+esc(o.client||'—')+'</b></div>'+
-    (o.mobile?'<div class="kv"><small>Mobile</small><b>'+esc(o.mobile)+'</b></div>':'')+
-    (o.fabric?'<div class="kv"><small>Fabric</small><b>'+esc(o.fabric)+'</b></div>':'')+
-    '<div class="kv"><small>Sales Person</small><b>'+esc(o.sales_person||o.created_by||'—')+'</b></div>'+
-    (o.assignment_type?'<div class="kv"><small>Assignment</small><b>'+esc(o.assignment_type)+'</b></div>':'')+
-    '<div class="kv"><small>Workflow</small><b>'+esc(o.version_name)+'</b></div>'+
-    (o.trial_round?'<div class="kv"><small>Trial</small><b>'+(o.trial_round+1)+' / '+o.max_trials+'</b></div>':'')+
-    '<div class="kv"><small>Created</small><b>'+fmt(o.created_ts)+'</b></div>'+
-    '<div class="kv grow"><small>Progress · '+o.done+'/'+o.total+' steps</small><div class="prog" style="margin-top:6px"><i style="width:'+pct+'%"></i></div></div>'+
-    '</div>';
-
-  // steps
-  var stepsHtml='<div class="wsSec">Workflow<span class="ln"></span></div>'+
-    (steps.length?steps.map(function(s){ return stepCard(o,s); }).join(''):'<div class="hint">No steps.</div>');
-
-  // details (product / measurement / design)
-  var detHtml='';
-  if(o.product_desc||o.measurement||o.design_url){
-    detHtml='<div class="wsSec">Details<span class="ln"></span></div><div class="wsSum" style="align-items:flex-start">'+
-      (o.product_desc?'<div class="kv grow"><small>Product</small><b style="font-weight:500;white-space:pre-wrap">'+esc(o.product_desc)+'</b></div>':'')+
-      (o.measurement?'<div class="kv grow"><small>Measurement</small><b style="font-weight:500;white-space:pre-wrap">'+esc(o.measurement)+'</b></div>':'')+
-      (o.design_url?'<div class="kv"><small>Design</small><a href="'+esc(o.design_url)+'" target="_blank" class="btn ghost sm" style="margin-top:4px">🖼 View Design</a></div>':'')+
-      '</div>';
-  }
-
-  // billing
-  var bill=Number(o.total_bill)||0, paid=Number(o.paid)||0, due=Number(o.due)||0;
-  var canBill=can('config')||can('update_delivery')||can('complete_task');
-  var billHtml='<div class="wsSec">Billing<span class="ln"></span></div><div class="wsSum">'+
-    '<div class="kv"><small>Total Bill</small><b>₹'+bill+'</b></div>'+
-    '<div class="kv"><small>Paid</small><b style="color:var(--ok)">₹'+paid+'</b></div>'+
-    '<div class="kv"><small>Due</small><b style="color:'+(due>0?'var(--err)':'var(--ok)')+'">₹'+due+'</b></div>'+
-    '<div class="kv grow" style="align-items:flex-end;flex-direction:row;gap:8px;justify-content:flex-end">'+
-      (canBill?'<button class="btn ghost sm" onclick="editBill(\''+o.order_id+'\','+bill+')">Set Bill</button><button class="btn sm" onclick="addPay(\''+o.order_id+'\','+due+')">+ Payment</button>':'')+
-    '</div></div>';
-  if(r.payments&&r.payments.length){
-    billHtml+='<div class="log" style="margin-top:10px">'+r.payments.map(function(pm){
-      return '<div class="logrow"><div class="logdot">₹</div><div class="logmain"><b>₹'+pm.amount+' · '+esc(pm.type)+'</b><div class="act">'+esc(pm.mode)+(pm.note?' — '+esc(pm.note):'')+' · '+esc(pm.by)+'</div></div><div class="logtime">'+fmt(pm.ts)+'</div></div>';
-    }).join('')+'</div>';
-  }
-
-  // followups
-  var fus=r.followups||[];
-  var fuHtml='<div class="wsSec">Follow-ups '+(due>0?'· ₹'+due+' due':'')+'<span class="ln"></span></div>'+
-    '<button class="btn ghost sm" onclick="addFU(\''+o.order_id+'\')">+ Add Follow-up</button>'+
-    (fus.length?'<div class="log" style="margin-top:10px">'+fus.map(function(f){
-      return '<div class="logrow"><div class="logdot">'+(f.status==='Open'?'🔔':'✅')+'</div><div class="logmain"><b>'+esc(f.note||'(no note)')+'</b><div class="act">'+(f.next_date?'Next: '+esc(f.next_date)+' · ':'')+esc(f.by)+' · '+esc(f.status)+'</div></div>'+(f.status==='Open'?'<button class="btn ghost sm" onclick="closeFU(\''+f.fu_id+'\',\''+o.order_id+'\')">Done</button>':'')+'</div>';
-    }).join('')+'</div>':'<div class="hint" style="margin-top:8px">No follow-ups.</div>');
-
-  // audit trail
-  var logHtml='<div class="wsSec">Activity · Audit Trail<span class="ln"></span></div>'+
-    (his.length?'<div class="log">'+his.map(function(h){
-      var d=new Date(Number(h.ts));
-      var dd=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit',timeZone:'Asia/Kolkata'});
-      var tt=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'});
-      return '<div class="logrow"><div class="logdot">🕘</div>'+
-        '<div class="logmain"><b>'+esc(h.who||'—')+'</b><div class="act">'+esc(h.action)+(h.detail?' — '+esc(h.detail):'')+'</div></div>'+
-        '<div class="logtime"><span class="d">'+dd+'</span><br>'+tt+'</div></div>';
-    }).join('')+'</div>':'<div class="hint">No activity yet.</div>');
-
-  var html='<div class="wsWrap ws" onclick="if(event.target===this)closeWorkspace()">'+
-    '<div class="workspace">'+
-      '<div class="wsHead"><div class="wid">'+esc(o.order_id)+'</div>'+
-        '<span class="pill p-'+st+'">'+st+'</span><div class="wsp"></div>'+
-        cancelBtn+
-        '<button class="mx" onclick="closeWorkspace()">✕</button></div>'+
-      '<div class="wsBody">'+sum+detHtml+billHtml+fuHtml+stepsHtml+logHtml+'</div>'+
-    '</div></div>';
-  $('wsRoot').innerHTML=html;
-}
-function closeWorkspace(){ $('wsRoot').innerHTML=''; if(TICK){clearInterval(TICK);TICK=null;} }
-function wsCancel(id){ confirmBox('Cancel this order?','It will be marked Cancelled.',function(){ api({action:'cancelOrder',order_id:id}).then(function(x){ if(x.ok){toast('Order cancelled','ok');closeWorkspace();loadOrders();} else toast(x.error,'err'); }); }); }
-function editBill(id,cur){
-  modal('Set Total Bill','<label class="f">Total Bill (₹)</label><input class="in" id="blVal" type="number" min="0" value="'+(cur||'')+'">',
-    [{t:'Save',c:'btn',f:function(){ api({action:'setBill',order_id:id,total_bill:$('blVal').value}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('Bill saved','ok');openOrder(id);loadOrders(); }); }},
-     {t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}],false,'confirmRoot');
-}
-function addPay(id,due){
-  modal('Add Payment','<div class="row"><div><label class="f">Amount (₹)</label><input class="in" id="pyAmt" type="number" min="1" value="'+(due>0?due:'')+'"></div><div><label class="f">Mode</label>'+modeSelect('pyMode')+'</div></div>'+
-    '<div style="height:10px"></div><label class="f">Type</label><select class="in" id="pyType"><option>Payment</option><option>Advance</option><option>Refund</option></select>'+
-    '<div style="height:10px"></div><label class="f">Note</label><input class="in" id="pyNote">',
-    [{t:'Save Payment',c:'btn',f:function(){ api({action:'addPayment',order_id:id,amount:$('pyAmt').value,mode:$('pyMode').value,type:$('pyType').value,note:$('pyNote').value}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('Payment recorded ✅','ok');openOrder(id);loadOrders(); }); }},
-     {t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}],false,'confirmRoot');
-}
-function addFU(id){
-  modal('Add Follow-up','<label class="f">Note</label><textarea class="in" id="fuNote" placeholder="Called customer, will pay by…"></textarea>'+
-    '<div style="height:10px"></div><label class="f">Next follow-up date</label><input class="in" id="fuDate" type="date">',
-    [{t:'Save',c:'btn',f:function(){ api({action:'addFollowup',order_id:id,note:$('fuNote').value,next_date:$('fuDate').value}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('Follow-up added','ok');openOrder(id); }); }},
-     {t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}],false,'confirmRoot');
-}
-function closeFU(fid,oid){ api({action:'closeFollowup',fu_id:fid}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast('Closed','ok');openOrder(oid); }); }
-function tatText(s){
-  var cur = s.ovr_tat_value!=null ? (s.ovr_tat_value+' '+s.ovr_tat_unit) : (s.def_tat_value+' '+s.def_tat_unit);
-  var h='Default TAT: <b>'+s.def_tat_value+' '+esc(s.def_tat_unit)+'</b>';
-  if(s.ovr_tat_value!=null) h+=' · Override: <b style="color:var(--accent2)">'+s.ovr_tat_value+' '+esc(s.ovr_tat_unit)+'</b> · Current: <b>'+esc(cur)+'</b>';
-  return h;
-}
-function stepIcon(t){return {'Decision':'❓','Action':'⚙️','Worker Task':'🧵','Information/Notification':'🔔','Optional':'➕','Mandatory':'📌'}[t]||'🧵';}
-function stepCard(o,s){
-  var active=(s.status==='Running'||s.status==='Delayed');
-  var acts='';
-  if(o.status==='Running' && active){
-    if(s.is_decision){
-      acts=(s.options||[]).map(function(op){
-        var cls=op.label.toLowerCase()==='yes'?'btn ok sm':op.label.toLowerCase()==='no'?'btn danger sm':'btn sm';
-        return can('complete_task')?'<button class="'+cls+'" onclick="decide(\''+o.order_id+'\','+s.seq+',\''+esc(op.label)+'\')">'+esc(op.label)+'</button>':'';
-      }).join('');
-    } else if(can('complete_task')){
-      acts='<button class="btn ok sm" onclick="doneStep(\''+o.order_id+'\','+s.seq+')">Mark Done</button>';
-    }
-    if(!s.mandatory && can('complete_task')) acts+='<button class="btn ghost sm" onclick="skip(\''+o.order_id+'\','+s.seq+')">Skip</button>';
-    if(can('config')) acts+='<button class="btn ghost sm" onclick="tatOverride(\''+o.order_id+'\','+s.seq+')">TAT</button>';
-  }
-  var meta=[];
-  meta.push('👤 '+esc(s.assign_worker||s.assign_role||'—'));
-  meta.push('🏷 '+esc(s.step_type));
-  if(s.decision_answer) meta.push('✔ '+esc(s.decision_answer));
-  if(s.due_ts && active) meta.push('<span data-due="'+s.due_ts+'" style="color:'+(Number(s.due_ts)<Date.now()?'var(--err)':'var(--muted)')+'">'+due(s.due_ts)+'</span>');
-  if(s.done_ts && s.status==='Done') meta.push('✅ '+fmtDT(s.done_ts)+(s.done_by?' · '+esc(s.done_by):''));
-  var stCls=s.status;
-  return '<div class="fcard st-'+stCls+'">'+
-    '<div class="ftile">'+stepIcon(s.step_type)+'</div>'+
-    '<div class="fbody"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">'+
-    '<div class="fname">'+esc(s.step_name)+(s.is_final?' 🏁':'')+(s.is_trial?' 🔁':'')+'</div><span class="pill p-'+stCls+'">'+stCls+'</span></div>'+
-    '<div class="fmeta">'+meta.join('')+'</div>'+
-    (active?'<div class="tatline">'+tatText(s)+'</div>':'')+
-    (s.instructions?'<div class="hint">📝 '+esc(s.instructions)+'</div>':'')+
-    (acts?'<div class="facts">'+acts+'</div>':'')+
-    '</div></div>';
-}
-function doneStep(id,seq){ api({action:'completeStep',order_id:id,seq:seq}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast(r.order_completed?'Order completed 🎉':'Step done ✅','ok'); openOrder(id); loadOrders(); }); }
-function decide(id,seq,opt){ api({action:'decideStep',order_id:id,seq:seq,option:opt}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast(r.order_completed?'Order confirmed 🎉':r.stopped?'Order stopped':r.trial?('Trial '+r.trial+' started'):'Recorded ✅','ok'); openOrder(id); loadOrders(); }); }
-function skip(id,seq){ confirmBox('Skip this optional step?','It will be recorded as Skipped (not counted as pending/late).',function(){ api({action:'skipStep',order_id:id,seq:seq}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast('Step skipped','ok'); openOrder(id); loadOrders(); }); }); }
-function tatOverride(id,seq){
-  var s=null; CUR_STEPS.forEach(function(x){if(x.seq===seq)s=x;}); if(!s)return;
-  modal('TAT Override — '+esc(s.step_name),
-    '<div class="hint" style="margin-bottom:12px">Default: <b style="color:var(--txt)">'+s.def_tat_value+' '+esc(s.def_tat_unit)+'</b>. This override applies only to this order.</div>'+
-    '<div class="row"><div><label class="f">New TAT value</label><input class="in" id="ovVal" type="number" min="1" value="'+(s.ovr_tat_value!=null?s.ovr_tat_value:s.def_tat_value)+'"></div>'+
-    '<div><label class="f">Unit</label>'+unitSelect('ovUnit',s.ovr_tat_unit||s.def_tat_unit)+'</div></div>',
-    [{t:'Save Override',c:'btn',f:function(){
-      api({action:'setStepTatOverride',order_id:id,seq:seq,tat_value:$('ovVal').value,tat_unit:$('ovUnit').value}).then(function(r){
-        if(!r.ok){toast(r.error,'err');return;} closeModal('confirmRoot');toast('TAT updated for this order','ok');openOrder(id);
-      });
-    }},{t:'Cancel',c:'btn ghost',f:function(){closeModal('confirmRoot');}}], false, 'confirmRoot');
-}
-
-/* ============ MY TASKS ============ */
-function renderTasks(){
-  $('content').innerHTML='<div class="pageH"><div><h2>My Tasks</h2><div class="sub">Every step currently waiting across active orders</div></div></div><div id="tList"><div class="empty">Loading…</div></div>';
-  api({action:'myTasks'}).then(function(r){
-    if(!r.ok){$('tList').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
-    var t=r.tasks||[];
-    if(!t.length){$('tList').innerHTML='<div class="empty"><div class="em">🎉</div>All clear. Nothing is waiting.</div>';return;}
-    $('tList').innerHTML='<div class="olist">'+t.map(function(s){
-      var acts='';
-      if(can('complete_task')){
-        if(s.is_decision){ acts=(s.options||[]).map(function(op){var cls=op.label.toLowerCase()==='yes'?'btn ok sm':op.label.toLowerCase()==='no'?'btn danger sm':'btn sm';return '<button class="'+cls+'" onclick="event.stopPropagation();decide(\''+s.order_id+'\','+s.seq+',\''+esc(op.label)+'\');setTimeout(renderTasks,600)">'+esc(op.label)+'</button>';}).join(''); }
-        else acts='<button class="btn ok sm" onclick="event.stopPropagation();doneStep(\''+s.order_id+'\','+s.seq+');setTimeout(renderTasks,600)">Done ✅</button>';
-      }
-      return '<div class="ocard" onclick="openOrder(\''+s.order_id+'\')"><div class="ohead"><div><div class="oid">'+esc(s.step_name)+(s.is_decision?' ❓':'')+'</div><div class="oclient">'+esc(s.order_id)+' · '+esc(s.client||'')+'</div></div><span class="pill p-'+(s.delayed?'Delayed':'Running')+'">'+(s.delayed?'Delayed':'Running')+'</span></div>'+
-      '<div class="ometa"><span>👤 '+esc(s.assignee)+'</span>'+(s.due_ts?'<span data-due="'+s.due_ts+'" style="color:'+(Number(s.due_ts)<Date.now()?'var(--err)':'var(--muted)')+'">'+due(s.due_ts)+'</span>':'')+'</div>'+
-      (acts?'<div class="facts">'+acts+'</div>':'')+'</div>';
-    }).join('')+'</div>';
-    if(TICK)clearInterval(TICK);
-    TICK=setInterval(function(){document.querySelectorAll('[data-due]').forEach(function(el){el.textContent=due(el.getAttribute('data-due'));});},1000);
-  });
-}
-
-/* ============ PROCESS BUILDER ============ */
-function unitSelect(id,val){ return '<select class="in" id="'+id+'">'+['Minutes','Hours','Days','Weeks'].map(function(u){return '<option'+(u===val?' selected':'')+'>'+u+'</option>'}).join('')+'</select>'; }
-function typeSelect(id,val){ return '<select class="in" id="'+id+'" onchange="onTypeChange()">'+['Worker Task','Action','Decision','Information/Notification','Mandatory','Optional'].map(function(u){return '<option'+(u===val?' selected':'')+'>'+u+'</option>'}).join('')+'</select>'; }
-function roleOptions(sel){ var rs=ROLES.filter(function(r){return r.active}); if(!rs.length)rs=[{role_name:'Karigar'},{role_name:'Tailor'},{role_name:'Dyer'},{role_name:'Master'},{role_name:'Sales Person'},{role_name:'Other'}]; return rs.map(function(r){return '<option'+(r.role_name===sel?' selected':'')+'>'+esc(r.role_name)+'</option>'}).join(''); }
-function workerOptions(sel){ var ws=WORKERS.filter(function(w){return w.active}); return '<option value="">— select worker —</option>'+ws.map(function(w){return '<option value="'+esc(w.name)+'"'+(w.name===sel?' selected':'')+'>'+esc(w.name)+' ('+esc(w.role)+')</option>'}).join(''); }
-
-function renderBuilder(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Process Builder</h2><div class="sub">Design the workflow — no coding. Publish creates a new version; old orders stay untouched.</div></div></div><div id="bWrap"><div class="empty">Loading…</div></div>';
-  api({action:'getWorkflow'}).then(function(r){
-    if(!r.ok){$('bWrap').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
-    if(!r.version){
-      $('bWrap').innerHTML='<div class="card" style="text-align:center"><div class="em" style="font-size:38px">🧩</div><p>No workflow yet. Start with the default Ikxari flow (Karigar → Tailor → Dyer → … → Trial), then edit freely.</p><button class="btn" onclick="seedWF()">Create Default Workflow</button><div class="hint" style="margin-top:8px">or build from scratch:</div><button class="btn ghost" style="margin-top:8px" onclick="DRAFT=[];drawBuilder(null)">Blank Workflow</button></div>';
-      return;
-    }
-    DRAFT=r.steps.map(cloneStep);
-    _VER=r.version;
-    drawBuilder(r.version);
-  });
-}
-function cloneStep(s){ return {step_name:s.step_name,step_type:s.step_type,assign_type:s.assign_type,assign_role:s.assign_role,assign_worker:s.assign_worker,tat_value:s.tat_value,tat_unit:s.tat_unit,instructions:s.instructions,mandatory:s.mandatory,enabled:s.enabled,is_decision:s.is_decision,options:(s.options||[]).map(function(o){return{label:o.label,action:o.action,target_seq:o.target_seq}}),is_trial:s.is_trial,is_final:s.is_final}; }
-function seedWF(){ api({action:'seedDefaults'}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} toast('Default workflow created ✅','ok'); apiS({action:'listRoles'}).then(function(x){if(x.ok)ROLES=x.roles;}); renderBuilder(); }); }
-
-function drawBuilder(ver){
-  var flow='<div class="flowview"><div class="fnode start">Order Created</div><div class="farr">↓</div>';
-  DRAFT.forEach(function(s,i){
-    var cls='fnode'+(!s.enabled?' dis':'')+(s.is_decision?' dec':'');
-    flow+='<div class="'+cls+'">'+esc(s.step_name||'(unnamed)')+(s.is_final?' 🏁':'')+'</div>';
-    if(s.is_decision && s.options && s.options.length){
-      flow+='<div class="fbranch">'+s.options.map(function(o){return esc(o.label)+'→'+actLabel(o)}).join(' · ')+'</div>';
-    }
-    if(i<DRAFT.length-1) flow+='<div class="farr">↓</div>';
-  });
-  flow+='</div>';
-
-  var rows=DRAFT.map(function(s,i){
-    var sub=[s.step_type,(s.assign_type==='Worker'?('👤 '+(s.assign_worker||'?')):('🏷 '+(s.assign_role||'?'))),'⏱ '+s.tat_value+' '+s.tat_unit];
-    if(!s.mandatory)sub.push('optional'); if(s.is_final)sub.push('final');
-    return '<div class="brow'+(!s.enabled?' dis':'')+'"><div class="bseq">'+(i+1)+'</div>'+
-      '<div class="bmain"><div class="bname">'+esc(s.step_name||'(unnamed)')+(s.is_decision?' ❓':'')+'</div><div class="bsub">'+sub.map(esc).join(' · ')+'</div></div>'+
-      '<div class="bctl">'+
-      '<button class="icb" title="Up" onclick="mv('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button>'+
-      '<button class="icb" title="Down" onclick="mv('+i+',1)" '+(i===DRAFT.length-1?'disabled':'')+'>↓</button>'+
-      '<button class="icb" title="Edit" onclick="editStep('+i+')">✎</button>'+
-      '<button class="icb" title="'+(s.enabled?'Disable':'Enable')+'" onclick="toggleStep('+i+')">'+(s.enabled?'⏸':'▶')+'</button>'+
-      '<button class="icb" title="Delete" onclick="delStep('+i+')">🗑</button>'+
-      '</div></div>';
-  }).join('');
-
-  $('bWrap').innerHTML=flow+
-    '<div class="tools"><button class="btn" onclick="editStep(-1)">+ Add Step</button>'+
-    '<button class="btn ok" onclick="publishWF()">Publish Changes 💾</button>'+
-    (ver?'<span class="hint" style="margin-left:auto">Active: <b style="color:var(--txt)">'+esc(ver.version_name)+'</b></span>':'')+'</div>'+
-    '<div class="builder">'+(rows||'<div class="empty">No steps. Add your first.</div>')+'</div>';
-}
-function actLabel(o){ return {Next:'next',Jump:'step '+o.target_seq,Complete:'Confirm',Stop:'Stop',NextTrial:'next trial'}[o.action]||o.action; }
-function mv(i,d){ var j=i+d; if(j<0||j>=DRAFT.length)return; var t=DRAFT[i];DRAFT[i]=DRAFT[j];DRAFT[j]=t; drawBuilder(_ver()); }
-var _VER=null; function _ver(){return _VER;}
-function toggleStep(i){ DRAFT[i].enabled=!DRAFT[i].enabled; drawBuilder(_ver()); }
-function delStep(i){ confirmBox('Remove step?','"'+esc(DRAFT[i].step_name)+'" will be removed from the workflow draft.',function(){ DRAFT.splice(i,1); drawBuilder(_ver()); }); }
-
-var EDIT_I=-1;
-function editStep(i){
-  EDIT_I=i;
-  var s = i>=0?DRAFT[i]:{step_name:'',step_type:'Worker Task',assign_type:'Role',assign_role:(ROLES[0]?ROLES[0].role_name:'Karigar'),assign_worker:'',tat_value:1,tat_unit:'Days',instructions:'',mandatory:true,enabled:true,is_decision:false,options:[],is_trial:false,is_final:false};
-  var body='<label class="f">Step name *</label><input class="in" id="stName" value="'+esc(s.step_name)+'">'+
-    '<div style="height:10px"></div><div class="row"><div><label class="f">Step type</label>'+typeSelect('stType',s.step_type)+'</div>'+
-    '<div><label class="f">Assign by</label><select class="in" id="stAssignType" onchange="onAssignChange()"><option'+(s.assign_type==='Role'?' selected':'')+'>Role</option><option'+(s.assign_type==='Worker'?' selected':'')+'>Worker</option></select></div></div>'+
-    '<div style="height:10px"></div><div id="assignWrap"></div>'+
-    '<div style="height:10px"></div><div class="row"><div><label class="f">TAT value</label><input class="in" id="stTatV" type="number" min="0" value="'+s.tat_value+'"></div><div><label class="f">TAT unit</label>'+unitSelect('stTatU',s.tat_unit)+'</div></div>'+
-    '<div style="height:10px"></div><label class="f">Instructions</label><textarea class="in" id="stInstr">'+esc(s.instructions)+'</textarea>'+
-    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">'+
-    '<label class="chkline"><input type="checkbox" id="stMand" '+(s.mandatory?'checked':'')+'> Mandatory</label>'+
-    '<label class="chkline"><input type="checkbox" id="stFinal" '+(s.is_final?'checked':'')+'> Final step (completes order)</label>'+
-    '<label class="chkline"><input type="checkbox" id="stTrial" '+(s.is_trial?'checked':'')+'> Trial decision</label>'+
-    '</div>'+
-    '<div id="decWrap"></div>';
-  modal(i>=0?'Edit Step':'Add Step', body, [
-    {t:'Save Step',c:'btn',f:saveStepDraft},{t:'Cancel',c:'btn ghost',f:closeModal}
-  ], false);
-  // init dynamic bits
-  window.__editOpts = (s.options||[]).map(function(o){return{label:o.label,action:o.action||'Next',target_seq:o.target_seq||0}});
-  onAssignChange(s.assign_role,s.assign_worker); onTypeChange();
-}
-function onTypeChange(){
-  var t=$('stType')?$('stType').value:'';
-  var isDec = t==='Decision';
-  // syncing mandatory checkbox for Optional type
-  if(t==='Optional' && $('stMand')) $('stMand').checked=false;
-  if(t==='Mandatory' && $('stMand')) $('stMand').checked=true;
-  if($('decWrap')) drawDecEditor(isDec);
-}
-function onAssignChange(role,worker){
-  var t=$('stAssignType')?$('stAssignType').value:'Role';
-  var w=$('assignWrap'); if(!w)return;
-  if(t==='Worker') w.innerHTML='<label class="f">Worker</label><select class="in" id="stWorker">'+workerOptions(worker||'')+'</select>'+(WORKERS.filter(function(x){return x.active}).length?'':'<div class="hint">No workers yet — add some in the Workers tab.</div>');
-  else w.innerHTML='<label class="f">Role</label><select class="in" id="stRole">'+roleOptions(role||'')+'</select>';
-}
-function drawDecEditor(show){
-  var w=$('decWrap'); if(!w)return;
-  if(!show){ w.innerHTML=''; return; }
-  var opts=window.__editOpts||[];
-  var seqOpts=DRAFT.map(function(s,i){return '<option value="'+(i+1)+'">step '+(i+1)+' · '+esc(s.step_name||'?')+'</option>'}).join('');
-  w.innerHTML='<div class="sechead">Decision Options</div><div class="hint" style="margin-bottom:8px">Each option points somewhere. Actions: Next step · Jump to step · Complete order · Stop order · Next trial.</div><div id="optList"></div><button class="btn ghost sm" onclick="addOpt()">+ Add Option</button>';
-  drawOpts();
-  function drawOpts(){
-    $('optList').innerHTML=(window.__editOpts||[]).map(function(o,i){
-      var acts=['Next','Jump','Complete','Stop','NextTrial'];
-      return '<div class="opt"><input class="in" style="flex:1.2" value="'+esc(o.label)+'" oninput="optSet('+i+',\'label\',this.value)" placeholder="Label e.g. Yes">'+
-        '<select class="in" style="flex:1" onchange="optSet('+i+',\'action\',this.value)">'+acts.map(function(a){return '<option'+(a===o.action?' selected':'')+'>'+a+'</option>'}).join('')+'</select>'+
-        '<select class="in" style="flex:1" onchange="optSet('+i+',\'target_seq\',this.value)" '+(o.action==='Jump'?'':'disabled')+'><option value="0">—</option>'+seqOpts.replace('value="'+o.target_seq+'"','value="'+o.target_seq+'" selected')+'</select>'+
-        '<button class="icb" onclick="optDel('+i+')">🗑</button></div>';
-    }).join('');
-  }
-  window.__drawOpts=drawOpts;
-}
-function addOpt(){ window.__editOpts=window.__editOpts||[]; window.__editOpts.push({label:'',action:'Next',target_seq:0}); window.__drawOpts(); }
-function optDel(i){ window.__editOpts.splice(i,1); window.__drawOpts(); }
-function optSet(i,k,v){ window.__editOpts[i][k]= (k==='target_seq'?Number(v):v); if(k==='action') window.__drawOpts(); }
-function saveStepDraft(){
-  var name=$('stName').value.trim(); if(!name){toast('Step name required','err');return;}
-  var type=$('stType').value;
-  var isDec = type==='Decision';
-  var at=$('stAssignType').value;
-  var s={
-    step_name:name, step_type:type, assign_type:at,
-    assign_role: at==='Role'?($('stRole')?$('stRole').value:''):'',
-    assign_worker: at==='Worker'?($('stWorker')?$('stWorker').value:''):'',
-    tat_value:Number($('stTatV').value)||0, tat_unit:$('stTatU').value,
-    instructions:$('stInstr').value,
-    mandatory: type==='Optional'?false:$('stMand').checked,
-    enabled: EDIT_I>=0?DRAFT[EDIT_I].enabled:true,
-    is_decision:isDec, options: isDec?(window.__editOpts||[]).filter(function(o){return o.label.trim()}):[],
-    is_trial:$('stTrial').checked, is_final:$('stFinal').checked
-  };
-  if(isDec && !s.options.length){toast('Decision step needs at least one option','err');return;}
-  if(EDIT_I>=0) DRAFT[EDIT_I]=s; else DRAFT.push(s);
-  closeModal(); drawBuilder(_ver());
-}
-function publishWF(){
-  if(!DRAFT.length){toast('Add at least one step','err');return;}
-  modal('Publish Workflow','<label class="f">Version name</label><input class="in" id="wfVName" placeholder="e.g. Version 2 — added Finishing">'+
-    '<div style="height:10px"></div><label class="f">Change summary</label><textarea class="in" id="wfVSum" placeholder="What changed & why"></textarea>'+
-    '<div class="hint">A new version is created. Existing orders keep their old version — only new orders use this one.</div>',
-    [{t:'Publish',c:'btn ok',f:function(){
-      api({action:'publishWorkflow',steps:DRAFT,version_name:$('wfVName').value,change_summary:$('wfVSum').value}).then(function(r){
-        if(!r.ok){toast(r.error,'err');return;} closeModal();toast('Published '+r.version+' ✅','ok');renderBuilder();
-      });
-    }},{t:'Cancel',c:'btn ghost',f:closeModal}]);
-}
-
-/* ============ WORKERS ============ */
-function renderWorkers(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Workers</h2><div class="sub">Worker master — assign steps by role or specific worker</div></div><button class="btn" onclick="editWorker(null)">+ Add Worker</button></div><div class="card" id="wkCard"><div class="empty">Loading…</div></div>';
-  api({action:'listWorkers'}).then(function(r){
-    if(r.ok)WORKERS=r.workers;
-    if(!WORKERS.length){$('wkCard').innerHTML='<div class="empty"><div class="em">🧑‍🔧</div>No workers yet.</div>';return;}
-    $('wkCard').innerHTML='<table class="tbl"><tr><th>Name</th><th>Role</th><th>Phone</th><th>Status</th><th></th></tr>'+
-      WORKERS.map(function(w){return '<tr><td><b>'+esc(w.name)+'</b></td><td>'+esc(w.role||'—')+'</td><td>'+esc(w.phone||'—')+'</td><td><span class="pill p-'+(w.active?'Done':'Cancelled')+'">'+(w.active?'Active':'Inactive')+'</span></td>'+
-      '<td style="text-align:right"><button class="icb" onclick="editWorker(\''+w.worker_id+'\')">✎</button> <button class="icb" onclick="delWorker(\''+w.worker_id+'\')">🗑</button></td></tr>';}).join('')+'</table>';
-  });
-}
-function editWorker(id){
-  var w=id?WORKERS.filter(function(x){return x.worker_id===id})[0]:{name:'',role:(ROLES[0]?ROLES[0].role_name:''),phone:'',active:true};
-  modal(id?'Edit Worker':'Add Worker',
-    '<label class="f">Name *</label><input class="in" id="wkName" value="'+esc(w.name)+'">'+
-    '<div style="height:10px"></div><label class="f">Role</label><select class="in" id="wkRole">'+roleOptions(w.role)+'</select>'+
-    '<div style="height:10px"></div><label class="f">Phone</label><input class="in" id="wkPhone" value="'+esc(w.phone||'')+'">'+
-    '<div style="height:6px"></div><label class="chkline"><input type="checkbox" id="wkActive" '+(w.active?'checked':'')+'> Active</label>',
-    [{t:'Save',c:'btn',f:function(){
-      var name=$('wkName').value.trim(); if(!name){toast('Name required','err');return;}
-      api({action:'saveWorker',worker_id:id||'',name:name,role:$('wkRole').value,phone:$('wkPhone').value,active:$('wkActive').checked}).then(function(r){
-        if(!r.ok){toast(r.error,'err');return;} closeModal();toast('Saved ✅','ok');renderWorkers();
-      });
-    }},{t:'Cancel',c:'btn ghost',f:closeModal}]);
-}
-function delWorker(id){ confirmBox('Delete worker?','This removes them from the master.',function(){ api({action:'deleteWorker',worker_id:id}).then(function(r){ if(r.ok){toast('Deleted','ok');renderWorkers();} }); }); }
-
-/* ============ ROLES ============ */
-function renderRoles(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Roles</h2><div class="sub">Roles used for step assignment</div></div><button class="btn" onclick="editRole(null)">+ Add Role</button></div><div class="card" id="rlCard"><div class="empty">Loading…</div></div>';
-  api({action:'listRoles'}).then(function(r){
-    if(r.ok)ROLES=r.roles;
-    if(!ROLES.length){$('rlCard').innerHTML='<div class="empty"><div class="em">🏷</div>No roles yet.</div>';return;}
-    $('rlCard').innerHTML='<table class="tbl"><tr><th>Role</th><th>Status</th><th></th></tr>'+
-      ROLES.map(function(r){return '<tr><td><b>'+esc(r.role_name)+'</b></td><td><span class="pill p-'+(r.active?'Done':'Cancelled')+'">'+(r.active?'Active':'Inactive')+'</span></td>'+
-      '<td style="text-align:right"><button class="icb" onclick="editRole(\''+r.role_id+'\')">✎</button> <button class="icb" onclick="delRole(\''+r.role_id+'\')">🗑</button></td></tr>';}).join('')+'</table>';
-  });
-}
-function editRole(id){
-  var r=id?ROLES.filter(function(x){return x.role_id===id})[0]:{role_name:'',active:true};
-  modal(id?'Edit Role':'Add Role','<label class="f">Role name *</label><input class="in" id="rlName" value="'+esc(r.role_name)+'"><div style="height:6px"></div><label class="chkline"><input type="checkbox" id="rlActive" '+(r.active?'checked':'')+'> Active</label>',
-    [{t:'Save',c:'btn',f:function(){var n=$('rlName').value.trim();if(!n){toast('Name required','err');return;}api({action:'saveRole',role_id:id||'',role_name:n,active:$('rlActive').checked}).then(function(x){if(!x.ok){toast(x.error,'err');return;}closeModal();toast('Saved ✅','ok');renderRoles();});}},{t:'Cancel',c:'btn ghost',f:closeModal}]);
-}
-function delRole(id){ confirmBox('Delete role?','',function(){ api({action:'deleteRole',role_id:id}).then(function(r){if(r.ok){toast('Deleted','ok');renderRoles();}}); }); }
-
-/* ============ SETTINGS ============ */
-function renderSettings(){
-  api({action:'getSettings'}).then(function(r){
-    if(r.ok)SETTINGS=r.settings; var s=SETTINGS;
-    $('content').innerHTML='<div class="pageH"><div><h2>Settings</h2><div class="sub">System, trial &amp; TAT defaults</div></div></div>'+
-    '<div class="card"><div class="sechead">System</div>'+
-    '<div class="grid2"><div><label class="f">Store name</label><input class="in" id="setStore" value="'+esc(s.store_name||'')+'"></div>'+
-    '<div><label class="f">Timezone</label><input class="in" id="setTz" value="'+esc(s.timezone||'Asia/Kolkata')+'"></div></div>'+
-    '<div style="height:10px"></div><label class="f">Working days</label><input class="in" id="setDays" value="'+esc(s.working_days||'')+'">'+
-    '<div style="height:10px"></div><label class="f">Order statuses</label><input class="in" id="setStatus" value="'+esc(s.status_settings||'')+'">'+
-    '<div class="sechead">Trial Management</div>'+
-    '<label class="f">Maximum trial rounds</label><select class="in" id="setTrials" style="max-width:200px">'+[1,2,3,4,5].map(function(n){return '<option'+(String(n)===String(s.max_trial_rounds)?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'+
-    '<div class="hint">Applies to new orders. On a "No" trial decision, the system auto-generates the next trial up to this cap.</div>'+
-    '<div style="height:16px"></div><button class="btn ok" onclick="saveSet()">Save Settings 💾</button></div>'+
-    '<div class="card" style="margin-top:14px"><div class="sechead">Fabrics (order-form dropdown)</div>'+
-    '<div class="row"><input class="in" id="fbNew" placeholder="Add fabric name"><button class="btn" style="flex:0 0 auto" onclick="addFabric()">+ Add</button></div>'+
-    '<div id="fbList" style="margin-top:10px"></div></div>';
-    drawFabrics();
-  });
-}
-function drawFabrics(){
-  var el=$('fbList'); if(!el)return;
-  if(!FABRICS.length){el.innerHTML='<div class="hint">No fabrics yet. Add some — they show as a dropdown in the order form.</div>';return;}
-  el.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px">'+FABRICS.map(function(f){return '<span class="pill p-Running" style="gap:8px">'+esc(f.name)+' <b style="cursor:pointer" onclick="delFabric(\''+f.fabric_id+'\')">✕</b></span>';}).join('')+'</div>';
-}
-function addFabric(){
-  var n=$('fbNew').value.trim(); if(!n){toast('Enter fabric name','err');return;}
-  api({action:'saveFabric',name:n}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} $('fbNew').value=''; apiS({action:'listFabrics'}).then(function(x){if(x.ok)FABRICS=x.fabrics; drawFabrics(); toast('Added ✅','ok');}); });
-}
-function delFabric(id){
-  api({action:'deleteFabric',fabric_id:id}).then(function(r){ if(!r.ok){toast(r.error,'err');return;} apiS({action:'listFabrics'}).then(function(x){if(x.ok)FABRICS=x.fabrics; drawFabrics();}); });
-}
-function saveSet(){
-  api({action:'saveSettings',settings:{store_name:$('setStore').value,timezone:$('setTz').value,working_days:$('setDays').value,status_settings:$('setStatus').value,max_trial_rounds:$('setTrials').value}}).then(function(r){
-    if(!r.ok){toast(r.error,'err');return;} SETTINGS=r.settings; toast('Settings saved ✅','ok');
-  });
-}
-
-/* ============ FOLLOW-UPS (due tracking) ============ */
-function renderFollowups(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Follow-ups</h2><div class="sub">Orders with pending dues or open follow-ups</div></div></div><div id="fuList"><div class="empty">Loading…</div></div>';
-  api({action:'listFollowups'}).then(function(r){
-    if(!r.ok){$('fuList').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
-    var rows=r.rows||[];
-    if(!rows.length){$('fuList').innerHTML='<div class="empty"><div class="em">🎉</div>No pending dues or follow-ups.</div>';return;}
-    var totalDue=0; rows.forEach(function(x){totalDue+=(x.due>0?x.due:0);});
-    $('fuList').innerHTML='<div class="stats"><div class="stat"><div class="n">'+rows.length+'</div><div class="l">Orders</div><div class="bar"></div></div><div class="stat"><div class="n">₹'+totalDue+'</div><div class="l">Total Due</div><div class="bar" style="background:var(--err)"></div></div></div>'+
-      '<div class="olist">'+rows.map(function(x){
-        return '<div class="ocard" onclick="openOrder(\''+x.order_id+'\')"><div class="ohead"><div><div class="oid">'+esc(x.order_id)+'</div><div class="oclient">'+esc(x.client||'—')+(x.mobile?' · '+esc(x.mobile):'')+'</div></div>'+(x.due>0?'<span class="pill p-Delayed">₹'+x.due+' due</span>':'<span class="pill p-Running">follow-up</span>')+'</div>'+
-        '<div class="ometa"><span>Bill ₹'+x.total_bill+'</span><span style="color:var(--ok)">Paid ₹'+x.paid+'</span>'+(x.open_followups?'<span>🔔 '+x.open_followups+' open</span>':'')+(x.next_date?'<span>Next: '+esc(x.next_date)+'</span>':'')+'<span>👤 '+esc(x.sales_person||'—')+'</span></div>'+
-        (x.last_note?'<div class="hint">📝 '+esc(x.last_note)+'</div>':'')+'</div>';
-      }).join('')+'</div>';
-  });
-}
-
-/* ============ REPORTS ============ */
-var REP_RANGE='30', REP_STATUS='All', REP_PERSON='', REP_DATA=null;
-function repRangeMs(){
-  if(REP_RANGE==='all') return {from:0,to:Date.now()};
-  var days=Number(REP_RANGE)||30; return {from:Date.now()-days*864e5, to:Date.now()};
-}
-function renderReports(){
-  var ppl=[], seen={};
-  WORKERS.forEach(function(w){ if(w.active&&!seen[w.name]){seen[w.name]=1;ppl.push(w.name);} });
-  $('content').innerHTML='<div class="pageH"><div><h2>Reports</h2><div class="sub">Order summary · export to PDF or Sheet</div></div></div>'+
-    '<div class="tools">'+
-    '<select class="in" id="rpRange" style="max-width:150px"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select>'+
-    '<select class="in" id="rpStatus" style="max-width:150px"><option>All</option><option>Running</option><option>Completed</option><option>Stopped</option><option>Cancelled</option></select>'+
-    '<select class="in" id="rpPerson" style="max-width:180px"><option value="">All people</option>'+ppl.map(function(n){return '<option>'+esc(n)+'</option>'}).join('')+'</select>'+
-    '<div style="flex:1"></div>'+
-    '<button class="btn ghost" onclick="reportPDF()">⬇ Download PDF</button>'+
-    (can('config')?'<button class="btn" onclick="reportToSheet()">Write to Sheet</button>':'')+
-    '</div>'+
-    '<div id="rpKpi" class="stats"></div><div class="card" id="rpTbl"><div class="empty">Loading…</div></div>';
-  $('rpRange').value=REP_RANGE; $('rpStatus').value=REP_STATUS; $('rpPerson').value=REP_PERSON;
-  $('rpRange').onchange=function(){REP_RANGE=this.value;loadReport();};
-  $('rpStatus').onchange=function(){REP_STATUS=this.value;loadReport();};
-  $('rpPerson').onchange=function(){REP_PERSON=this.value;loadReport();};
-  loadReport();
-}
-function loadReport(){
-  var r=repRangeMs();
-  api({action:'reportData',from:r.from,to:r.to,status:REP_STATUS,person:REP_PERSON}).then(function(d){
-    if(!d.ok){$('rpTbl').innerHTML='<div class="empty">'+esc(d.error)+'</div>';return;}
-    REP_DATA=d; var k=d.kpi;
-    var cards=[['Total',k.total,'var(--accent)'],['Running',k.running,'var(--info)'],['Delayed',k.delayed,'var(--err)'],['Completed',k.completed,'var(--ok)'],['Stopped',k.stopped,'var(--warn)'],['Cancelled',k.cancelled,'var(--grey)']];
-    $('rpKpi').innerHTML=cards.map(function(c){return '<div class="stat"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div><div class="bar" style="background:'+c[2]+'"></div></div>';}).join('');
-    if(!d.rows.length){$('rpTbl').innerHTML='<div class="empty">No orders in this range.</div>';return;}
-    $('rpTbl').innerHTML='<div style="overflow-x:auto"><table class="tbl"><tr><th>Order</th><th>Client</th><th>Sales</th><th>Fabric</th><th>Type</th><th>Status</th><th>Progress</th><th>Current</th><th>Created</th></tr>'+
-      d.rows.map(function(r){var st=r.delayed&&r.status==='Running'?'Delayed':r.status;return '<tr><td><b>'+esc(r.order_id)+'</b></td><td>'+esc(r.client||'—')+'</td><td>'+esc(r.sales_person||'—')+'</td><td>'+esc(r.fabric||'—')+'</td><td>'+esc(r.assignment_type||'—')+'</td><td><span class="pill p-'+st+'">'+st+'</span></td><td>'+r.done+'/'+r.total+'</td><td>'+esc(r.current)+'</td><td>'+fmt(r.created_ts)+'</td></tr>';}).join('')+'</table></div>';
-  });
-}
-function reportToSheet(){
-  var r=repRangeMs();
-  api({action:'exportReportSheet',from:r.from,to:r.to,status:REP_STATUS,person:REP_PERSON}).then(function(d){
-    if(!d.ok){toast(d.error,'err');return;} toast(d.count+' rows written to '+d.sheet+' ✅','ok');
-  });
-}
-function reportPDF(){
-  if(!REP_DATA||!REP_DATA.rows.length){toast('Nothing to export','err');return;}
-  var k=REP_DATA.kpi, rows=REP_DATA.rows;
-  var rangeLbl=REP_RANGE==='all'?'All time':('Last '+REP_RANGE+' days');
-  var when=new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
-  var kpi=[['Total',k.total],['Running',k.running],['Delayed',k.delayed],['Completed',k.completed],['Stopped',k.stopped],['Cancelled',k.cancelled]];
-  var html='<!doctype html><html><head><meta charset="utf-8"><title>Ikxari FMS Report</title>'+
-    '<style>*{font-family:Jost,Arial,sans-serif}body{margin:28px;color:#111}h1{margin:0;font-size:22px}.sub{color:#666;font-size:13px;margin:4px 0 18px}'+
-    '.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.kc{border:1px solid #ddd;border-radius:8px;padding:10px 16px;min-width:90px}.kc .n{font-size:22px;font-weight:700}.kc .l{color:#777;font-size:12px}'+
-    'table{width:100%;border-collapse:collapse;font-size:12px}th{background:#E0457B;color:#fff;text-align:left;padding:7px 8px}td{padding:6px 8px;border-bottom:1px solid #eee}'+
-    'h1 span{color:#E0457B}.ft{margin-top:20px;color:#999;font-size:11px;text-align:center}@media print{.noprint{display:none}}</style></head><body>'+
-    '<h1>Ikxari <span>FMS</span> — Order Report</h1><div class="sub">'+rangeLbl+' · Status: '+esc(REP_STATUS)+(REP_PERSON?' · Person: '+esc(REP_PERSON):'')+' · Generated '+esc(when)+' by '+esc(ME.name)+'</div>'+
-    '<div class="kpis">'+kpi.map(function(c){return '<div class="kc"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>';}).join('')+'</div>'+
-    '<table><thead><tr><th>Order</th><th>Client</th><th>Sales</th><th>Fabric</th><th>Type</th><th>Status</th><th>Progress</th><th>Current</th><th>Created</th></tr></thead><tbody>'+
-    rows.map(function(r){var st=r.delayed&&r.status==='Running'?'Delayed':r.status;return '<tr><td>'+esc(r.order_id)+'</td><td>'+esc(r.client||'-')+'</td><td>'+esc(r.sales_person||'-')+'</td><td>'+esc(r.fabric||'-')+'</td><td>'+esc(r.assignment_type||'-')+'</td><td>'+st+'</td><td>'+r.done+'/'+r.total+'</td><td>'+esc(r.current)+'</td><td>'+fmt(r.created_ts)+'</td></tr>';}).join('')+
-    '</tbody></table><div class="ft">Ikxari · Fashion Management System · '+rows.length+' orders</div>'+
-    '<div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="background:#E0457B;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer">Print / Save PDF</button></div>'+
-    '<'+'script>window.onload=function(){setTimeout(window.print,400)}<\/script></body></html>';
-  var w=window.open('','_blank'); if(!w){toast('Allow popups to download PDF','err');return;}
-  w.document.write(html); w.document.close();
-}
-
-/* ============ CHANGE LOG ============ */
-function renderChangelog(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Change Log</h2><div class="sub">Workflow versions & every change</div></div></div><div id="clVers"></div><div class="card" id="clCard" style="margin-top:14px"><div class="empty">Loading…</div></div>';
-  Promise.all([api({action:'listVersions'}),api({action:'listChangeLog'})]).then(function(a){
-    var vers=a[0].ok?a[0].versions:[], log=a[1].ok?a[1].log:[];
-    $('clVers').innerHTML='<div class="olist">'+(vers.length?vers.map(function(v){return '<div class="ocard" style="cursor:default"><div class="ohead"><div><div class="oid">'+esc(v.version_name)+(v.active?' <span class="pill p-Done">Active</span>':'')+'</div><div class="oclient">'+esc(v.change_summary||'')+'</div></div></div><div class="ometa"><span>👤 '+esc(v.created_by||'—')+'</span><span>'+fmtDT(v.created_ts)+'</span><span>'+esc(v.version_id)+'</span></div></div>';}).join(''):'<div class="empty">No versions yet.</div>')+'</div>';
-    if(!log.length){$('clCard').innerHTML='<div class="empty">No changes logged yet.</div>';return;}
-    $('clCard').innerHTML='<table class="tbl"><tr><th>When</th><th>Type</th><th>Step</th><th>Old → New</th><th>By</th></tr>'+
-      log.map(function(c){return '<tr><td>'+fmtDT(c.changed_at)+'</td><td><span class="pill p-Running">'+esc(c.change_type)+'</span></td><td>'+esc(c.step)+'</td><td>'+esc(c.old_value)+' → '+esc(c.new_value)+'</td><td>'+esc(c.changed_by)+'</td></tr>';}).join('')+'</table>';
-  });
-}
-
-/* ============ TEAM ============ */
-function renderTeam(){
-  $('content').innerHTML='<div class="pageH"><div><h2>Team</h2><div class="sub">Approve users, set roles &amp; permissions</div></div></div><div class="card" id="tmCard"><div class="empty">Loading…</div></div>';
-  api({action:'listUsers'}).then(function(r){
-    if(!r.ok){$('tmCard').innerHTML='<div class="empty">'+esc(r.error)+'</div>';return;}
-    var us=r.users||[];
-    $('tmCard').innerHTML='<table class="tbl"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr>'+
-      us.map(function(u){
-        var act='';
-        if(u.status==='Pending') act+='<button class="btn ok sm" onclick="approve(\''+u.user_id+'\')">Approve</button> ';
-        act+='<button class="icb" title="Permissions" onclick="editPerms(\''+u.user_id+'\')">🔑</button> ';
-        if(u.user_id!==ME.user_id) act+='<button class="icb" onclick="delUser(\''+u.user_id+'\')">🗑</button>';
-        return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td>'+
-          '<select class="in" style="padding:6px 8px" onchange="setRole(\''+u.user_id+'\',this.value)"><option'+(u.role==='Admin'?' selected':'')+'>Admin</option><option'+(u.role==='Staff'?' selected':'')+'>Staff</option></select></td>'+
-          '<td><span class="pill p-'+(u.status==='Active'?'Done':u.status==='Pending'?'Running':'Cancelled')+'">'+esc(u.status)+'</span></td>'+
-          '<td style="text-align:right;white-space:nowrap">'+act+'</td></tr>';
-      }).join('')+'</table>';
-    window.__users=us;
-  });
-}
-function approve(id){ api({action:'approveUser',user_id:id,role:'Staff'}).then(function(r){if(r.ok){toast('Approved ✅','ok');renderTeam();}else toast(r.error,'err');}); }
-function setRole(id,role){ api({action:'setUserRole',user_id:id,role:role}).then(function(r){if(r.ok)toast('Role updated','ok');else toast(r.error,'err');}); }
-function delUser(id){ confirmBox('Remove user?','',function(){ api({action:'deleteUser',user_id:id}).then(function(r){if(r.ok){toast('Removed','ok');renderTeam();}else toast(r.error,'err');}); }); }
-function editPerms(id){
-  var u=(window.__users||[]).filter(function(x){return x.user_id===id})[0]; if(!u)return;
-  var p=u.perms||{};
-  var keys=[['create_order','Create orders'],['complete_task','Complete tasks'],['update_trial','Update trial status'],['update_delivery','Update delivery'],['config','Configure workflow / TAT / settings'],['manage_team','Manage team'],['view_all','View all orders']];
-  modal('Permissions — '+esc(u.name), (u.role==='Admin'?'<div class="hint" style="margin-bottom:10px">Admins have all permissions.</div>':'')+
-    keys.map(function(k){return '<label class="chkline"><input type="checkbox" id="pm_'+k[0]+'" '+((u.role==='Admin'||p[k[0]])?'checked':'')+' '+(u.role==='Admin'?'disabled':'')+'> '+k[1]+'</label>';}).join(''),
-    [{t:'Save',c:'btn',f:function(){
-      var np={}; keys.forEach(function(k){np[k[0]]=$('pm_'+k[0]).checked;});
-      api({action:'setUserPerms',user_id:id,perms:np}).then(function(r){if(r.ok){toast('Permissions saved ✅','ok');closeModal();renderTeam();}else toast(r.error,'err');});
-    }},{t:'Cancel',c:'btn ghost',f:closeModal}]);
-}
-
-/* ============ MODAL / CONFIRM ============ */
-function modal(title, bodyHtml, buttons, tall, root){
-  root=root||'modalRoot';
-  var foot=(buttons||[]).map(function(b,i){return '<button class="'+(b.c||'btn')+'" id="__mb'+i+'">'+esc(b.t)+'</button>';}).join('');
-  $(root).innerHTML='<div class="mwrap" onclick="if(event.target===this)closeModal(\''+root+'\')"><div class="modal'+(tall?'':'')+'"><div class="mhead"><h3>'+title+'</h3><button class="mx" onclick="closeModal(\''+root+'\')">✕</button></div><div class="mbody">'+bodyHtml+'</div>'+(foot?'<div class="mfoot">'+foot+'</div>':'')+'</div></div>';
-  (buttons||[]).forEach(function(b,i){ $('__mb'+i).onclick=b.f; });
-}
-function closeModal(root){ $(root||'modalRoot').innerHTML=''; if((root||'modalRoot')==='confirmRoot')return; }
-function confirmBox(title,msg,onYes){
-  $('confirmRoot').innerHTML='<div class="mwrap" id="cfWrap" style="z-index:10000" onclick="if(event.target===this)$(\'confirmRoot\').innerHTML=\'\'"><div class="modal confirm"><div class="mhead"><h3>'+esc(title)+'</h3></div><div class="mbody">'+esc(msg||'')+'</div><div class="mfoot"><button class="btn ghost" onclick="$(\'confirmRoot\').innerHTML=\'\'">Cancel</button><button class="btn danger" id="cfYes">Confirm</button></div></div></div>';
-  $('cfYes').onclick=function(){ $('confirmRoot').innerHTML=''; onYes(); };
-}
-
-/* ============ API URL ============ */
-function askUrl(){
-  modal('Set API URL','<label class="f">Web App /exec URL</label><input class="in" id="apiUrl" value="'+esc(API)+'" placeholder="https://script.google.com/macros/s/…/exec"><div class="hint">Paste your deployed Apps Script web app URL.</div>',
-    [{t:'Save & Reload',c:'btn',f:function(){var u=$('apiUrl').value.trim();if(!/\/exec$/.test(u)){toast('URL must end with /exec','err');return;}localStorage.setItem('ikx_api',u);location.reload();}},{t:'Cancel',c:'btn ghost',f:closeModal}]);
-}
+  window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
+  window.APP_VERSION = '<?= APP_VERSION ?>';
 </script>
+<!-- JS.html — Ikxari · Order Management front-end logic -->
+<script>
+/* ------------------------------- state ---------------------------------- */
+var STATE = {
+  suggestions: {salesPersons:[],tailors:[],dyers:[],karigars:[]},
+  dashboard: null,
+  orders: [], ordersLoaded: false,
+  pending: [], pendingLoaded: false,
+  notify: [],
+  img: {o:null,p:null,e:null,pe:null},
+  editOrderId: null, editPendingId: null
+};
+
+/* ------------------------------ helpers --------------------------------- */
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function showLoader(t){$('loaderTxt').textContent=t||'Loading…';$('loader').classList.add('on');}
+function hideLoader(){$('loader').classList.remove('on');}
+
+function toast(msg,type){
+  var t=document.createElement('div');
+  t.className='toast '+(type||'');
+  t.textContent=msg;
+  $('toasts').appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(20px)';
+    setTimeout(function(){t.remove();},250);},3200);
+}
+
+function btnLoad(id,on,label){
+  var b=$(id); if(!b) return;
+  var lbl=b.querySelector('.lbl');
+  if(on){b.classList.add('loading');b.disabled=true;
+    if(lbl){b.dataset.orig=lbl.textContent;if(label)lbl.textContent=label;}}
+  else{b.classList.remove('loading');b.disabled=false;
+    if(lbl&&b.dataset.orig)lbl.textContent=b.dataset.orig;}
+}
+
+/* Server call. Uses fetch when window.API_URL is set (file hosted anywhere),
+   else google.script.run (file served by Apps Script). */
+function api(fn,args,opt){
+  opt=opt||{};
+  if(opt.btn) btnLoad(opt.btn,true,opt.loadingLabel);
+  if(!opt.silent) showLoader(opt.loaderTxt);
+  function done(){ if(opt.btn) btnLoad(opt.btn,false); if(!opt.silent) hideLoader(); }
+
+  if(window.API_URL){
+    return fetch(window.API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:fn,args:args||[]})
+    }).then(function(r){return r.json();})
+      .then(function(v){done();return v;})
+      .catch(function(e){done();toast('Network error. Check the GAS URL / deployment.','err');throw e;});
+  }
+  return new Promise(function(res,rej){
+    var r=google.script.run
+      .withSuccessHandler(function(v){done();res(v);})
+      .withFailureHandler(function(e){done();toast((e&&e.message)||'Something went wrong. Please try again.','err');rej(e);});
+    r[fn].apply(r,args||[]);
+  });
+}
+
+var _dq;
+function debounced(fn){clearTimeout(_dq);_dq=setTimeout(fn,220);}
+
+function cleanMobile(v){return String(v||'').replace(/\D/g,'').slice(0,10);}
+function validMobile(v){return /^[6-9]\d{9}$/.test(cleanMobile(v));}
+
+/* --------------------------- navigation --------------------------------- */
+function go(sec){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.add('hide');});
+  var el=$('sec-'+sec); if(el) el.classList.remove('hide');
+  document.querySelectorAll('#nav button').forEach(function(b){
+    b.classList.toggle('active', b.dataset.sec===sec);});
+  closeNav();
+  if(sec==='dashboard') renderDashboard();
+  if(sec==='new')       ensureOrderForm();
+  if(sec==='pending')   loadPending();
+  if(sec==='orders')    loadOrders();
+  if(sec==='notify')    loadNotify();
+  window.scrollTo(0,0);
+}
+function toggleNav(){ $('nav').classList.toggle('open'); $('navbd').classList.toggle('open'); }
+function closeNav(){ $('nav').classList.remove('open'); $('navbd').classList.remove('open'); }
+
+/* ------------------------------- boot ----------------------------------- */
+window.addEventListener('load',function(){
+  api('Api_boot',[],{silent:true}).then(function(b){
+    STATE.suggestions=b.suggestions||STATE.suggestions;
+    STATE.dashboard=b.dashboard;
+    fillDatalists();
+    setNotify(b.notifyCount||0);
+    var f=$('foot'); if(f&&b.version) f.textContent='Ikxari · Order Management · v'+b.version;
+    $('boot').style.display='none';
+    var valid={dashboard:1,'new':1,pending:1,orders:1,notify:1};
+    var start=window.INITIAL_SECTION;
+    go(valid[start]?start:'dashboard');
+  }).catch(function(){ $('boot').style.display='none'; go('dashboard'); });
+
+  // mobile inputs → digits only
+  ['o-mobile','p-mobile','e-mobile','pe-mobile'].forEach(function(id){
+    var el=$(id); if(el) el.addEventListener('input',function(){this.value=cleanMobile(this.value);});
+  });
+});
+
+function fillDatalists(){
+  fillDL('dlSales',STATE.suggestions.salesPersons);
+  fillDL('dlTailor',STATE.suggestions.tailors);
+  fillDL('dlDyer',STATE.suggestions.dyers);
+  fillDL('dlKarigar',STATE.suggestions.karigars);
+}
+function fillDL(id,arr){
+  var dl=$(id); if(!dl) return;
+  dl.innerHTML=(arr||[]).map(function(v){return '<option value="'+esc(v)+'">';}).join('');
+}
+
+/* ---------------------------- dashboard --------------------------------- */
+function renderDashboard(){
+  var d=STATE.dashboard||{todayOrders:0,totalPending:0,dueToday:0,overdue:0,convertedToday:0};
+  $('s-today').textContent=d.todayOrders||0;
+  $('s-pending').textContent=d.totalPending||0;
+  $('s-due').textContent=d.dueToday||0;
+  $('s-over').textContent=d.overdue||0;
+  $('s-conv').textContent=d.convertedToday||0;
+}
+function refreshMeta(){
+  api('Api_refresh',[],{silent:true}).then(function(r){
+    STATE.dashboard=r.dashboard; setNotify(r.notifyCount||0);
+    if(!$('sec-dashboard').classList.contains('hide')) renderDashboard();
+  });
+}
+function setNotify(n){
+  var dot=$('bellDot'); dot.textContent=n; dot.classList.toggle('on',n>0);
+}
+
+/* ------------------------- item rows (products) ------------------------- */
+function itemRowHtml(){
+  return ''+
+  '<div class="item">'+
+    '<div class="head">'+
+      '<div class="field"><label>Product</label><input class="it-prod" placeholder="e.g. Blouse" autocomplete="off"></div>'+
+      '<div class="field qty"><label>Qty</label><input class="it-qty" placeholder="2 Pc" autocomplete="off"></div>'+
+      '<button type="button" class="rm" title="Remove" onclick="rmItem(this)">🗑</button>'+
+    '</div>'+
+    '<div class="field" style="margin:11px 0 0"><label>Description</label><input class="it-desc" placeholder="e.g. Blue blouse with design" autocomplete="off"></div>'+
+    '<div class="workers">'+
+      '<div class="field"><label>Tailor</label><input class="it-tailor" list="dlTailor" autocomplete="off"></div>'+
+      '<div class="field"><label>Dyer</label><input class="it-dyer" list="dlDyer" autocomplete="off"></div>'+
+      '<div class="field"><label>Karigar</label><input class="it-karigar" list="dlKarigar" autocomplete="off"></div>'+
+    '</div>'+
+  '</div>';
+}
+function addItem(scope){
+  var c=$((scope==='e'?'e':'o')+'-items');
+  c.insertAdjacentHTML('beforeend',itemRowHtml());
+}
+function rmItem(btn){
+  var c=btn.closest('.items');
+  if(c.querySelectorAll('.item').length<=1){ toast('At least one product is required.'); return; }
+  btn.closest('.item').remove();
+}
+function collectItems(scope){
+  var c=$((scope==='e'?'e':'o')+'-items');
+  return Array.prototype.map.call(c.querySelectorAll('.item'),function(it){
+    return {
+      product:     it.querySelector('.it-prod').value.trim(),
+      quantity:    it.querySelector('.it-qty').value.trim(),
+      description: it.querySelector('.it-desc').value.trim(),
+      tailor:      it.querySelector('.it-tailor').value.trim(),
+      dyer:        it.querySelector('.it-dyer').value.trim(),
+      karigar:     it.querySelector('.it-karigar').value.trim()
+    };
+  }).filter(function(x){return x.product;});
+}
+
+/* ----------------------------- images ----------------------------------- */
+function pickImg(scope){ $(scope+'-file').click(); }
+function onImg(scope){
+  var f=$(scope+'-file').files[0];
+  if(!f) return;
+  if(f.size>10*1024*1024){ toast('Image is too large (max 10 MB).','err'); return; }
+  var rd=new FileReader();
+  rd.onload=function(){
+    STATE.img[scope]={data:rd.result.split(',')[1],name:f.name,type:f.type};
+    var th=$(scope+'-thumb'); th.src=rd.result; th.classList.add('on');
+    $(scope+'-fname').textContent=f.name;
+  };
+  rd.readAsDataURL(f);
+}
+function clearImg(scope){
+  STATE.img[scope]=null;
+  var th=$(scope+'-thumb'); if(th){th.src='';th.classList.remove('on');}
+  var fi=$(scope+'-file'); if(fi) fi.value='';
+}
+
+/* ---------------------------- New Order --------------------------------- */
+function ensureOrderForm(){
+  var d=new Date();
+  $('o-date').value=('0'+d.getDate()).slice(-2)+' '+
+    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getFullYear();
+  if(!$('o-items').querySelector('.item')) addItem('o');
+}
+function resetOrderForm(){
+  ['o-client','o-mobile','o-sales'].forEach(function(id){$(id).value='';});
+  $('o-items').innerHTML=''; addItem('o');
+  clearImg('o'); $('o-fname').textContent='JPG, PNG or WEBP';
+  markBad(['o-client','o-mobile'],false);
+}
+function markBad(ids,on){ids.forEach(function(id){var e=$(id);if(e)e.classList.toggle('bad',on);});}
+
+function submitOrder(){
+  var client=$('o-client').value.trim(), mobile=$('o-mobile').value.trim();
+  var bad=[];
+  if(!client) bad.push('o-client');
+  if(!validMobile(mobile)) bad.push('o-mobile');
+  markBad(['o-client','o-mobile'],false); markBad(bad,true);
+  if(bad.length){ toast('Please fix the highlighted fields.','err'); return; }
+  var items=collectItems('o');
+  if(!items.length){ toast('Add at least one product.','err'); return; }
+
+  var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),items:items,image:STATE.img.o};
+  api('Api_createOrder',[payload],{btn:'o-submit',loadingLabel:'Creating Order…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to create order.','err'); return; }
+    toast('Order '+r.orderId+' created ✓','ok');
+    resetOrderForm();
+    STATE.ordersLoaded=false; refreshMeta();
+    showSuccess(r.orderId);
+  });
+}
+function showSuccess(orderId){
+  openConfirm({
+    title:'Order Created ✓',
+    body:'Order saved successfully.<br><br>Order ID: <b>'+esc(orderId)+'</b>',
+    okLabel:'View Order', cancelLabel:'Create New Order',
+    onOk:function(){ closeModal('mConfirm'); openDetail(orderId); }
+  });
+}
+
+/* ---------------------------- Pending form ------------------------------ */
+function openPendingForm(){ go('pending'); $('pendingCard').classList.remove('hide'); $('pendingCard').scrollIntoView({behavior:'smooth'}); }
+function closePendingForm(){ $('pendingCard').classList.add('hide'); }
+function resetPendingForm(){
+  ['p-name','p-mobile','p-fabric','p-qty','p-desc','p-remarks','p-exp'].forEach(function(id){$(id).value='';});
+  clearImg('p'); $('p-fname').textContent='JPG, PNG or WEBP';
+  markBad(['p-name','p-mobile'],false);
+}
+function submitPending(){
+  var name=$('p-name').value.trim(), mobile=$('p-mobile').value.trim();
+  var bad=[]; if(!name) bad.push('p-name'); if(!validMobile(mobile)) bad.push('p-mobile');
+  markBad(['p-name','p-mobile'],false); markBad(bad,true);
+  if(bad.length){ toast('Please fix the highlighted fields.','err'); return; }
+  var payload={customerName:name,mobile:mobile,fabric:$('p-fabric').value.trim(),
+    quantity:$('p-qty').value.trim(),description:$('p-desc').value.trim(),
+    remarks:$('p-remarks').value.trim(),expectedDate:$('p-exp').value,image:STATE.img.p};
+  api('Api_createPending',[payload],{btn:'p-submit',loadingLabel:'Saving…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to save.','err'); return; }
+    toast('Pending '+r.pendingId+' saved ✓','ok');
+    resetPendingForm(); closePendingForm();
+    STATE.pendingLoaded=false; loadPending(true); refreshMeta();
+  });
+}
+
+/* ---------------------------- Orders list ------------------------------- */
+function loadOrders(force){
+  if(STATE.ordersLoaded && !force){ renderOrders(); return; }
+  api('Api_listOrders',[{}],{loaderTxt:'Loading orders…'}).then(function(list){
+    STATE.orders=list||[]; STATE.ordersLoaded=true;
+    fillSalesFilter(); renderOrders();
+  });
+}
+function fillSalesFilter(){
+  var sel=$('of-sales'); var cur=sel.value;
+  var names={}; STATE.orders.forEach(function(o){ if(o.salesPerson) names[o.salesPerson]=1; });
+  sel.innerHTML='<option value="">All Sales</option>'+Object.keys(names).sort().map(function(n){
+    return '<option value="'+esc(n)+'">'+esc(n)+'</option>';}).join('');
+  sel.value=cur;
+}
+function renderOrders(){
+  var q=$('of-search').value.trim().toLowerCase();
+  var sales=$('of-sales').value, source=$('of-source').value;
+  var from=$('of-from').value, to=$('of-to').value;
+  var list=STATE.orders.filter(function(o){
+    if(sales && o.salesPerson!==sales) return false;
+    if(source && o.source!==source) return false;
+    if(from && cmpDate(o.dateOrder,from)<0) return false;
+    if(to && cmpDate(o.dateOrder,to)>0) return false;
+    if(q){ var h=[o.orderId,o.clientName,o.mobile,o.productSummary,o.salesPerson,o.workerSummary,o.pendingId].join(' ').toLowerCase();
+      if(h.indexOf(q)===-1) return false; }
+    return true;
+  });
+  var c=$('ordersList');
+  if(!list.length){ c.innerHTML='<div class="empty">No orders found.</div>'; return; }
+  c.innerHTML=list.map(orderCard).join('');
+}
+function orderCard(o){
+  var src=o.source==='Converted from Pending'?'<span class="badge src">↩ '+esc(o.pendingId||'Converted')+'</span>':'<span class="badge src">Direct</span>';
+  return '<div class="rowcard">'+
+    '<span class="id">'+esc(o.orderId)+'</span>'+
+    '<div class="main"><div class="name">'+esc(o.clientName)+' · <span style="color:var(--muted);font-weight:600">'+esc(o.mobile)+'</span></div>'+
+      '<div class="meta">'+esc(o.productSummary||'—')+
+        (o.workerSummary?'<br>👤 '+esc(o.workerSummary):'')+
+        '<br>📅 '+esc(o.dateOrder)+(o.salesPerson?' · 🧑‍💼 '+esc(o.salesPerson):'')+' · Qty '+esc(o.totalQty)+'</div></div>'+
+    '<div class="side">'+src+
+      '<div class="acts">'+
+        '<button class="btn ghost sm" onclick="openDetail(\''+esc(o.orderId)+'\')">View</button>'+
+        '<button class="btn primary sm" onclick="openEditOrder(\''+esc(o.orderId)+'\')">Edit</button>'+
+      '</div></div>'+
+  '</div>';
+}
+function cmpDate(disp,iso){ // disp "26 Sep 2026" vs iso "2026-09-26"
+  var d=parseDisp(disp); if(!d) return 0;
+  var t=new Date(iso+'T00:00:00');
+  return d.getTime()-t.getTime();
+}
+function parseDisp(s){ var d=new Date(s); return isNaN(d.getTime())?null:new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+
+/* --------------------------- Order detail ------------------------------- */
+function openDetail(orderId){
+  api('Api_getOrder',[orderId],{loaderTxt:'Opening order…'}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Order not found.','err'); return; }
+    var o=r.order, items=r.items||[];
+    $('md-title').textContent='Order '+o.orderId;
+    var kv='<div class="kv">'+
+      row('Client',o.clientName)+row('Mobile',o.mobile)+row('Sales Person',o.salesPerson||'—')+
+      row('Date',o.dateOrder)+row('Total Qty',o.totalQty)+row('Source',o.source)+
+      (o.pendingId?row('From Pending',o.pendingId):'')+row('Status',o.status)+
+      (o.imageUrl?row('Reference','<a class="link" target="_blank" href="'+esc(o.imageUrl)+'">Measurement and Design ↗</a>'):'')+
+    '</div>';
+    var di='<div class="detail-items"><b>Products</b>'+items.map(function(it){
+      var w=[]; if(it.tailor)w.push('Tailor: '+esc(it.tailor)); if(it.dyer)w.push('Dyer: '+esc(it.dyer)); if(it.karigar)w.push('Karigar: '+esc(it.karigar));
+      return '<div class="di"><b>'+esc(it.product)+'</b> — '+esc(it.quantity||'')+
+        (it.description?'<br><small>'+esc(it.description)+'</small>':'')+
+        (w.length?'<br><small>👤 '+w.join(' · ')+'</small>':'')+'</div>';
+    }).join('')+'</div>';
+    $('md-body').innerHTML=kv+di;
+    $('md-foot').innerHTML='<button class="btn ghost" onclick="closeModal(\'mDetail\')">Close</button>'+
+      '<button class="btn primary" onclick="closeModal(\'mDetail\');openEditOrder(\''+esc(o.orderId)+'\')">Edit</button>';
+    openModal('mDetail');
+  });
+}
+function row(k,v){return '<div class="k">'+esc(k)+'</div><div class="v">'+(v==null?'':v)+'</div>';}
+
+/* ---------------------------- Edit order -------------------------------- */
+function openEditOrder(orderId){
+  api('Api_getOrder',[orderId],{loaderTxt:'Loading…'}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Order not found.','err'); return; }
+    var o=r.order, items=r.items||[];
+    STATE.editOrderId=o.orderId; clearImg('e'); $('e-fname').textContent='Keep existing';
+    $('e-id').textContent=o.orderId;
+    $('e-client').value=o.clientName||''; $('e-mobile').value=o.mobile||''; $('e-sales').value=o.salesPerson||'';
+    var c=$('e-items'); c.innerHTML='';
+    (items.length?items:[{}]).forEach(function(it){
+      c.insertAdjacentHTML('beforeend',itemRowHtml());
+      var el=c.lastElementChild;
+      el.querySelector('.it-prod').value=it.product||'';
+      el.querySelector('.it-qty').value=it.quantity||'';
+      el.querySelector('.it-desc').value=it.description||'';
+      el.querySelector('.it-tailor').value=it.tailor||'';
+      el.querySelector('.it-dyer').value=it.dyer||'';
+      el.querySelector('.it-karigar').value=it.karigar||'';
+    });
+    openModal('mEdit');
+  });
+}
+function submitEditOrder(){
+  var client=$('e-client').value.trim(), mobile=$('e-mobile').value.trim();
+  if(!client){ toast('Client name is required.','err'); return; }
+  if(!validMobile(mobile)){ toast('Enter a valid 10-digit mobile.','err'); return; }
+  var items=collectItems('e');
+  if(!items.length){ toast('Add at least one product.','err'); return; }
+  var payload={orderId:STATE.editOrderId,clientName:client,mobile:mobile,
+    salesPerson:$('e-sales').value.trim(),items:items,image:STATE.img.e};
+  api('Api_updateOrder',[payload],{btn:'e-submit',loadingLabel:'Saving…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
+    toast('Order updated ✓','ok'); closeModal('mEdit');
+    STATE.ordersLoaded=false; loadOrders(true); refreshMeta();
+  });
+}
+
+/* --------------------------- Pending list ------------------------------- */
+function loadPending(force){
+  if(STATE.pendingLoaded && !force){ renderPending(); return; }
+  api('Api_listPending',[{}],{loaderTxt:'Loading pending…'}).then(function(list){
+    STATE.pending=list||[]; STATE.pendingLoaded=true; renderPending();
+  });
+}
+function renderPending(){
+  var q=$('pf-search').value.trim().toLowerCase();
+  var status=$('pf-status').value;
+  var today=new Date(); today=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  var list=STATE.pending.filter(function(p){
+    if(status){
+      if(status==='Due'){ if(p.status==='Converted') return false;
+        var e=p.expectedDateISO?new Date(p.expectedDateISO+'T00:00:00'):null;
+        if(!e||e.getTime()>today.getTime()) return false; }
+      else if(status==='Converted'){ if(p.status!=='Converted') return false; }
+      else if(status==='Kept Pending'){ if(p.reminderStatus!=='Kept Pending') return false; }
+      else if(status==='Pending'){ if(p.status!=='Pending') return false; }
+    }
+    if(q){ var h=[p.pendingId,p.customer,p.mobile,p.fabric,p.description,p.remarks,p.convertedOrderId].join(' ').toLowerCase();
+      if(h.indexOf(q)===-1) return false; }
+    return true;
+  });
+  var c=$('pendingList');
+  if(!list.length){ c.innerHTML='<div class="empty">No pending orders found.</div>'; return; }
+  c.innerHTML=list.map(function(p){return pendingCard(p,today);}).join('');
+}
+function pendingCard(p,today){
+  var converted=(p.status==='Converted');
+  var badge, exp=p.expectedDateISO?new Date(p.expectedDateISO+'T00:00:00'):null;
+  if(converted) badge='<span class="badge conv">✓ '+esc(p.convertedOrderId||'Converted')+'</span>';
+  else if(p.reminderStatus==='Kept Pending') badge='<span class="badge kept">Kept Pending</span>';
+  else if(exp && exp.getTime()<today.getTime()) badge='<span class="badge over">Overdue</span>';
+  else if(exp && exp.getTime()===today.getTime()) badge='<span class="badge due">Due Today</span>';
+  else badge='<span class="badge pending">Pending</span>';
+
+  var acts='<button class="btn ghost sm" onclick="openEditPending(\''+esc(p.pendingId)+'\')">Edit</button>';
+  if(!converted){
+    acts+='<button class="btn primary sm" onclick="confirmConvert(\''+esc(p.pendingId)+'\',\''+esc(p.customer)+'\')">Send to Main</button>'+
+          '<button class="btn ghost sm" onclick="keepPending(\''+esc(p.pendingId)+'\')">Keep Pending</button>';
+  }
+  return '<div class="rowcard">'+
+    '<span class="id">'+esc(p.pendingId)+'</span>'+
+    '<div class="main"><div class="name">'+esc(p.customer)+' · <span style="color:var(--muted);font-weight:600">'+esc(p.mobile)+'</span></div>'+
+      '<div class="meta">'+esc(p.fabric||'—')+(p.quantity?' · '+esc(p.quantity):'')+
+        (p.description?'<br>'+esc(p.description):'')+
+        (p.remarks?'<br>📝 '+esc(p.remarks):'')+
+        (p.expectedDate?'<br>📅 Expected '+esc(p.expectedDate):'')+
+        (p.imageUrl?' · <a class="link" target="_blank" href="'+esc(p.imageUrl)+'">Image ↗</a>':'')+
+      '</div></div>'+
+    '<div class="side">'+badge+'<div class="acts">'+acts+'</div></div>'+
+  '</div>';
+}
+function openEditPending(penId){
+  api('Api_getPending',[penId],{loaderTxt:'Loading…'}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Not found.','err'); return; }
+    var p=r.pending; STATE.editPendingId=p.pendingId; clearImg('pe'); $('pe-fname').textContent='Keep existing';
+    $('pe-id').textContent=p.pendingId;
+    $('pe-name').value=p.customer||''; $('pe-mobile').value=p.mobile||'';
+    $('pe-fabric').value=p.fabric||''; $('pe-qty').value=p.quantity||'';
+    $('pe-desc').value=p.description||''; $('pe-remarks').value=p.remarks||'';
+    $('pe-exp').value=p.expectedDateISO||'';
+    openModal('mPend');
+  });
+}
+function submitEditPending(){
+  var name=$('pe-name').value.trim(), mobile=$('pe-mobile').value.trim();
+  if(!name){ toast('Customer name is required.','err'); return; }
+  if(!validMobile(mobile)){ toast('Enter a valid 10-digit mobile.','err'); return; }
+  var payload={pendingId:STATE.editPendingId,customerName:name,mobile:mobile,
+    fabric:$('pe-fabric').value.trim(),quantity:$('pe-qty').value.trim(),
+    description:$('pe-desc').value.trim(),remarks:$('pe-remarks').value.trim(),
+    expectedDate:$('pe-exp').value,image:STATE.img.pe};
+  api('Api_updatePending',[payload],{btn:'pe-submit',loadingLabel:'Saving…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
+    toast('Pending updated ✓','ok'); closeModal('mPend');
+    STATE.pendingLoaded=false; loadPending(true); refreshMeta();
+  });
+}
+function confirmConvert(penId,customer){
+  openConfirm({
+    title:'Send to Main Order',
+    body:'Convert <b>'+esc(penId)+'</b> ('+esc(customer)+') into a Main Order?<br><br>All details carry over automatically.',
+    okLabel:'Convert', cancelLabel:'Cancel',
+    onOk:function(ok){
+      api('Api_convertPending',[penId],{btn:'c-ok',loadingLabel:'Converting…',silent:true}).then(function(r){
+        if(!r||!r.ok){ toast((r&&r.msg)||'Unable to convert.','err'); return; }
+        closeModal('mConfirm'); toast(penId+' → '+r.orderId+' ✓','ok');
+        STATE.pendingLoaded=false; STATE.ordersLoaded=false;
+        loadPending(true); refreshMeta();
+        if(!$('sec-notify').classList.contains('hide')) loadNotify(true);
+      });
+    }
+  });
+}
+function keepPending(penId){
+  api('Api_keepPending',[penId],{silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
+    toast('Kept pending.','ok');
+    STATE.pendingLoaded=false; loadPending(true); refreshMeta();
+    if(!$('sec-notify').classList.contains('hide')) loadNotify(true);
+  });
+}
+
+/* --------------------------- Notifications ------------------------------ */
+function loadNotify(force){
+  api('Api_notifications',[],{loaderTxt:'Checking due orders…',silent:force===true}).then(function(r){
+    STATE.notify=(r&&r.items)||[]; setNotify((r&&r.count)||0); renderNotify();
+  });
+}
+function renderNotify(){
+  var c=$('notifyList');
+  if(!STATE.notify.length){ c.innerHTML='<div class="empty">All clear — nothing is due right now. 🎉</div>'; return; }
+  c.innerHTML=STATE.notify.map(function(n){
+    var badge=n.overdue?'<span class="badge over">Overdue</span>':'<span class="badge due">Due Today</span>';
+    return '<div class="rowcard">'+
+      '<span class="id">'+esc(n.pendingId)+'</span>'+
+      '<div class="main"><div class="name">'+esc(n.customer)+' · <span style="color:var(--muted);font-weight:600">'+esc(n.mobile)+'</span></div>'+
+        '<div class="meta">'+esc(n.product||'—')+(n.quantity?' · '+esc(n.quantity):'')+'<br>📅 Expected '+esc(n.expectedDate)+'</div></div>'+
+      '<div class="side">'+badge+'<div class="acts">'+
+        '<button class="btn primary sm" onclick="confirmConvert(\''+esc(n.pendingId)+'\',\''+esc(n.customer)+'\')">Move to Main Order</button>'+
+        '<button class="btn ghost sm" onclick="keepPending(\''+esc(n.pendingId)+'\')">Keep Pending</button>'+
+      '</div></div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ------------------------------ modals ---------------------------------- */
+function openModal(id){ $(id).classList.add('on'); }
+function closeModal(id){ $(id).classList.remove('on'); }
+function openConfirm(opt){
+  $('c-title').textContent=opt.title||'Confirm';
+  $('c-body').innerHTML=opt.body||'';
+  var ok=$('c-ok'); ok.querySelector('.lbl').textContent=opt.okLabel||'Confirm';
+  var cancel=$('mConfirm').querySelector('.mfoot .ghost');
+  cancel.textContent=opt.cancelLabel||'Cancel';
+  ok.onclick=function(){ if(opt.onOk) opt.onOk(true); else closeModal('mConfirm'); };
+  openModal('mConfirm');
+}
+/* click backdrop to close */
+document.querySelectorAll('.modal').forEach(function(m){
+  m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); });
+});
+</script>
+
 </body>
 </html>
