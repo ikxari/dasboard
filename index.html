@@ -125,6 +125,14 @@ textarea{resize:vertical;min-height:64px}
 .thumb{width:60px;height:60px;border-radius:10px;object-fit:cover;border:1px solid var(--line);display:none}
 .thumb.on{display:block}
 .file-name{font-size:13px;color:var(--muted)}
+/* multi-image uploader (Measurement & Design) */
+.up-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.up-item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:8px 10px;background:var(--card-2)}
+.up-th{width:42px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--line);flex:none}
+.up-name{flex:1}
+.up-rm{background:var(--err-bg);color:var(--err);border:none;border-radius:8px;width:38px;height:40px;cursor:pointer;flex:none;font-size:15px}
+.chk{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--ink-2);cursor:pointer;font-size:14.5px}
+.chk input{width:auto;height:18px;width:18px}
 
 /* toolbar (search + filters) */
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -303,14 +311,25 @@ textarea{resize:vertical;min-height:64px}
           <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem()">＋ Add Product</button>
         </div>
 
-        <div class="field">
-          <label>Measurement / Design Image</label>
-          <div class="uploader">
-            <button type="button" class="btn ghost sm" onclick="pickImg('o')">📎 Upload Image</button>
-            <img class="thumb" id="o-thumb">
-            <span class="file-name" id="o-fname">JPG, PNG or WEBP</span>
-            <input type="file" id="o-file" accept="image/png,image/jpeg,image/webp" class="hide" onchange="onImg('o')">
+        <div class="row">
+          <div class="field">
+            <label>Measurement Images</label>
+            <div class="up-list" id="m-uplist"></div>
+            <button type="button" class="btn ghost sm" onclick="pickImg('m')">📎 Add Measurement</button>
+            <input type="file" id="m-file" accept="image/png,image/jpeg,image/webp" multiple class="hide" onchange="onImg('m')">
           </div>
+          <div class="field">
+            <label>Design Images</label>
+            <div class="up-list" id="d-uplist"></div>
+            <button type="button" class="btn ghost sm" onclick="pickImg('d')">📎 Add Design</button>
+            <input type="file" id="d-file" accept="image/png,image/jpeg,image/webp" multiple class="hide" onchange="onImg('d')">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Advance Payment</label>
+          <label class="chk"><input type="checkbox" id="o-adv" onchange="toggleAdv('o')"> Customer paid advance</label>
+          <input id="o-advamt" class="hide" placeholder="Advance amount (₹)" inputmode="numeric" style="margin-top:8px;max-width:50%">
         </div>
 
         <div style="display:flex;gap:10px;margin-top:6px">
@@ -409,9 +428,7 @@ textarea{resize:vertical;min-height:64px}
 
 <!-- datalists -->
 <datalist id="dlSales"></datalist>
-<datalist id="dlTailor"></datalist>
-<datalist id="dlDyer"></datalist>
-<datalist id="dlKarigar"></datalist>
+<datalist id="dlProduct"></datalist>
 
 <!-- DETAIL / EDIT ORDER modal -->
 <div class="modal" id="mDetail">
@@ -432,10 +449,22 @@ textarea{resize:vertical;min-height:64px}
       <div class="field" style="max-width:50%"><label>Sales Person</label><input id="e-sales" list="dlSales"></div>
       <div class="field"><label>Product Details</label><div class="items" id="e-items"></div>
         <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem('e')">＋ Add Product</button></div>
-      <div class="field"><label>Replace Image (optional)</label>
-        <div class="uploader"><button type="button" class="btn ghost sm" onclick="pickImg('e')">📎 Upload Image</button>
-          <img class="thumb" id="e-thumb"><span class="file-name" id="e-fname">Keep existing</span>
-          <input type="file" id="e-file" accept="image/png,image/jpeg,image/webp" class="hide" onchange="onImg('e')"></div>
+      <div class="row">
+        <div class="field"><label>Add Measurement Images</label>
+          <div class="up-list" id="em-uplist"></div>
+          <button type="button" class="btn ghost sm" onclick="pickImg('em')">📎 Add Measurement</button>
+          <input type="file" id="em-file" accept="image/png,image/jpeg,image/webp" multiple class="hide" onchange="onImg('em')">
+        </div>
+        <div class="field"><label>Add Design Images</label>
+          <div class="up-list" id="ed-uplist"></div>
+          <button type="button" class="btn ghost sm" onclick="pickImg('ed')">📎 Add Design</button>
+          <input type="file" id="ed-file" accept="image/png,image/jpeg,image/webp" multiple class="hide" onchange="onImg('ed')">
+        </div>
+      </div>
+      <div class="file-name" style="margin:-4px 0 12px">New images add to the order's folder; existing stay.</div>
+      <div class="field"><label>Advance Payment</label>
+        <label class="chk"><input type="checkbox" id="e-adv" onchange="toggleAdv('e')"> Customer paid advance</label>
+        <input id="e-advamt" class="hide" placeholder="Advance amount (₹)" inputmode="numeric" style="margin-top:8px;max-width:50%">
       </div>
     </div>
     <div class="mfoot">
@@ -494,7 +523,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbzz73Y56n9w3Y4c-KY1LQp52SIkSIG6XuGgbasVYXcpsHgQswXhNZ2jyJA__VZk92t3/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbwEpYAI1htzJryj_TxaosKChBY_dUpnKUmFZXry2pyJiWSpd-tLOQ0Rsu47hONTmKxu/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -503,12 +532,13 @@ textarea{resize:vertical;min-height:64px}
 <script>
 /* ------------------------------- state ---------------------------------- */
 var STATE = {
-  suggestions: {salesPersons:[],tailors:[],dyers:[],karigars:[]},
+  suggestions: {salesPersons:[],tailors:[],dyers:[],karigars:[],products:[]},
   dashboard: null,
   orders: [], ordersLoaded: false,
   pending: [], pendingLoaded: false,
   notify: [],
-  img: {o:null,p:null,e:null,pe:null},
+  img: {p:null,pe:null},
+  imgs: {m:[],d:[],em:[],ed:[]},
   editOrderId: null, editPendingId: null
 };
 
@@ -608,9 +638,7 @@ window.addEventListener('load',function(){
 
 function fillDatalists(){
   fillDL('dlSales',STATE.suggestions.salesPersons);
-  fillDL('dlTailor',STATE.suggestions.tailors);
-  fillDL('dlDyer',STATE.suggestions.dyers);
-  fillDL('dlKarigar',STATE.suggestions.karigars);
+  fillDL('dlProduct',(STATE.suggestions.products||[]).map(function(p){return p.name;}));
 }
 function fillDL(id,arr){
   var dl=$(id); if(!dl) return;
@@ -641,17 +669,23 @@ function itemRowHtml(){
   return ''+
   '<div class="item">'+
     '<div class="head">'+
-      '<div class="field"><label>Product</label><input class="it-prod" placeholder="e.g. Blouse" autocomplete="off"></div>'+
+      '<div class="field"><label>Product with Description</label><input class="it-prod" list="dlProduct" onchange="prodPick(this)" placeholder="e.g. Blue Blouse with design" autocomplete="off"></div>'+
       '<div class="field qty"><label>Qty</label><input class="it-qty" placeholder="2 Pc" autocomplete="off"></div>'+
       '<button type="button" class="rm" title="Remove" onclick="rmItem(this)">🗑</button>'+
     '</div>'+
-    '<div class="field" style="margin:11px 0 0"><label>Description</label><input class="it-desc" placeholder="e.g. Blue blouse with design" autocomplete="off"></div>'+
     '<div class="workers">'+
-      '<div class="field"><label>Tailor</label><input class="it-tailor" list="dlTailor" autocomplete="off"></div>'+
-      '<div class="field"><label>Dyer</label><input class="it-dyer" list="dlDyer" autocomplete="off"></div>'+
-      '<div class="field"><label>Karigar</label><input class="it-karigar" list="dlKarigar" autocomplete="off"></div>'+
+      '<div class="field"><label>Tailor</label><select class="it-tailor">'+optList(STATE.suggestions.tailors)+'</select></div>'+
+      '<div class="field"><label>Dyer</label><select class="it-dyer">'+optList(STATE.suggestions.dyers)+'</select></div>'+
+      '<div class="field"><label>Karigar</label><select class="it-karigar">'+optList(STATE.suggestions.karigars)+'</select></div>'+
     '</div>'+
   '</div>';
+}
+function optList(arr){
+  return '<option value="">— select —</option>'+(arr||[]).map(function(v){return '<option>'+esc(v)+'</option>';}).join('');
+}
+function setSel(el,val){
+  if(!el) return; el.value=val||'';
+  if(val && el.value!==val){ var o=document.createElement('option'); o.textContent=val; o.selected=true; el.appendChild(o); }
 }
 function addItem(scope){
   var c=$((scope==='e'?'e':'o')+'-items');
@@ -662,13 +696,24 @@ function rmItem(btn){
   if(c.querySelectorAll('.item').length<=1){ toast('At least one product is required.'); return; }
   btn.closest('.item').remove();
 }
+/* picking a known product fills in its saved "Product with Description" text */
+function prodPick(inp){
+  var v=inp.value.trim(); if(!v) return;
+  var list=STATE.suggestions.products||[];
+  for(var i=0;i<list.length;i++){
+    if(String(list[i].name||'').trim().toLowerCase()===v.toLowerCase()){
+      inp.value = list[i].desc ? (list[i].name+' — '+list[i].desc) : list[i].name;
+      return;
+    }
+  }
+}
 function collectItems(scope){
   var c=$((scope==='e'?'e':'o')+'-items');
   return Array.prototype.map.call(c.querySelectorAll('.item'),function(it){
     return {
       product:     it.querySelector('.it-prod').value.trim(),
       quantity:    it.querySelector('.it-qty').value.trim(),
-      description: it.querySelector('.it-desc').value.trim(),
+      description: '',
       tailor:      it.querySelector('.it-tailor').value.trim(),
       dyer:        it.querySelector('.it-dyer').value.trim(),
       karigar:     it.querySelector('.it-karigar').value.trim()
@@ -677,18 +722,53 @@ function collectItems(scope){
 }
 
 /* ----------------------------- images ----------------------------------- */
+var MULTI_IMG={m:1,d:1,em:1,ed:1};
 function pickImg(scope){ $(scope+'-file').click(); }
 function onImg(scope){
-  var f=$(scope+'-file').files[0];
-  if(!f) return;
-  if(f.size>10*1024*1024){ toast('Image is too large (max 10 MB).','err'); return; }
-  var rd=new FileReader();
-  rd.onload=function(){
-    STATE.img[scope]={data:rd.result.split(',')[1],name:f.name,type:f.type};
-    var th=$(scope+'-thumb'); th.src=rd.result; th.classList.add('on');
-    $(scope+'-fname').textContent=f.name;
-  };
-  rd.readAsDataURL(f);
+  var inp=$(scope+'-file'); var files=inp.files;
+  if(!files||!files.length) return;
+  if(MULTI_IMG[scope]){          /* multi (Measurement / Design) */
+    Array.prototype.forEach.call(files,function(f){
+      if(f.size>10*1024*1024){ toast(f.name+': too large (max 10 MB).','err'); return; }
+      var rd=new FileReader();
+      rd.onload=function(){
+        STATE.imgs[scope].push({data:rd.result.split(',')[1],name:f.name,type:f.type,
+          rename:f.name.replace(/\.[^.]+$/,''),url:rd.result});
+        renderUpList(scope);
+      };
+      rd.readAsDataURL(f);
+    });
+    inp.value='';
+  } else {                                /* single (pending) */
+    var f=files[0];
+    if(f.size>10*1024*1024){ toast('Image is too large (max 10 MB).','err'); return; }
+    var rd=new FileReader();
+    rd.onload=function(){
+      STATE.img[scope]={data:rd.result.split(',')[1],name:f.name,type:f.type};
+      var th=$(scope+'-thumb'); if(th){th.src=rd.result; th.classList.add('on');}
+      var fn=$(scope+'-fname'); if(fn) fn.textContent=f.name;
+    };
+    rd.readAsDataURL(f);
+  }
+}
+function renderUpList(scope){
+  var c=$(scope+'-uplist'); if(!c) return;
+  var arr=STATE.imgs[scope]||[];
+  c.innerHTML=arr.map(function(im,i){
+    return '<div class="up-item">'+
+      '<img class="up-th" src="'+im.url+'">'+
+      '<input class="up-name" value="'+esc(im.rename)+'" oninput="renameImg(\''+scope+'\','+i+',this.value)" placeholder="File name">'+
+      '<button type="button" class="up-rm" onclick="rmImg(\''+scope+'\','+i+')">🗑</button>'+
+    '</div>';
+  }).join('');
+}
+function renameImg(scope,i,val){ if(STATE.imgs[scope][i]) STATE.imgs[scope][i].rename=val; }
+function rmImg(scope,i){ STATE.imgs[scope].splice(i,1); renderUpList(scope); }
+function imgsPayload(scope){ return (STATE.imgs[scope]||[]).map(function(x){return {data:x.data,type:x.type,name:(x.rename||x.name)};}); }
+function toggleAdv(scope){
+  var on=$(scope+'-adv').checked;
+  $(scope+'-advamt').classList.toggle('hide',!on);
+  if(!on) $(scope+'-advamt').value='';
 }
 function clearImg(scope){
   STATE.img[scope]=null;
@@ -706,7 +786,8 @@ function ensureOrderForm(){
 function resetOrderForm(){
   ['o-client','o-mobile','o-sales'].forEach(function(id){$(id).value='';});
   $('o-items').innerHTML=''; addItem('o');
-  clearImg('o'); $('o-fname').textContent='JPG, PNG or WEBP';
+  STATE.imgs.m=[]; STATE.imgs.d=[]; renderUpList('m'); renderUpList('d');
+  $('o-adv').checked=false; toggleAdv('o');
   markBad(['o-client','o-mobile'],false);
 }
 function markBad(ids,on){ids.forEach(function(id){var e=$(id);if(e)e.classList.toggle('bad',on);});}
@@ -721,7 +802,9 @@ function submitOrder(){
   var items=collectItems('o');
   if(!items.length){ toast('Add at least one product.','err'); return; }
 
-  var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),items:items,image:STATE.img.o};
+  var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),items:items,
+    measurement:imgsPayload('m'),design:imgsPayload('d'),
+    advancePaid:$('o-adv').checked,advanceAmount:$('o-advamt').value.trim()};
   api('Api_createOrder',[payload],{btn:'o-submit',loadingLabel:'Creating Order…',silent:true}).then(function(r){
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to create order.','err'); return; }
     toast('Order '+r.orderId+' created ✓','ok');
@@ -802,7 +885,8 @@ function orderCard(o){
     '<div class="main"><div class="name">'+esc(o.clientName)+' · <span style="color:var(--muted);font-weight:600">'+esc(o.mobile)+'</span></div>'+
       '<div class="meta">'+esc(o.productSummary||'—')+
         (o.workerSummary?'<br>👤 '+esc(o.workerSummary):'')+
-        '<br>📅 '+esc(o.dateOrder)+(o.salesPerson?' · 🧑‍💼 '+esc(o.salesPerson):'')+' · Qty '+esc(o.totalQty)+'</div></div>'+
+        '<br>📅 '+esc(o.dateOrder)+(o.salesPerson?' · 🧑‍💼 '+esc(o.salesPerson):'')+' · Qty '+esc(o.totalQty)+
+        (o.advancePaid==='Yes'?' · 💰 Adv ₹'+esc(o.advanceAmount||'0'):'')+'</div></div>'+
     '<div class="side">'+src+
       '<div class="acts">'+
         '<button class="btn ghost sm" onclick="openDetail(\''+esc(o.orderId)+'\')">View</button>'+
@@ -827,7 +911,9 @@ function openDetail(orderId){
       row('Client',o.clientName)+row('Mobile',o.mobile)+row('Sales Person',o.salesPerson||'—')+
       row('Date',o.dateOrder)+row('Total Qty',o.totalQty)+row('Source',o.source)+
       (o.pendingId?row('From Pending',o.pendingId):'')+row('Status',o.status)+
-      (o.imageUrl?row('Reference','<a class="link" target="_blank" href="'+esc(o.imageUrl)+'">Measurement and Design ↗</a>'):'')+
+      (o.measurementUrl?row('Measurement','<a class="link" target="_blank" href="'+esc(o.measurementUrl)+'">Open ↗</a>'):'')+
+      (o.designUrl?row('Design','<a class="link" target="_blank" href="'+esc(o.designUrl)+'">Open ↗</a>'):'')+
+      (o.advancePaid==='Yes'?row('Advance','₹'+esc(o.advanceAmount||'0')+' paid'):'')+
     '</div>';
     var di='<div class="detail-items"><b>Products</b>'+items.map(function(it){
       var w=[]; if(it.tailor)w.push('Tailor: '+esc(it.tailor)); if(it.dyer)w.push('Dyer: '+esc(it.dyer)); if(it.karigar)w.push('Karigar: '+esc(it.karigar));
@@ -848,7 +934,9 @@ function openEditOrder(orderId){
   api('Api_getOrder',[orderId],{loaderTxt:'Loading…'}).then(function(r){
     if(!r||!r.ok){ toast((r&&r.msg)||'Order not found.','err'); return; }
     var o=r.order, items=r.items||[];
-    STATE.editOrderId=o.orderId; clearImg('e'); $('e-fname').textContent='Keep existing';
+    STATE.editOrderId=o.orderId;
+    STATE.imgs.em=[]; STATE.imgs.ed=[]; renderUpList('em'); renderUpList('ed');
+    $('e-adv').checked=(o.advancePaid==='Yes'); $('e-advamt').value=o.advanceAmount||''; toggleAdv('e');
     $('e-id').textContent=o.orderId;
     $('e-client').value=o.clientName||''; $('e-mobile').value=o.mobile||''; $('e-sales').value=o.salesPerson||'';
     var c=$('e-items'); c.innerHTML='';
@@ -857,10 +945,9 @@ function openEditOrder(orderId){
       var el=c.lastElementChild;
       el.querySelector('.it-prod').value=it.product||'';
       el.querySelector('.it-qty').value=it.quantity||'';
-      el.querySelector('.it-desc').value=it.description||'';
-      el.querySelector('.it-tailor').value=it.tailor||'';
-      el.querySelector('.it-dyer').value=it.dyer||'';
-      el.querySelector('.it-karigar').value=it.karigar||'';
+      setSel(el.querySelector('.it-tailor'),it.tailor||'');
+      setSel(el.querySelector('.it-dyer'),it.dyer||'');
+      setSel(el.querySelector('.it-karigar'),it.karigar||'');
     });
     openModal('mEdit');
   });
@@ -872,7 +959,9 @@ function submitEditOrder(){
   var items=collectItems('e');
   if(!items.length){ toast('Add at least one product.','err'); return; }
   var payload={orderId:STATE.editOrderId,clientName:client,mobile:mobile,
-    salesPerson:$('e-sales').value.trim(),items:items,image:STATE.img.e};
+    salesPerson:$('e-sales').value.trim(),items:items,
+    measurement:imgsPayload('em'),design:imgsPayload('ed'),
+    advancePaid:$('e-adv').checked,advanceAmount:$('e-advamt').value.trim()};
   api('Api_updateOrder',[payload],{btn:'e-submit',loadingLabel:'Saving…',silent:true}).then(function(r){
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
     toast('Order updated ✓','ok'); closeModal('mEdit');
