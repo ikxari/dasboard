@@ -303,12 +303,21 @@ textarea{resize:vertical;min-height:64px}
           <div class="field"><label>Client Name <span class="req">*</span></label><input id="o-client" placeholder="e.g. Rahul Das" autocomplete="off"></div>
           <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="o-mobile" placeholder="10-digit mobile" inputmode="numeric" maxlength="10" autocomplete="off"></div>
         </div>
-        <div class="field" style="max-width:50%"><label>Sales Person</label><input id="o-sales" list="dlSales" placeholder="Search / select" autocomplete="off"></div>
+        <div class="field" style="max-width:50%"><label>Sales Person</label><select id="o-sales"></select></div>
 
         <div class="field">
           <label>Product Details <span class="req">*</span></label>
           <div class="items" id="o-items"></div>
           <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem()">＋ Add Product</button>
+        </div>
+
+        <div class="field">
+          <label>Workers <span style="color:var(--muted);font-weight:500">(applies to whole order)</span></label>
+          <div class="workers">
+            <div class="field"><label>Tailor</label><select id="o-tailor"></select></div>
+            <div class="field"><label>Dyer</label><select id="o-dyer"></select></div>
+            <div class="field"><label>Karigar</label><select id="o-karigar"></select></div>
+          </div>
         </div>
 
         <div class="row">
@@ -427,7 +436,6 @@ textarea{resize:vertical;min-height:64px}
 </div>
 
 <!-- datalists -->
-<datalist id="dlSales"></datalist>
 <datalist id="dlProduct"></datalist>
 
 <!-- DETAIL / EDIT ORDER modal -->
@@ -446,9 +454,16 @@ textarea{resize:vertical;min-height:64px}
         <div class="field"><label>Client Name <span class="req">*</span></label><input id="e-client"></div>
         <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="e-mobile" maxlength="10" inputmode="numeric"></div>
       </div>
-      <div class="field" style="max-width:50%"><label>Sales Person</label><input id="e-sales" list="dlSales"></div>
+      <div class="field" style="max-width:50%"><label>Sales Person</label><select id="e-sales"></select></div>
       <div class="field"><label>Product Details</label><div class="items" id="e-items"></div>
         <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem('e')">＋ Add Product</button></div>
+      <div class="field"><label>Workers <span style="color:var(--muted);font-weight:500">(whole order)</span></label>
+        <div class="workers">
+          <div class="field"><label>Tailor</label><select id="e-tailor"></select></div>
+          <div class="field"><label>Dyer</label><select id="e-dyer"></select></div>
+          <div class="field"><label>Karigar</label><select id="e-karigar"></select></div>
+        </div>
+      </div>
       <div class="row">
         <div class="field"><label>Add Measurement Images</label>
           <div class="up-list" id="em-uplist"></div>
@@ -523,7 +538,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbw0cGciqcKd344mVgVB_BGRN6oMXSXGZnYpsI4OB5wFG4wUy_kuI0EnyNtlD4eKtqzU/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbw7ZYdkiSLsq7c2lzzx3w8VW33YBPYJ2xT4sgzT_0mYxk3jjGxjj3xqRP8r8AOwTeVM/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -622,6 +637,7 @@ window.addEventListener('load',function(){
     STATE.suggestions=b.suggestions||STATE.suggestions;
     STATE.dashboard=b.dashboard;
     fillDatalists();
+    fillAllSelects('o');
     setNotify(b.notifyCount||0);
     var f=$('foot'); if(f&&b.version) f.textContent='Ikxari · Order Management · v'+b.version;
     $('boot').style.display='none';
@@ -637,7 +653,6 @@ window.addEventListener('load',function(){
 });
 
 function fillDatalists(){
-  fillDL('dlSales',STATE.suggestions.salesPersons);
   fillDL('dlProduct',(STATE.suggestions.products||[]).map(function(p){return p.name;}));
 }
 function fillDL(id,arr){
@@ -673,11 +688,6 @@ function itemRowHtml(){
       '<div class="field qty"><label>Qty</label><input class="it-qty" placeholder="2 Pc" autocomplete="off"></div>'+
       '<button type="button" class="rm" title="Remove" onclick="rmItem(this)">🗑</button>'+
     '</div>'+
-    '<div class="workers">'+
-      '<div class="field"><label>Tailor</label><select class="it-tailor">'+optList(STATE.suggestions.tailors)+'</select></div>'+
-      '<div class="field"><label>Dyer</label><select class="it-dyer">'+optList(STATE.suggestions.dyers)+'</select></div>'+
-      '<div class="field"><label>Karigar</label><select class="it-karigar">'+optList(STATE.suggestions.karigars)+'</select></div>'+
-    '</div>'+
   '</div>';
 }
 function optList(arr){
@@ -686,6 +696,17 @@ function optList(arr){
 function setSel(el,val){
   if(!el) return; el.value=val||'';
   if(val && el.value!==val){ var o=document.createElement('option'); o.textContent=val; o.selected=true; el.appendChild(o); }
+}
+function fillSelect(id,arr){
+  var s=$(id); if(!s) return; var cur=s.value;
+  s.innerHTML='<option value="">— select —</option>'+(arr||[]).map(function(v){return '<option>'+esc(v)+'</option>';}).join('');
+  s.value=cur;
+}
+function fillAllSelects(pre){
+  fillSelect(pre+'-sales',STATE.suggestions.salesPersons);
+  fillSelect(pre+'-tailor',STATE.suggestions.tailors);
+  fillSelect(pre+'-dyer',STATE.suggestions.dyers);
+  fillSelect(pre+'-karigar',STATE.suggestions.karigars);
 }
 function addItem(scope){
   var c=$((scope==='e'?'e':'o')+'-items');
@@ -711,12 +732,9 @@ function collectItems(scope){
   var c=$((scope==='e'?'e':'o')+'-items');
   return Array.prototype.map.call(c.querySelectorAll('.item'),function(it){
     return {
-      product:     it.querySelector('.it-prod').value.trim(),
-      quantity:    it.querySelector('.it-qty').value.trim(),
-      description: '',
-      tailor:      it.querySelector('.it-tailor').value.trim(),
-      dyer:        it.querySelector('.it-dyer').value.trim(),
-      karigar:     it.querySelector('.it-karigar').value.trim()
+      product:  it.querySelector('.it-prod').value.trim(),
+      quantity: it.querySelector('.it-qty').value.trim(),
+      description: ''
     };
   }).filter(function(x){return x.product;});
 }
@@ -784,7 +802,8 @@ function ensureOrderForm(){
   if(!$('o-items').querySelector('.item')) addItem('o');
 }
 function resetOrderForm(){
-  ['o-client','o-mobile','o-sales'].forEach(function(id){$(id).value='';});
+  $('o-client').value=''; $('o-mobile').value='';
+  ['o-sales','o-tailor','o-dyer','o-karigar'].forEach(function(id){var s=$(id);if(s)s.value='';});
   $('o-items').innerHTML=''; addItem('o');
   STATE.imgs.m=[]; STATE.imgs.d=[]; renderUpList('m'); renderUpList('d');
   $('o-adv').checked=false; toggleAdv('o');
@@ -803,6 +822,7 @@ function submitOrder(){
   if(!items.length){ toast('Add at least one product.','err'); return; }
 
   var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),items:items,
+    tailor:$('o-tailor').value.trim(),dyer:$('o-dyer').value.trim(),karigar:$('o-karigar').value.trim(),
     measurement:imgsPayload('m'),design:imgsPayload('d'),
     advancePaid:$('o-adv').checked,advanceAmount:$('o-advamt').value.trim()};
   api('Api_createOrder',[payload],{btn:'o-submit',loadingLabel:'Creating Order…',silent:true}).then(function(r){
@@ -909,6 +929,7 @@ function openDetail(orderId){
     $('md-title').textContent='Order '+o.orderId;
     var kv='<div class="kv">'+
       row('Client',o.clientName)+row('Mobile',o.mobile)+row('Sales Person',o.salesPerson||'—')+
+      row('Workers',o.workerSummary||'—')+
       row('Date',o.dateOrder)+row('Total Qty',o.totalQty)+row('Source',o.source)+
       (o.pendingId?row('From Pending',o.pendingId):'')+row('Status',o.status)+
       (o.measurementUrl?row('Measurement','<a class="link" target="_blank" href="'+esc(o.measurementUrl)+'">Open ↗</a>'):'')+
@@ -916,10 +937,7 @@ function openDetail(orderId){
       (o.advancePaid==='Yes'?row('Advance','₹'+esc(o.advanceAmount||'0')+' paid'):'')+
     '</div>';
     var di='<div class="detail-items"><b>Products</b>'+items.map(function(it){
-      var w=[]; if(it.tailor)w.push('Tailor: '+esc(it.tailor)); if(it.dyer)w.push('Dyer: '+esc(it.dyer)); if(it.karigar)w.push('Karigar: '+esc(it.karigar));
-      return '<div class="di"><b>'+esc(it.product)+'</b> — '+esc(it.quantity||'')+
-        (it.description?'<br><small>'+esc(it.description)+'</small>':'')+
-        (w.length?'<br><small>👤 '+w.join(' · ')+'</small>':'')+'</div>';
+      return '<div class="di"><b>'+esc(it.product)+'</b> — '+esc(it.quantity||'')+'</div>';
     }).join('')+'</div>';
     $('md-body').innerHTML=kv+di;
     $('md-foot').innerHTML='<button class="btn ghost" onclick="closeModal(\'mDetail\')">Close</button>'+
@@ -938,16 +956,17 @@ function openEditOrder(orderId){
     STATE.imgs.em=[]; STATE.imgs.ed=[]; renderUpList('em'); renderUpList('ed');
     $('e-adv').checked=(o.advancePaid==='Yes'); $('e-advamt').value=o.advanceAmount||''; toggleAdv('e');
     $('e-id').textContent=o.orderId;
-    $('e-client').value=o.clientName||''; $('e-mobile').value=o.mobile||''; $('e-sales').value=o.salesPerson||'';
+    $('e-client').value=o.clientName||''; $('e-mobile').value=o.mobile||'';
+    fillAllSelects('e');
+    setSel($('e-sales'),o.salesPerson||'');
+    var w0=items[0]||{};
+    setSel($('e-tailor'),w0.tailor||''); setSel($('e-dyer'),w0.dyer||''); setSel($('e-karigar'),w0.karigar||'');
     var c=$('e-items'); c.innerHTML='';
     (items.length?items:[{}]).forEach(function(it){
       c.insertAdjacentHTML('beforeend',itemRowHtml());
       var el=c.lastElementChild;
       el.querySelector('.it-prod').value=it.product||'';
       el.querySelector('.it-qty').value=it.quantity||'';
-      setSel(el.querySelector('.it-tailor'),it.tailor||'');
-      setSel(el.querySelector('.it-dyer'),it.dyer||'');
-      setSel(el.querySelector('.it-karigar'),it.karigar||'');
     });
     openModal('mEdit');
   });
@@ -960,6 +979,7 @@ function submitEditOrder(){
   if(!items.length){ toast('Add at least one product.','err'); return; }
   var payload={orderId:STATE.editOrderId,clientName:client,mobile:mobile,
     salesPerson:$('e-sales').value.trim(),items:items,
+    tailor:$('e-tailor').value.trim(),dyer:$('e-dyer').value.trim(),karigar:$('e-karigar').value.trim(),
     measurement:imgsPayload('em'),design:imgsPayload('ed'),
     advancePaid:$('e-adv').checked,advanceAmount:$('e-advamt').value.trim()};
   api('Api_updateOrder',[payload],{btn:'e-submit',loadingLabel:'Saving…',silent:true}).then(function(r){
