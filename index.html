@@ -438,6 +438,13 @@ textarea{resize:vertical;min-height:64px}
           <option value="Dyer">Dyer jobs</option>
           <option value="Karigar">Karigar jobs</option>
         </select>
+        <select id="as-status" onchange="renderAssign()">
+          <option value="">All status</option>
+          <option value="On Time">🟢 On Time</option>
+          <option value="Pending">🟡 Pending</option>
+          <option value="Overdue">🔴 Overdue</option>
+          <option value="Late">🔴 Late</option>
+        </select>
       </div>
       <div class="list" id="assignList"><div class="empty">Loading…</div></div>
     </div>
@@ -551,7 +558,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbxaOnqCUUoUzLxJtNEK8qQiRCncxxspN6aRGtudD40bTPYyiUXTO66LP-6eRM-DK9k/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbxNRYmvP7Ez6fif-VisVxOXhDRupFCS_fnwtvj_5wAeUq3ljEyCZUTDL-r-hhqnwVfh/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -714,19 +721,22 @@ function loadAssign(force){
 }
 function renderAssign(){
   var c=$('assignList'); var q=$('as-search').value.trim().toLowerCase();
+  var stF=$('as-status')?$('as-status').value:'';
   if(STATE.assignView==='board'){
     var list=(STATE.assign||[]).filter(function(o){
-      if(!q) return true;
-      return [o.orderId,o.client,o.product].join(' ').toLowerCase().indexOf(q)!==-1;
+      if(q && [o.orderId,o.client,o.product].join(' ').toLowerCase().indexOf(q)===-1) return false;
+      if(stF){ var hit=['Tailor','Dyer','Karigar'].some(function(st){var s=o.stages[st];return s.assigned&&s.status===stF;}); if(!hit) return false; }
+      return true;
     });
-    if(!list.length){ c.innerHTML='<div class="empty">No orders to assign.</div>'; return; }
+    if(!list.length){ c.innerHTML='<div class="empty">No orders match.</div>'; return; }
     c.innerHTML=list.map(assignBoardCard).join('');
   } else {
     var jobs=(STATE.assignJobs||[]).filter(function(j){
-      if(!q) return true;
-      return [j.orderId,j.worker,j.client,j.product].join(' ').toLowerCase().indexOf(q)!==-1;
+      if(q && [j.orderId,j.worker,j.client,j.product].join(' ').toLowerCase().indexOf(q)===-1) return false;
+      if(stF && j.status!==stF) return false;
+      return true;
     });
-    if(!jobs.length){ c.innerHTML='<div class="empty">No '+esc(STATE.assignView)+' jobs.</div>'; return; }
+    if(!jobs.length){ c.innerHTML='<div class="empty">No '+esc(STATE.assignView)+' jobs match.</div>'; return; }
     c.innerHTML=jobs.map(jobCard).join('');
   }
 }
