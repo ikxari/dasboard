@@ -267,6 +267,7 @@ textarea{resize:vertical;min-height:64px}
     <button data-sec="new" onclick="go('new')">＋ New Order</button>
     <button data-sec="pending" onclick="go('pending')">Pending Orders</button>
     <button data-sec="orders" onclick="go('orders')">Main Orders</button>
+    <button data-sec="assign" onclick="go('assign')">Assign Worker</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -310,15 +311,6 @@ textarea{resize:vertical;min-height:64px}
           <label>Product Details <span class="req">*</span></label>
           <div class="items" id="o-items"></div>
           <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem()">＋ Add Product</button>
-        </div>
-
-        <div class="field">
-          <label>Workers <span style="color:var(--muted);font-weight:500">(applies to whole order)</span></label>
-          <div class="workers">
-            <div class="field"><label>Tailor</label><select id="o-tailor"></select></div>
-            <div class="field"><label>Dyer</label><select id="o-dyer"></select></div>
-            <div class="field"><label>Karigar</label><select id="o-karigar"></select></div>
-          </div>
         </div>
 
         <div class="row">
@@ -433,6 +425,24 @@ textarea{resize:vertical;min-height:64px}
     </div>
   </section>
 
+  <!-- ASSIGN WORKER -->
+  <section id="sec-assign" class="sec hide">
+    <div class="card">
+      <h2 style="margin-bottom:4px">Assign Worker</h2>
+      <p class="hint">Assign Tailor / Dyer / Karigar to each order with a TAT (hours). Deadline auto. On-time / Late tracked.</p>
+      <div class="toolbar">
+        <input class="search" id="as-search" placeholder="Search order, client, product, worker…" oninput="debounced(renderAssign)">
+        <select id="as-view" onchange="loadAssign(true)">
+          <option value="board">To Assign / In Progress</option>
+          <option value="Tailor">Tailor jobs</option>
+          <option value="Dyer">Dyer jobs</option>
+          <option value="Karigar">Karigar jobs</option>
+        </select>
+      </div>
+      <div class="list" id="assignList"><div class="empty">Loading…</div></div>
+    </div>
+  </section>
+
   <div class="footer" id="foot">Ikxari · Order Management</div>
 </div>
 
@@ -459,13 +469,6 @@ textarea{resize:vertical;min-height:64px}
       <div class="field" style="max-width:50%"><label>Expected Delivery Date</label><input type="date" id="e-exp"></div>
       <div class="field"><label>Product Details</label><div class="items" id="e-items"></div>
         <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem('e')">＋ Add Product</button></div>
-      <div class="field"><label>Workers <span style="color:var(--muted);font-weight:500">(whole order)</span></label>
-        <div class="workers">
-          <div class="field"><label>Tailor</label><select id="e-tailor"></select></div>
-          <div class="field"><label>Dyer</label><select id="e-dyer"></select></div>
-          <div class="field"><label>Karigar</label><select id="e-karigar"></select></div>
-        </div>
-      </div>
       <div class="row">
         <div class="field"><label>Add Measurement Images</label>
           <div class="up-list" id="em-uplist"></div>
@@ -521,6 +524,14 @@ textarea{resize:vertical;min-height:64px}
   </div>
 </div>
 
+<!-- ASSIGN modal (per order, 3 stages) -->
+<div class="modal" id="mAssign">
+  <div class="box"><div class="mhead"><h3>Assign Workers <span id="a-id"></span></h3><button class="x" onclick="closeModal('mAssign')">✕</button></div>
+    <div class="mbody" id="a-body"></div>
+    <div class="mfoot"><button class="btn ghost" onclick="closeModal('mAssign')">Close</button></div>
+  </div>
+</div>
+
 <!-- CONFIRM modal -->
 <div class="modal confirm" id="mConfirm" style="z-index:10000">
   <div class="box"><div class="mhead"><h3 id="c-title">Confirm</h3><button class="x" onclick="closeModal('mConfirm')">✕</button></div>
@@ -540,7 +551,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbxn2GoyFN0tdgkcv2OrpUiiJxw4AaSj3KrOgztg4CbcurxvbPCyxMnWpuJt3hfqYai8/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbxaOnqCUUoUzLxJtNEK8qQiRCncxxspN6aRGtudD40bTPYyiUXTO66LP-6eRM-DK9k/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -553,6 +564,7 @@ var STATE = {
   dashboard: null,
   orders: [], ordersLoaded: false,
   pending: [], pendingLoaded: false,
+  assign: [], assignJobs: [], assignView:'board', assignOrder:null,
   notify: [],
   img: {p:null,pe:null},
   imgs: {m:[],d:[],em:[],ed:[]},
@@ -627,6 +639,7 @@ function go(sec){
   if(sec==='new')       ensureOrderForm();
   if(sec==='pending')   loadPending();
   if(sec==='orders')    loadOrders();
+  if(sec==='assign')    loadAssign();
   if(sec==='notify')    loadNotify();
   window.scrollTo(0,0);
 }
@@ -639,8 +652,9 @@ window.addEventListener('load',function(){
     STATE.suggestions=b.suggestions||STATE.suggestions;
     STATE.dashboard=b.dashboard;
     fillDatalists();
-    fillAllSelects('o');
+    fillSelect('o-sales',STATE.suggestions.salesPersons);
     setNotify(b.notifyCount||0);
+    setAssignBadge(b.assignCount||0);
     var f=$('foot'); if(f&&b.version) f.textContent='Ikxari · Order Management · v'+b.version;
     $('boot').style.display='none';
     var valid={dashboard:1,'new':1,pending:1,orders:1,notify:1};
@@ -673,12 +687,129 @@ function renderDashboard(){
 }
 function refreshMeta(){
   api('Api_refresh',[],{silent:true}).then(function(r){
-    STATE.dashboard=r.dashboard; setNotify(r.notifyCount||0);
+    STATE.dashboard=r.dashboard; setNotify(r.notifyCount||0); setAssignBadge(r.assignCount||0);
     if(!$('sec-dashboard').classList.contains('hide')) renderDashboard();
   });
 }
 function setNotify(n){
   var dot=$('bellDot'); dot.textContent=n; dot.classList.toggle('on',n>0);
+}
+function setAssignBadge(n){
+  var nav=document.querySelector('#nav button[data-sec="assign"]');
+  if(nav) nav.textContent='Assign Worker'+(n>0?' ('+n+')':'');
+}
+
+/* ------------------------- Assign Worker -------------------------------- */
+function loadAssign(force){
+  var view=$('as-view').value;
+  if(view==='board'){
+    api('Api_assignBoard',[{}],{loaderTxt:'Loading orders…'}).then(function(list){
+      STATE.assign=list||[]; STATE.assignView='board'; renderAssign();
+    });
+  } else {
+    api('Api_assignJobs',[{stage:view}],{loaderTxt:'Loading '+view+' jobs…'}).then(function(list){
+      STATE.assignJobs=list||[]; STATE.assignView=view; renderAssign();
+    });
+  }
+}
+function renderAssign(){
+  var c=$('assignList'); var q=$('as-search').value.trim().toLowerCase();
+  if(STATE.assignView==='board'){
+    var list=(STATE.assign||[]).filter(function(o){
+      if(!q) return true;
+      return [o.orderId,o.client,o.product].join(' ').toLowerCase().indexOf(q)!==-1;
+    });
+    if(!list.length){ c.innerHTML='<div class="empty">No orders to assign.</div>'; return; }
+    c.innerHTML=list.map(assignBoardCard).join('');
+  } else {
+    var jobs=(STATE.assignJobs||[]).filter(function(j){
+      if(!q) return true;
+      return [j.orderId,j.worker,j.client,j.product].join(' ').toLowerCase().indexOf(q)!==-1;
+    });
+    if(!jobs.length){ c.innerHTML='<div class="empty">No '+esc(STATE.assignView)+' jobs.</div>'; return; }
+    c.innerHTML=jobs.map(jobCard).join('');
+  }
+}
+function stChip(s){
+  var m={'Pending':'pending','Overdue':'over','On Time':'conv','Late':'over'};
+  return '<span class="badge '+(m[s]||'pending')+'">'+esc(s)+'</span>';
+}
+function assignBoardCard(o){
+  var stages=['Tailor','Dyer','Karigar'];
+  var mini=stages.map(function(st){
+    var s=o.stages[st];
+    if(s.assigned) return st+': '+esc(s.worker)+' '+stChip(s.status);
+    return '<span style="color:var(--muted)">'+st+': —</span>';
+  }).join(' &nbsp; ');
+  return '<div class="rowcard">'+
+    '<span class="id">'+esc(o.orderId)+'</span>'+
+    '<div class="main"><div class="name">'+esc(o.client)+'</div>'+
+      '<div class="meta">'+esc(o.product||'—').replace(/\n/g,' · ')+
+        (o.expectedDate?'<br>🚚 '+esc(o.expectedDate):'')+'<br>'+mini+'</div></div>'+
+    '<div class="side"><span class="badge '+(o.orderStatus==='Completed'?'conv':(o.orderStatus==='To Assign'?'pending':'open'))+'">'+esc(o.orderStatus)+'</span>'+
+      '<div class="acts"><button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button></div></div>'+
+  '</div>';
+}
+function jobCard(j){
+  var done=j.doneAt;
+  return '<div class="rowcard">'+
+    '<span class="id">'+esc(j.orderId)+'</span>'+
+    '<div class="main"><div class="name">'+esc(j.worker)+' · <span style="color:var(--muted);font-weight:600">'+esc(j.client)+'</span></div>'+
+      '<div class="meta">'+esc(j.product||'—').replace(/\n/g,' · ')+
+        '<br>⏱ TAT '+esc(j.tatHours)+'h · Deadline '+esc(j.deadline)+
+        (done?'<br>✅ Done '+esc(done):'')+'</div></div>'+
+    '<div class="side">'+stChip(j.status)+
+      (done?'':'<div class="acts"><button class="btn ok sm" onclick="doneStage(\''+esc(j.stage)+'\',\''+esc(j.orderId)+'\')">Mark Done</button></div>')+
+    '</div></div>';
+}
+function openAssign(orderId){
+  var o=(STATE.assign||[]).filter(function(x){return x.orderId===orderId;})[0];
+  if(!o){ loadAssign(true); return; }
+  STATE.assignOrder=orderId;
+  $('a-id').textContent=orderId;
+  var stages=['Tailor','Dyer','Karigar'];
+  $('a-body').innerHTML='<div style="font-size:13px;color:var(--muted);margin-bottom:12px">'+esc(o.client)+' · '+esc(o.product||'').replace(/\n/g,', ')+'</div>'+
+    stages.map(function(st){
+      var s=o.stages[st];
+      var opts=optList(STATE.suggestions[st.toLowerCase()+'s']||[]);
+      if(s.assigned){
+        return '<div class="item"><div style="font-weight:700;margin-bottom:6px">'+st+' '+stChip(s.status)+'</div>'+
+          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+' · TAT '+esc(s.tatHours)+'h · Deadline '+esc(s.deadline)+
+          (s.doneAt?' · ✅ '+esc(s.doneAt):'')+'</div>'+
+          '<div style="display:flex;gap:8px;margin-top:10px">'+
+            (s.doneAt?'':'<button class="btn ok sm" onclick="doneStage(\''+st+'\',\''+esc(orderId)+'\')">Mark Done</button>')+
+            '<button class="btn ghost sm" onclick="toggleReassign(\''+st+'\')">Re-assign</button></div>'+
+          '<div id="ra-'+st+'" class="hide" style="margin-top:10px">'+assignRow(st,opts)+'</div>'+
+        '</div>';
+      }
+      return '<div class="item"><div style="font-weight:700;margin-bottom:8px">'+st+'</div>'+assignRow(st,opts)+'</div>';
+    }).join('');
+  openModal('mAssign');
+}
+function assignRow(st,opts){
+  return '<div class="workers" style="grid-template-columns:2fr 1fr auto;align-items:end">'+
+    '<div class="field"><label>Worker</label><select id="aw-'+st+'">'+opts+'</select></div>'+
+    '<div class="field"><label>TAT (hrs)</label><input id="at-'+st+'" inputmode="numeric" placeholder="e.g. 24"></div>'+
+    '<button class="btn primary sm" id="ab-'+st+'" onclick="assignStage(\''+st+'\')"><span class="spin"></span><span class="lbl">Assign</span></button>'+
+  '</div>';
+}
+function toggleReassign(st){ var e=$('ra-'+st); if(e) e.classList.toggle('hide'); }
+function assignStage(st){
+  var worker=$('aw-'+st).value.trim(), tat=$('at-'+st).value.trim();
+  if(!worker){ toast('Pick a '+st+'.','err'); return; }
+  if(!(Number(tat)>0)){ toast('Enter TAT hours for '+st+'.','err'); return; }
+  api('Api_assignCreate',[{orderId:STATE.assignOrder,stage:st,worker:worker,tatHours:tat}],{btn:'ab-'+st,loadingLabel:'…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to assign.','err'); return; }
+    toast(st+' assigned ✓','ok'); closeModal('mAssign');
+    loadAssign(true); refreshMeta();
+  });
+}
+function doneStage(st,orderId){
+  api('Api_assignDone',[{stage:st,orderId:orderId}],{silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
+    toast(st+': '+(r.status||'Done')+' ✓','ok'); closeModal('mAssign');
+    loadAssign(true); refreshMeta();
+  });
 }
 
 /* ------------------------- item rows (products) ------------------------- */
@@ -805,7 +936,7 @@ function ensureOrderForm(){
 }
 function resetOrderForm(){
   $('o-client').value=''; $('o-mobile').value=''; $('o-exp').value='';
-  ['o-sales','o-tailor','o-dyer','o-karigar'].forEach(function(id){var s=$(id);if(s)s.value='';});
+  var s=$('o-sales'); if(s)s.value='';
   $('o-items').innerHTML=''; addItem('o');
   STATE.imgs.m=[]; STATE.imgs.d=[]; renderUpList('m'); renderUpList('d');
   $('o-adv').checked=false; toggleAdv('o');
@@ -824,7 +955,6 @@ function submitOrder(){
   if(!items.length){ toast('Add at least one product.','err'); return; }
 
   var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),items:items,
-    tailor:$('o-tailor').value.trim(),dyer:$('o-dyer').value.trim(),karigar:$('o-karigar').value.trim(),
     expectedDate:$('o-exp').value,
     measurement:imgsPayload('m'),design:imgsPayload('d'),
     advancePaid:$('o-adv').checked,advanceAmount:$('o-advamt').value.trim()};
@@ -962,10 +1092,8 @@ function openEditOrder(orderId){
     $('e-adv').checked=(o.advancePaid==='Yes'); $('e-advamt').value=o.advanceAmount||''; toggleAdv('e');
     $('e-id').textContent=o.orderId;
     $('e-client').value=o.clientName||''; $('e-mobile').value=o.mobile||'';
-    fillAllSelects('e');
+    fillSelect('e-sales',STATE.suggestions.salesPersons);
     setSel($('e-sales'),o.salesPerson||'');
-    var w0=items[0]||{};
-    setSel($('e-tailor'),w0.tailor||''); setSel($('e-dyer'),w0.dyer||''); setSel($('e-karigar'),w0.karigar||'');
     $('e-exp').value=o.expectedDateISO||'';
     var c=$('e-items'); c.innerHTML='';
     (items.length?items:[{}]).forEach(function(it){
@@ -985,7 +1113,6 @@ function submitEditOrder(){
   if(!items.length){ toast('Add at least one product.','err'); return; }
   var payload={orderId:STATE.editOrderId,clientName:client,mobile:mobile,
     salesPerson:$('e-sales').value.trim(),items:items,
-    tailor:$('e-tailor').value.trim(),dyer:$('e-dyer').value.trim(),karigar:$('e-karigar').value.trim(),
     expectedDate:$('e-exp').value,
     measurement:imgsPayload('em'),design:imgsPayload('ed'),
     advancePaid:$('e-adv').checked,advanceAmount:$('e-advamt').value.trim()};
