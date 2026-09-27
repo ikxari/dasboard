@@ -594,7 +594,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbxVV5Zp5X8XNDcUL5wKUTwwU4p_DEGfVInSkY3adxXY6qmPSkGE1voHoAicF1e410dF/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbxRe3NNse8KgxEhK-FckiOsWY03tdFgNzdlkKtN2HBhBiVCsymRAE085ynGyYdHhbvP/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -632,7 +632,7 @@ function toast(msg,type){
 }
 
 function btnLoad(id,on,label){
-  var b=$(id); if(!b) return;
+  var b=(typeof id==='string')?$(id):id; if(!b) return;
   var lbl=b.querySelector('.lbl');
   if(on){b.classList.add('loading');b.disabled=true;
     if(lbl){b.dataset.orig=lbl.textContent;if(label)lbl.textContent=label;}}
@@ -808,7 +808,7 @@ function jobCard(j){
         '<br>⏰ Deadline: '+esc(j.deadline)+
         (done?'<br>✅ Done: '+esc(done):'<br>⏳ Not done yet')+'</div></div>'+
     '<div class="side">'+stChip(j.status)+
-      (done?'':'<div class="acts"><button class="btn ok sm" onclick="doneStage(\''+esc(j.stage)+'\',\''+esc(j.orderId)+'\')">Mark Done</button></div>')+
+      (done?'':'<div class="acts"><button class="btn ok sm" onclick="doneStage(\''+esc(j.stage)+'\',\''+esc(j.orderId)+'\',this)"><span class="spin"></span><span class="lbl">Mark Done</span></button></div>')+
     '</div></div>';
 }
 function openAssign(orderId){
@@ -827,7 +827,7 @@ function openAssign(orderId){
           '<br>📤 Assigned: '+esc(s.assignedAt)+' · ⏰ Deadline: '+esc(s.deadline)+
           (s.doneAt?'<br>✅ Done: '+esc(s.doneAt):'<br>⏳ Not done yet')+'</div>'+
           '<div style="display:flex;gap:8px;margin-top:10px">'+
-            (s.doneAt?'':'<button class="btn ok sm" onclick="doneStage(\''+st+'\',\''+esc(orderId)+'\')">Mark Done</button>')+
+            (s.doneAt?'':'<button class="btn ok sm" onclick="doneStage(\''+st+'\',\''+esc(orderId)+'\',this)"><span class="spin"></span><span class="lbl">Mark Done</span></button>')+
             '<button class="btn ghost sm" onclick="toggleReassign(\''+st+'\')">Re-assign</button></div>'+
           '<div id="ra-'+st+'" class="hide" style="margin-top:10px">'+assignRow(st,opts)+'</div>'+
         '</div>';
@@ -855,12 +855,14 @@ function assignStage(st){
     loadAssign(true); refreshMeta();
   });
 }
-function doneStage(st,orderId){
+function doneStage(st,orderId,btn){
+  if(btn) btnLoad(btn,true,'Saving…');
   api('Api_assignDone',[{stage:st,orderId:orderId}],{silent:true}).then(function(r){
+    if(btn) btnLoad(btn,false);
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
     toast(st+': '+(r.status||'Done')+' ✓','ok'); closeModal('mAssign');
     loadAssign(true); refreshMeta();
-  });
+  }).catch(function(){ if(btn) btnLoad(btn,false); });
 }
 
 /* ------------------------- item rows (products) ------------------------- */
