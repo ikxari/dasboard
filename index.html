@@ -558,7 +558,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbxNRYmvP7Ez6fif-VisVxOXhDRupFCS_fnwtvj_5wAeUq3ljEyCZUTDL-r-hhqnwVfh/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbxR6Eu-gNkmIaHk58L3xNB_smmVuQ2Qpr48HeyGaAjRffDeuS6S8ow6q3k5THXmG2pC/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -766,7 +766,7 @@ function jobCard(j){
     '<span class="id">'+esc(j.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(j.worker)+' · <span style="color:var(--muted);font-weight:600">'+esc(j.client)+'</span></div>'+
       '<div class="meta">'+esc(j.product||'—').replace(/\n/g,' · ')+
-        '<br>⏱ TAT '+esc(j.tatHours)+'h · Deadline '+esc(j.deadline)+
+        '<br>⏱ TAT '+esc(j.tatText)+' · Deadline '+esc(j.deadline)+
         (done?'<br>✅ Done '+esc(done):'')+'</div></div>'+
     '<div class="side">'+stChip(j.status)+
       (done?'':'<div class="acts"><button class="btn ok sm" onclick="doneStage(\''+esc(j.stage)+'\',\''+esc(j.orderId)+'\')">Mark Done</button></div>')+
@@ -784,7 +784,7 @@ function openAssign(orderId){
       var opts=optList(STATE.suggestions[st.toLowerCase()+'s']||[]);
       if(s.assigned){
         return '<div class="item"><div style="font-weight:700;margin-bottom:6px">'+st+' '+stChip(s.status)+'</div>'+
-          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+' · TAT '+esc(s.tatHours)+'h · Deadline '+esc(s.deadline)+
+          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+' · TAT '+esc(s.tatText)+' · Deadline '+esc(s.deadline)+
           (s.doneAt?' · ✅ '+esc(s.doneAt):'')+'</div>'+
           '<div style="display:flex;gap:8px;margin-top:10px">'+
             (s.doneAt?'':'<button class="btn ok sm" onclick="doneStage(\''+st+'\',\''+esc(orderId)+'\')">Mark Done</button>')+
@@ -797,18 +797,19 @@ function openAssign(orderId){
   openModal('mAssign');
 }
 function assignRow(st,opts){
-  return '<div class="workers" style="grid-template-columns:2fr 1fr auto;align-items:end">'+
+  return '<div class="workers" style="grid-template-columns:1.6fr .8fr .9fr auto;align-items:end">'+
     '<div class="field"><label>Worker</label><select id="aw-'+st+'">'+opts+'</select></div>'+
-    '<div class="field"><label>TAT (hrs)</label><input id="at-'+st+'" inputmode="numeric" placeholder="e.g. 24"></div>'+
+    '<div class="field"><label>TAT</label><input id="at-'+st+'" inputmode="numeric" placeholder="e.g. 2"></div>'+
+    '<div class="field"><label>Unit</label><select id="au-'+st+'"><option>Days</option><option>Hours</option></select></div>'+
     '<button class="btn primary sm" id="ab-'+st+'" onclick="assignStage(\''+st+'\')"><span class="spin"></span><span class="lbl">Assign</span></button>'+
   '</div>';
 }
 function toggleReassign(st){ var e=$('ra-'+st); if(e) e.classList.toggle('hide'); }
 function assignStage(st){
-  var worker=$('aw-'+st).value.trim(), tat=$('at-'+st).value.trim();
+  var worker=$('aw-'+st).value.trim(), tat=$('at-'+st).value.trim(), unit=$('au-'+st).value;
   if(!worker){ toast('Pick a '+st+'.','err'); return; }
-  if(!(Number(tat)>0)){ toast('Enter TAT hours for '+st+'.','err'); return; }
-  api('Api_assignCreate',[{orderId:STATE.assignOrder,stage:st,worker:worker,tatHours:tat}],{btn:'ab-'+st,loadingLabel:'…',silent:true}).then(function(r){
+  if(!(Number(tat)>0)){ toast('Enter TAT for '+st+'.','err'); return; }
+  api('Api_assignCreate',[{orderId:STATE.assignOrder,stage:st,worker:worker,tat:tat,tatUnit:unit}],{btn:'ab-'+st,loadingLabel:'…',silent:true}).then(function(r){
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to assign.','err'); return; }
     toast(st+' assigned ✓','ok'); closeModal('mAssign');
     loadAssign(true); refreshMeta();
