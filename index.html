@@ -322,7 +322,10 @@ textarea{resize:vertical;min-height:64px}
           <div class="field"><label>Client Name <span class="req">*</span></label><input id="o-client" placeholder="e.g. Rahul Das" autocomplete="off"></div>
           <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="o-mobile" placeholder="10-digit mobile" inputmode="numeric" maxlength="10" autocomplete="off"></div>
         </div>
-        <div class="field" style="max-width:50%"><label>Sales Person</label><select id="o-sales"></select></div>
+        <div class="row">
+          <div class="field"><label>Sales Person</label><select id="o-sales"></select></div>
+          <div class="field"><label>Service Type</label><select id="o-service"></select></div>
+        </div>
         <div class="field" style="max-width:50%"><label>Expected Delivery Date</label><input type="date" id="o-exp"></div>
 
         <div class="field">
@@ -490,7 +493,10 @@ textarea{resize:vertical;min-height:64px}
         <div class="field"><label>Client Name <span class="req">*</span></label><input id="e-client"></div>
         <div class="field"><label>Mobile Number <span class="req">*</span></label><input id="e-mobile" maxlength="10" inputmode="numeric"></div>
       </div>
-      <div class="field" style="max-width:50%"><label>Sales Person</label><select id="e-sales"></select></div>
+      <div class="row">
+        <div class="field"><label>Sales Person</label><select id="e-sales"></select></div>
+        <div class="field"><label>Service Type</label><select id="e-service"></select></div>
+      </div>
       <div class="field" style="max-width:50%"><label>Expected Delivery Date</label><input type="date" id="e-exp"></div>
       <div class="field"><label>Product Details</label><div class="items" id="e-items"></div>
         <button type="button" class="btn ghost sm" style="margin-top:11px" onclick="addItem('e')">＋ Add Product</button></div>
@@ -576,7 +582,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbxR6Eu-gNkmIaHk58L3xNB_smmVuQ2Qpr48HeyGaAjRffDeuS6S8ow6q3k5THXmG2pC/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbxyVVDyxicji7Z_Zp7VDJ0PhhdqKJVqENtWRqH6rYLn4ZiIyFOYjCbxg8rElFo2kft2/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -585,7 +591,7 @@ textarea{resize:vertical;min-height:64px}
 <script>
 /* ------------------------------- state ---------------------------------- */
 var STATE = {
-  suggestions: {salesPersons:[],tailors:[],dyers:[],karigars:[],products:[]},
+  suggestions: {salesPersons:[],tailors:[],dyers:[],karigars:[],products:[],serviceTypes:[]},
   dashboard: null,
   orders: [], ordersLoaded: false,
   pending: [], pendingLoaded: false,
@@ -678,6 +684,7 @@ window.addEventListener('load',function(){
     STATE.dashboard=b.dashboard;
     fillDatalists();
     fillSelect('o-sales',STATE.suggestions.salesPersons);
+    fillSelect('o-service',STATE.suggestions.serviceTypes);
     setNotify(b.notifyCount||0);
     setAssignBadge(b.assignCount||0);
     var f=$('foot'); if(f&&b.version) f.textContent='Ikxari · Order Management · v'+b.version;
@@ -766,9 +773,10 @@ function assignBoardCard(o){
   var stages=['Tailor','Dyer','Karigar'];
   var mini=stages.map(function(st){
     var s=o.stages[st];
-    if(s.assigned) return st+': '+esc(s.worker)+' '+stChip(s.status);
-    return '<span style="color:var(--muted)">'+st+': —</span>';
-  }).join(' &nbsp; ');
+    if(s.assigned) return '<div style="margin-top:4px">'+st+': '+esc(s.worker)+' '+stChip(s.status)+
+      '<br><small style="color:var(--muted)">📤 '+esc(s.assignedAt)+(s.doneAt?' → ✅ '+esc(s.doneAt):' → ⏰ '+esc(s.deadline))+'</small></div>';
+    return '<div style="margin-top:4px;color:var(--muted)">'+st+': —</div>';
+  }).join('');
   return '<div class="rowcard">'+
     '<span class="id">'+esc(o.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(o.client)+'</div>'+
@@ -784,8 +792,9 @@ function jobCard(j){
     '<span class="id">'+esc(j.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(j.worker)+' · <span style="color:var(--muted);font-weight:600">'+esc(j.client)+'</span></div>'+
       '<div class="meta">'+esc(j.product||'—').replace(/\n/g,' · ')+
-        '<br>⏱ TAT '+esc(j.tatText)+' · Deadline '+esc(j.deadline)+
-        (done?'<br>✅ Done '+esc(done):'')+'</div></div>'+
+        '<br>📤 Assigned: '+esc(j.assignedAt)+' · TAT '+esc(j.tatText)+
+        '<br>⏰ Deadline: '+esc(j.deadline)+
+        (done?'<br>✅ Done: '+esc(done):'<br>⏳ Not done yet')+'</div></div>'+
     '<div class="side">'+stChip(j.status)+
       (done?'':'<div class="acts"><button class="btn ok sm" onclick="doneStage(\''+esc(j.stage)+'\',\''+esc(j.orderId)+'\')">Mark Done</button></div>')+
     '</div></div>';
@@ -802,8 +811,9 @@ function openAssign(orderId){
       var opts=optList(STATE.suggestions[st.toLowerCase()+'s']||[]);
       if(s.assigned){
         return '<div class="item"><div style="font-weight:700;margin-bottom:6px">'+st+' '+stChip(s.status)+'</div>'+
-          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+' · TAT '+esc(s.tatText)+' · Deadline '+esc(s.deadline)+
-          (s.doneAt?' · ✅ '+esc(s.doneAt):'')+'</div>'+
+          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+' · TAT '+esc(s.tatText)+
+          '<br>📤 Assigned: '+esc(s.assignedAt)+' · ⏰ Deadline: '+esc(s.deadline)+
+          (s.doneAt?'<br>✅ Done: '+esc(s.doneAt):'<br>⏳ Not done yet')+'</div>'+
           '<div style="display:flex;gap:8px;margin-top:10px">'+
             (s.doneAt?'':'<button class="btn ok sm" onclick="doneStage(\''+st+'\',\''+esc(orderId)+'\')">Mark Done</button>')+
             '<button class="btn ghost sm" onclick="toggleReassign(\''+st+'\')">Re-assign</button></div>'+
@@ -965,7 +975,7 @@ function ensureOrderForm(){
 }
 function resetOrderForm(){
   $('o-client').value=''; $('o-mobile').value=''; $('o-exp').value='';
-  var s=$('o-sales'); if(s)s.value='';
+  var s=$('o-sales'); if(s)s.value=''; var sv=$('o-service'); if(sv)sv.value='';
   $('o-items').innerHTML=''; addItem('o');
   STATE.imgs.m=[]; STATE.imgs.d=[]; renderUpList('m'); renderUpList('d');
   $('o-adv').checked=false; toggleAdv('o');
@@ -983,7 +993,8 @@ function submitOrder(){
   var items=collectItems('o');
   if(!items.length){ toast('Add at least one product.','err'); return; }
 
-  var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),items:items,
+  var payload={clientName:client,mobile:mobile,salesPerson:$('o-sales').value.trim(),
+    serviceType:$('o-service').value.trim(),items:items,
     expectedDate:$('o-exp').value,
     measurement:imgsPayload('m'),design:imgsPayload('d'),
     advancePaid:$('o-adv').checked,advanceAmount:$('o-advamt').value.trim()};
@@ -1107,6 +1118,7 @@ function openDetail(orderId){
     $('md-title').textContent='Order '+o.orderId;
     var kv='<div class="kv">'+
       row('Client',o.clientName)+row('Mobile',o.mobile)+row('Sales Person',o.salesPerson||'—')+
+      (o.serviceType?row('Service Type',o.serviceType):'')+
       row('Workers',(o.workerSummary?esc(o.workerSummary).replace(/\n/g,'<br>'):'—'))+
       row('Date',o.dateOrder)+row('Total Qty',o.totalQty)+
       (o.expectedDate?row('Expected Delivery',o.expectedDate):'')+row('Source',o.source)+
@@ -1138,6 +1150,8 @@ function openEditOrder(orderId){
     $('e-client').value=o.clientName||''; $('e-mobile').value=o.mobile||'';
     fillSelect('e-sales',STATE.suggestions.salesPersons);
     setSel($('e-sales'),o.salesPerson||'');
+    fillSelect('e-service',STATE.suggestions.serviceTypes);
+    setSel($('e-service'),o.serviceType||'');
     $('e-exp').value=o.expectedDateISO||'';
     var c=$('e-items'); c.innerHTML='';
     (items.length?items:[{}]).forEach(function(it){
@@ -1156,7 +1170,7 @@ function submitEditOrder(){
   var items=collectItems('e');
   if(!items.length){ toast('Add at least one product.','err'); return; }
   var payload={orderId:STATE.editOrderId,clientName:client,mobile:mobile,
-    salesPerson:$('e-sales').value.trim(),items:items,
+    salesPerson:$('e-sales').value.trim(),serviceType:$('e-service').value.trim(),items:items,
     expectedDate:$('e-exp').value,
     measurement:imgsPayload('em'),design:imgsPayload('ed'),
     advancePaid:$('e-adv').checked,advanceAmount:$('e-advamt').value.trim()};
