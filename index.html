@@ -459,13 +459,13 @@ textarea{resize:vertical;min-height:64px}
   <section id="sec-assign" class="sec hide">
     <div class="card">
       <h2 style="margin-bottom:4px">Assign Worker</h2>
-      <p class="hint">Assign Tailor / Dyer / Karigar to each order with a TAT (hours). Deadline auto. On-time / Late tracked.</p>
+      <p class="hint">All orders shown. Assign Tailor / Dyer / Karigar with a TAT, track On-time / Late. Click <b>Complete</b> only when the order is fully done.</p>
       <div class="toolbar">
         <input class="search" id="as-search" placeholder="Search order, client, product, worker…" oninput="debounced(renderAssign)">
         <select id="as-view" onchange="loadAssign(true)">
+          <option value="all">All Orders</option>
           <option value="board">To Assign / In Progress</option>
           <option value="done">Completed Orders</option>
-          <option value="all">All Orders</option>
           <option value="Tailor">Tailor jobs</option>
           <option value="Dyer">Dyer jobs</option>
           <option value="Karigar">Karigar jobs</option>
