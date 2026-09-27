@@ -464,6 +464,8 @@ textarea{resize:vertical;min-height:64px}
         <input class="search" id="as-search" placeholder="Search order, client, product, worker…" oninput="debounced(renderAssign)">
         <select id="as-view" onchange="loadAssign(true)">
           <option value="board">To Assign / In Progress</option>
+          <option value="done">Completed Orders</option>
+          <option value="all">All Orders</option>
           <option value="Tailor">Tailor jobs</option>
           <option value="Dyer">Dyer jobs</option>
           <option value="Karigar">Karigar jobs</option>
@@ -597,7 +599,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbwOkDdoG8QUhSUaRBG3XjBM4a_WDV2uOmrROFAuUiexGu1AaAKgWsHD5vduBRBG_Lbf/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbywRtdik03lDSPhnuL2m8XkVVZwHyp8_rA-XimEcpTv_l1fec3STlid2bHvqmPsLmqF/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -749,8 +751,9 @@ function setAssignBadge(n){
 /* ------------------------- Assign Worker -------------------------------- */
 function loadAssign(force){
   var view=$('as-view').value;
-  if(view==='board'){
-    api('Api_assignBoard',[{}],{loaderTxt:'Loading orders…'}).then(function(list){
+  if(view==='board'||view==='done'||view==='all'){
+    var scope=(view==='board')?'active':view;
+    api('Api_assignBoard',[{scope:scope}],{loaderTxt:'Loading orders…'}).then(function(list){
       STATE.assign=list||[]; STATE.assignView='board'; renderAssign();
     });
   } else {
@@ -792,15 +795,27 @@ function assignBoardCard(o){
       '<br><small style="color:var(--muted)">📤 '+esc(s.assignedAt)+(s.doneAt?' → ✅ '+esc(s.doneAt):' → ⏰ '+esc(s.deadline))+'</small></div>';
     return '<div style="margin-top:4px;color:var(--muted)">'+st+': —</div>';
   }).join('');
+  var done=(o.orderStatus==='Completed');
+  var acts=done
+    ? '<button class="btn ghost sm" onclick="reopenOrder(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">↺ Reopen</span></button>'
+    : '<button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button>'+
+      '<button class="btn ok sm" onclick="completeOrderId(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">Complete</span></button>';
   return '<div class="rowcard">'+
     '<span class="id">'+esc(o.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(o.client)+'</div>'+
       '<div class="meta">'+esc(o.product||'—').replace(/\n/g,' · ')+
         (o.expectedDate?'<br>🚚 '+esc(o.expectedDate):'')+'<br>'+mini+'</div></div>'+
-    '<div class="side"><span class="badge '+(o.orderStatus==='Completed'?'conv':(o.orderStatus==='To Assign'?'pending':'open'))+'">'+esc(o.orderStatus)+'</span>'+
-      '<div class="acts"><button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button>'+
-        '<button class="btn ok sm" onclick="completeOrderId(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">Complete</span></button></div></div>'+
+    '<div class="side"><span class="badge '+(done?'conv':(o.orderStatus==='To Assign'?'pending':'open'))+'">'+esc(o.orderStatus)+'</span>'+
+      '<div class="acts">'+acts+'</div></div>'+
   '</div>';
+}
+function reopenOrder(id,btn){
+  if(btn) btnLoad(btn,true,'…');
+  api('Api_assignReopen',[id],{silent:true}).then(function(r){
+    if(btn) btnLoad(btn,false);
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to reopen.','err'); return; }
+    toast(id+' reopened ✓','ok'); loadAssign(true); refreshMeta();
+  }).catch(function(){ if(btn) btnLoad(btn,false); });
 }
 function jobCard(j){
   var done=j.doneAt;
