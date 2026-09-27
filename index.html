@@ -571,7 +571,10 @@ textarea{resize:vertical;min-height:64px}
 <div class="modal" id="mAssign">
   <div class="box"><div class="mhead"><h3>Assign Workers <span id="a-id"></span></h3><button class="x" onclick="closeModal('mAssign')">✕</button></div>
     <div class="mbody" id="a-body"></div>
-    <div class="mfoot"><button class="btn ghost" onclick="closeModal('mAssign')">Close</button></div>
+    <div class="mfoot">
+      <button class="btn ghost" onclick="closeModal('mAssign')">Close</button>
+      <button class="btn ok" id="a-complete" onclick="completeOrder()"><span class="spin"></span><span class="lbl">✓ Complete Order</span></button>
+    </div>
   </div>
 </div>
 
@@ -594,7 +597,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbxRe3NNse8KgxEhK-FckiOsWY03tdFgNzdlkKtN2HBhBiVCsymRAE085ynGyYdHhbvP/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbwOkDdoG8QUhSUaRBG3XjBM4a_WDV2uOmrROFAuUiexGu1AaAKgWsHD5vduBRBG_Lbf/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -795,7 +798,8 @@ function assignBoardCard(o){
       '<div class="meta">'+esc(o.product||'—').replace(/\n/g,' · ')+
         (o.expectedDate?'<br>🚚 '+esc(o.expectedDate):'')+'<br>'+mini+'</div></div>'+
     '<div class="side"><span class="badge '+(o.orderStatus==='Completed'?'conv':(o.orderStatus==='To Assign'?'pending':'open'))+'">'+esc(o.orderStatus)+'</span>'+
-      '<div class="acts"><button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button></div></div>'+
+      '<div class="acts"><button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button>'+
+        '<button class="btn ok sm" onclick="completeOrderId(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">Complete</span></button></div></div>'+
   '</div>';
 }
 function jobCard(j){
@@ -862,6 +866,22 @@ function doneStage(st,orderId,btn){
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to update.','err'); return; }
     toast(st+': '+(r.status||'Done')+' ✓','ok'); closeModal('mAssign');
     loadAssign(true); refreshMeta();
+  }).catch(function(){ if(btn) btnLoad(btn,false); });
+}
+function completeOrder(){
+  var id=STATE.assignOrder;
+  api('Api_assignComplete',[id],{btn:'a-complete',loadingLabel:'Completing…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to complete.','err'); return; }
+    toast(id+' completed ✓','ok'); closeModal('mAssign');
+    loadAssign(true); refreshMeta();
+  });
+}
+function completeOrderId(id,btn){
+  if(btn) btnLoad(btn,true,'…');
+  api('Api_assignComplete',[id],{silent:true}).then(function(r){
+    if(btn) btnLoad(btn,false);
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to complete.','err'); return; }
+    toast(id+' completed ✓','ok'); loadAssign(true); refreshMeta();
   }).catch(function(){ if(btn) btnLoad(btn,false); });
 }
 
