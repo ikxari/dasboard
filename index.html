@@ -308,7 +308,7 @@ textarea{resize:vertical;min-height:64px}
       <p class="hint">Jump straight into the work.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn primary" onclick="go('new')">＋ Create New Order</button>
-        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Enquiry</button>
+        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Orders</button>
         <button class="btn ghost" onclick="go('orders')">View Active Orders</button>
       </div>
     </div>
@@ -474,7 +474,7 @@ textarea{resize:vertical;min-height:64px}
           <option value="">All status</option>
           <option value="On Time">🟢 On Time</option>
           <option value="Pending">🟡 Pending</option>
-          <option value="Long Time">🔴 Long Time</option>
+          <option value="Long Time">🔴 Overdue Long Time</option>
           <option value="Late">🔴 Late</option>
         </select>
       </div>
