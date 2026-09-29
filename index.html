@@ -290,7 +290,7 @@ textarea{resize:vertical;min-height:64px}
     <button data-sec="dashboard" onclick="go('dashboard')">Dashboard</button>
     <button data-sec="new" onclick="go('new')">＋ New Order</button>
     <button data-sec="pending" onclick="go('pending')">Pending Orders</button>
-    <button data-sec="orders" onclick="go('orders')">Main Orders</button>
+    <button data-sec="orders" onclick="go('orders')">Active Orders</button>
     <button data-sec="assign" onclick="go('assign')">Assign Worker</button>
   </div>
 
@@ -309,7 +309,7 @@ textarea{resize:vertical;min-height:64px}
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn primary" onclick="go('new')">＋ Create New Order</button>
         <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Enquiry</button>
-        <button class="btn ghost" onclick="go('orders')">View Main Orders</button>
+        <button class="btn ghost" onclick="go('orders')">View Active Orders</button>
       </div>
     </div>
   </section>
@@ -375,7 +375,7 @@ textarea{resize:vertical;min-height:64px}
   <!-- PENDING -->
   <section id="sec-pending" class="sec hide">
     <div class="card hide" id="pendingCard">
-      <div style="display:flex;align-items:center"><h2 style="flex:1">New Pending Enquiry</h2>
+      <div style="display:flex;align-items:center"><h2 style="flex:1">New Pending Order</h2>
         <button class="x" onclick="closePendingForm()">✕</button></div>
       <p class="hint">Pending ID is generated automatically when saved.</p>
       <form id="pendingForm" onsubmit="return false">
@@ -430,7 +430,7 @@ textarea{resize:vertical;min-height:64px}
   <!-- MAIN ORDERS -->
   <section id="sec-orders" class="sec hide">
     <div class="card">
-      <h2 style="margin-bottom:14px">Main Orders</h2>
+      <h2 style="margin-bottom:14px">Active Orders</h2>
       <div class="toolbar">
         <input class="search" id="of-search" placeholder="Search id, client, mobile, product, sales, worker…" oninput="debounced(renderOrders)">
         <select id="of-sales" onchange="renderOrders()"><option value="">All Sales</option></select>
@@ -474,7 +474,7 @@ textarea{resize:vertical;min-height:64px}
           <option value="">All status</option>
           <option value="On Time">🟢 On Time</option>
           <option value="Pending">🟡 Pending</option>
-          <option value="Overdue">🔴 Overdue</option>
+          <option value="Long Time">🔴 Long Time</option>
           <option value="Late">🔴 Late</option>
         </select>
       </div>
@@ -599,7 +599,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbywRtdik03lDSPhnuL2m8XkVVZwHyp8_rA-XimEcpTv_l1fec3STlid2bHvqmPsLmqF/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbwVii3yypkNgGtVWPWo3l3c-MulB40XGVIrxg8X0RZkBfhr3YW71vYnXsPr9k3PFiMJ/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -784,7 +784,7 @@ function renderAssign(){
   }
 }
 function stChip(s){
-  var m={'Pending':'pending','Overdue':'over','On Time':'conv','Late':'over'};
+  var m={'Pending':'pending','Long Time':'over','On Time':'conv','Late':'over'};
   return '<span class="badge '+(m[s]||'pending')+'">'+esc(s)+'</span>';
 }
 function assignBoardCard(o){
@@ -792,7 +792,7 @@ function assignBoardCard(o){
   var mini=stages.map(function(st){
     var s=o.stages[st];
     if(s.assigned) return '<div style="margin-top:4px">'+st+': '+esc(s.worker)+' '+stChip(s.status)+
-      '<br><small style="color:var(--muted)">📤 '+esc(s.assignedAt)+(s.doneAt?' → ✅ '+esc(s.doneAt):' → ⏰ '+esc(s.deadline))+'</small></div>';
+      '<br><small style="color:var(--muted)">📤 '+esc(s.assignedAt)+(s.assignedBy?' by '+esc(s.assignedBy):'')+(s.doneAt?' → ✅ '+esc(s.doneAt):' → ⏰ '+esc(s.deadline))+'</small></div>';
     return '<div style="margin-top:4px;color:var(--muted)">'+st+': —</div>';
   }).join('');
   var done=(o.orderStatus==='Completed');
@@ -823,7 +823,7 @@ function jobCard(j){
     '<span class="id">'+esc(j.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(j.worker)+' · <span style="color:var(--muted);font-weight:600">'+esc(j.client)+'</span></div>'+
       '<div class="meta">'+esc(j.product||'—').replace(/\n/g,' · ')+
-        '<br>📤 Assigned: '+esc(j.assignedAt)+' · TAT '+esc(j.tatText)+
+        '<br>📤 Assigned: '+esc(j.assignedAt)+(j.assignedBy?' by '+esc(j.assignedBy):'')+' · Time: '+esc(j.tatText)+
         '<br>⏰ Deadline: '+esc(j.deadline)+
         (done?'<br>✅ Done: '+esc(done):'<br>⏳ Not done yet')+'</div></div>'+
     '<div class="side">'+stChip(j.status)+
@@ -837,12 +837,13 @@ function openAssign(orderId){
   $('a-id').textContent=orderId;
   var stages=['Tailor','Dyer','Karigar'];
   $('a-body').innerHTML='<div style="font-size:13px;color:var(--muted);margin-bottom:12px">'+esc(o.client)+' · '+esc(o.product||'').replace(/\n/g,', ')+'</div>'+
+    '<div class="field" style="margin-bottom:16px"><label>Assigned By <span class="req">*</span> <span style="color:var(--muted);font-weight:500">(who is assigning)</span></label><select id="a-by">'+optList(STATE.suggestions.salesPersons||[])+'</select></div>'+
     stages.map(function(st){
       var s=o.stages[st];
       var opts=optList(STATE.suggestions[st.toLowerCase()+'s']||[]);
       if(s.assigned){
         return '<div class="item"><div style="font-weight:700;margin-bottom:6px">'+st+' '+stChip(s.status)+'</div>'+
-          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+' · TAT '+esc(s.tatText)+
+          '<div class="meta" style="color:var(--muted);font-size:13px">👤 '+esc(s.worker)+(s.assignedBy?' · 🧑‍💼 by '+esc(s.assignedBy):'')+' · Time: '+esc(s.tatText)+
           '<br>📤 Assigned: '+esc(s.assignedAt)+' · ⏰ Deadline: '+esc(s.deadline)+
           (s.doneAt?'<br>✅ Done: '+esc(s.doneAt):'<br>⏳ Not done yet')+'</div>'+
           '<div style="display:flex;gap:8px;margin-top:10px">'+
@@ -858,7 +859,7 @@ function openAssign(orderId){
 function assignRow(st,opts){
   return '<div class="workers" style="grid-template-columns:1.6fr .8fr .9fr auto;align-items:end">'+
     '<div class="field"><label>Worker</label><select id="aw-'+st+'">'+opts+'</select></div>'+
-    '<div class="field"><label>TAT</label><input id="at-'+st+'" inputmode="numeric" placeholder="e.g. 2"></div>'+
+    '<div class="field"><label>Tentative Time For Completion</label><input id="at-'+st+'" inputmode="numeric" placeholder="e.g. 2"></div>'+
     '<div class="field"><label>Unit</label><select id="au-'+st+'"><option>Days</option><option>Hours</option></select></div>'+
     '<button class="btn primary sm" id="ab-'+st+'" onclick="assignStage(\''+st+'\')"><span class="spin"></span><span class="lbl">Assign</span></button>'+
   '</div>';
@@ -866,9 +867,11 @@ function assignRow(st,opts){
 function toggleReassign(st){ var e=$('ra-'+st); if(e) e.classList.toggle('hide'); }
 function assignStage(st){
   var worker=$('aw-'+st).value.trim(), tat=$('at-'+st).value.trim(), unit=$('au-'+st).value;
+  var by=$('a-by')?$('a-by').value.trim():'';
+  if(!by){ toast('Pick who is assigning (Assigned By).','err'); return; }
   if(!worker){ toast('Pick a '+st+'.','err'); return; }
-  if(!(Number(tat)>0)){ toast('Enter TAT for '+st+'.','err'); return; }
-  api('Api_assignCreate',[{orderId:STATE.assignOrder,stage:st,worker:worker,tat:tat,tatUnit:unit}],{btn:'ab-'+st,loadingLabel:'…',silent:true}).then(function(r){
+  if(!(Number(tat)>0)){ toast('Enter time for '+st+'.','err'); return; }
+  api('Api_assignCreate',[{orderId:STATE.assignOrder,stage:st,worker:worker,assignedBy:by,tat:tat,tatUnit:unit}],{btn:'ab-'+st,loadingLabel:'…',silent:true}).then(function(r){
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to assign.','err'); return; }
     toast(st+' assigned ✓','ok'); closeModal('mAssign');
     loadAssign(true); refreshMeta();
