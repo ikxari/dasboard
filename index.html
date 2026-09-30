@@ -308,7 +308,7 @@ textarea{resize:vertical;min-height:64px}
       <p class="hint">Jump straight into the work.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn primary" onclick="go('new')">＋ Create New Order</button>
-        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Orders</button>
+        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Enquiry</button>
         <button class="btn ghost" onclick="go('orders')">View Active Orders</button>
       </div>
     </div>
@@ -474,7 +474,7 @@ textarea{resize:vertical;min-height:64px}
           <option value="">All status</option>
           <option value="On Time">🟢 On Time</option>
           <option value="Pending">🟡 Pending</option>
-          <option value="Long Time">🔴 Overdue Long Time</option>
+          <option value="Long Time">🔴 Long Time</option>
           <option value="Late">🔴 Late</option>
         </select>
       </div>
@@ -599,7 +599,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbzDyLSeyO-QWeCPVHPO3WsoGvmeV6h8XEhKcShRdQLZVTU0E09_sb1XTeBYLtmwzbhg/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbykexXBVeBlfjcFAhdmV2Tsw_Br1wqqJs_51V8ssf_4y0-f7q76NBI95EwniOdQu5Q/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -965,32 +965,49 @@ function collectItems(scope){
 
 /* ----------------------------- images ----------------------------------- */
 var MULTI_IMG={m:1,d:1,em:1,ed:1};
+/* Resize + compress to JPEG so 10-12 phone photos don't blow the GAS payload.
+   max 1600px longest side, quality 0.7 → ~150-300 KB each. */
+function compressImage(file, cb){
+  var rd=new FileReader();
+  rd.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var max=1600, w=img.width, h=img.height;
+      if(w>h && w>max){ h=Math.round(h*max/w); w=max; }
+      else if(h>=w && h>max){ w=Math.round(w*max/h); h=max; }
+      try{
+        var c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        cb(c.toDataURL('image/jpeg',0.7));
+      }catch(e){ cb(rd.result); }   /* fallback: original */
+    };
+    img.onerror=function(){ cb(rd.result); };
+    img.src=rd.result;
+  };
+  rd.readAsDataURL(file);
+}
 function pickImg(scope){ $(scope+'-file').click(); }
 function onImg(scope){
   var inp=$(scope+'-file'); var files=inp.files;
   if(!files||!files.length) return;
   if(MULTI_IMG[scope]){          /* multi (Measurement / Design) */
     Array.prototype.forEach.call(files,function(f){
-      if(f.size>10*1024*1024){ toast(f.name+': too large (max 10 MB).','err'); return; }
-      var rd=new FileReader();
-      rd.onload=function(){
-        STATE.imgs[scope].push({data:rd.result.split(',')[1],name:f.name,type:f.type,
-          rename:f.name.replace(/\.[^.]+$/,''),url:rd.result});
+      if(f.size>20*1024*1024){ toast(f.name+': too large (max 20 MB).','err'); return; }
+      compressImage(f,function(dataUrl){
+        STATE.imgs[scope].push({data:dataUrl.split(',')[1],name:f.name,type:'image/jpeg',
+          rename:f.name.replace(/\.[^.]+$/,''),url:dataUrl});
         renderUpList(scope);
-      };
-      rd.readAsDataURL(f);
+      });
     });
     inp.value='';
   } else {                                /* single (pending) */
     var f=files[0];
-    if(f.size>10*1024*1024){ toast('Image is too large (max 10 MB).','err'); return; }
-    var rd=new FileReader();
-    rd.onload=function(){
-      STATE.img[scope]={data:rd.result.split(',')[1],name:f.name,type:f.type};
-      var th=$(scope+'-thumb'); if(th){th.src=rd.result; th.classList.add('on');}
+    if(f.size>20*1024*1024){ toast('Image is too large (max 20 MB).','err'); return; }
+    compressImage(f,function(dataUrl){
+      STATE.img[scope]={data:dataUrl.split(',')[1],name:f.name,type:'image/jpeg'};
+      var th=$(scope+'-thumb'); if(th){th.src=dataUrl; th.classList.add('on');}
       var fn=$(scope+'-fname'); if(fn) fn.textContent=f.name;
-    };
-    rd.readAsDataURL(f);
+    });
   }
 }
 function renderUpList(scope){
