@@ -580,6 +580,18 @@ textarea{resize:vertical;min-height:64px}
   </div>
 </div>
 
+<!-- ISSUE / RETURN modal -->
+<div class="modal confirm" id="mIssue" style="z-index:10000">
+  <div class="box"><div class="mhead"><h3>Report Issue / Return <span id="iss-id"></span></h3><button class="x" onclick="closeModal('mIssue')">✕</button></div>
+    <div class="mbody">
+      <p class="hint" style="margin:0 0 10px">Customer returned / issue found. Order goes back to the board for rework.</p>
+      <div class="field"><label>Issue details</label><textarea id="iss-note" placeholder="e.g. Sleeve length short, re-stitch needed"></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn ghost" onclick="closeModal('mIssue')">Cancel</button>
+      <button class="btn danger" id="iss-ok" onclick="submitIssue()"><span class="spin"></span><span class="lbl">Flag Issue</span></button></div>
+  </div>
+</div>
+
 <!-- CONFIRM modal -->
 <div class="modal confirm" id="mConfirm" style="z-index:10000">
   <div class="box"><div class="mhead"><h3 id="c-title">Confirm</h3><button class="x" onclick="closeModal('mConfirm')">✕</button></div>
@@ -599,7 +611,7 @@ textarea{resize:vertical;min-height:64px}
    *  /exec URL below. Leave blank when this file is served by
    *  Apps Script itself (Deploy → Web app, or the menu dialogs).
    * ============================================================ */
-  window.API_URL = 'https://script.google.com/macros/s/AKfycbykexXBVeBlfjcFAhdmV2Tsw_Br1wqqJs_51V8ssf_4y0-f7q76NBI95EwniOdQu5Q/exec';   // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  window.API_URL = 'https://script.google.com/macros/s/AKfycbzlyfR8Ke679DZ2xxfe0ydBKidnx9dnKqrhpNbPrQKKYnEKVirIQ81OwRM9t6L1QFfJ/exec';
 
   window.INITIAL_SECTION = '<?= INITIAL_SECTION ?>';
   window.APP_VERSION = '<?= APP_VERSION ?>';
@@ -612,7 +624,7 @@ var STATE = {
   dashboard: null,
   orders: [], ordersLoaded: false,
   pending: [], pendingLoaded: false,
-  assign: [], assignJobs: [], assignView:'board', assignOrder:null,
+  assign: [], assignJobs: [], assignView:'board', assignOrder:null, issueOrder:null,
   notify: [],
   img: {p:null,pe:null},
   imgs: {m:[],d:[],em:[],ed:[]},
@@ -784,30 +796,56 @@ function renderAssign(){
   }
 }
 function stChip(s){
-  var m={'Pending':'pending','Long Time':'over','On Time':'conv','Late':'over'};
+  var m={'Pending':'pending','Long Time':'over','On Time':'conv','Late':'over','Not Required':'src'};
   return '<span class="badge '+(m[s]||'pending')+'">'+esc(s)+'</span>';
 }
 function assignBoardCard(o){
   var stages=['Tailor','Dyer','Karigar'];
   var mini=stages.map(function(st){
     var s=o.stages[st];
-    if(s.assigned) return '<div style="margin-top:4px">'+st+': '+esc(s.worker)+' '+stChip(s.status)+
+    if(s.assigned){
+      if(s.status==='Not Required') return '<div style="margin-top:4px">'+st+': '+stChip('Not Required')+'</div>';
+      return '<div style="margin-top:4px">'+st+': '+esc(s.worker)+' '+stChip(s.status)+
       '<br><small style="color:var(--muted)">📤 '+esc(s.assignedAt)+(s.assignedBy?' by '+esc(s.assignedBy):'')+(s.doneAt?' → ✅ '+esc(s.doneAt):' → ⏰ '+esc(s.deadline))+'</small></div>';
+    }
     return '<div style="margin-top:4px;color:var(--muted)">'+st+': —</div>';
   }).join('');
   var done=(o.orderStatus==='Completed');
-  var acts=done
-    ? '<button class="btn ghost sm" onclick="reopenOrder(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">↺ Reopen</span></button>'
-    : '<button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button>'+
-      '<button class="btn ok sm" onclick="completeOrderId(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">Complete</span></button>';
+  var issue=(o.orderStatus==='Issue / Returned');
+  var acts;
+  if(done){
+    acts='<button class="btn ghost sm" onclick="reopenOrder(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">↺ Reopen</span></button>'+
+         '<button class="btn danger sm" onclick="openIssue(\''+esc(o.orderId)+'\')">↩ Return / Issue</button>';
+  } else {
+    acts='<button class="btn primary sm" onclick="openAssign(\''+esc(o.orderId)+'\')">Assign</button>'+
+         '<button class="btn ok sm" onclick="completeOrderId(\''+esc(o.orderId)+'\',this)"><span class="spin"></span><span class="lbl">Complete</span></button>'+
+         '<button class="btn ghost sm" onclick="openIssue(\''+esc(o.orderId)+'\')">⚠ Issue</button>';
+  }
+  var badgeCls=done?'conv':(issue?'over':(o.orderStatus==='To Assign'?'pending':'open'));
   return '<div class="rowcard">'+
     '<span class="id">'+esc(o.orderId)+'</span>'+
     '<div class="main"><div class="name">'+esc(o.client)+'</div>'+
       '<div class="meta">'+esc(o.product||'—').replace(/\n/g,' · ')+
-        (o.expectedDate?'<br>🚚 '+esc(o.expectedDate):'')+'<br>'+mini+'</div></div>'+
-    '<div class="side"><span class="badge '+(done?'conv':(o.orderStatus==='To Assign'?'pending':'open'))+'">'+esc(o.orderStatus)+'</span>'+
+        (o.expectedDate?'<br>🚚 '+esc(o.expectedDate):'')+
+        (issue&&o.issueNote?'<br>⚠ <b style="color:var(--err)">Issue:</b> '+esc(o.issueNote):'')+'<br>'+mini+'</div></div>'+
+    '<div class="side"><span class="badge '+badgeCls+'">'+esc(o.orderStatus)+'</span>'+
       '<div class="acts">'+acts+'</div></div>'+
   '</div>';
+}
+function openIssue(id){
+  STATE.issueOrder=id;
+  $('iss-id').textContent=id;
+  $('iss-note').value='';
+  openModal('mIssue');
+}
+function submitIssue(){
+  var note=$('iss-note').value.trim();
+  if(!note){ toast('Describe the issue briefly.','err'); return; }
+  api('Api_assignIssue',[{orderId:STATE.issueOrder,note:note}],{btn:'iss-ok',loadingLabel:'Saving…',silent:true}).then(function(r){
+    if(!r||!r.ok){ toast((r&&r.msg)||'Unable to flag issue.','err'); return; }
+    toast(STATE.issueOrder+' flagged ⚠','ok'); closeModal('mIssue');
+    loadAssign(true); refreshMeta();
+  });
 }
 function reopenOrder(id,btn){
   if(btn) btnLoad(btn,true,'…');
@@ -858,22 +896,32 @@ function openAssign(orderId){
 }
 function assignRow(st,opts){
   return '<div class="workers" style="grid-template-columns:1.6fr .8fr .9fr auto;align-items:end">'+
-    '<div class="field"><label>Worker</label><select id="aw-'+st+'">'+opts+'</select></div>'+
+    '<div class="field"><label>Worker</label><select id="aw-'+st+'" onchange="awChange(\''+st+'\')">'+opts+'<option>Not Required</option></select></div>'+
     '<div class="field"><label>Tentative Time For Completion</label><input id="at-'+st+'" inputmode="numeric" placeholder="e.g. 2"></div>'+
     '<div class="field"><label>Unit</label><select id="au-'+st+'"><option>Days</option><option>Hours</option></select></div>'+
     '<button class="btn primary sm" id="ab-'+st+'" onclick="assignStage(\''+st+'\')"><span class="spin"></span><span class="lbl">Assign</span></button>'+
   '</div>';
 }
+/* grey-out TAT/Unit when worker = Not Required */
+function awChange(st){
+  var nr=($('aw-'+st).value.trim().toLowerCase()==='not required');
+  var t=$('at-'+st), u=$('au-'+st);
+  if(t){ t.disabled=nr; if(nr) t.value=''; }
+  if(u){ u.disabled=nr; }
+}
 function toggleReassign(st){ var e=$('ra-'+st); if(e) e.classList.toggle('hide'); }
 function assignStage(st){
   var worker=$('aw-'+st).value.trim(), tat=$('at-'+st).value.trim(), unit=$('au-'+st).value;
   var by=$('a-by')?$('a-by').value.trim():'';
-  if(!by){ toast('Pick who is assigning (Assigned By).','err'); return; }
-  if(!worker){ toast('Pick a '+st+'.','err'); return; }
-  if(!(Number(tat)>0)){ toast('Enter time for '+st+'.','err'); return; }
+  var nr=(worker.toLowerCase()==='not required');
+  if(!worker){ toast('Pick a '+st+' (or Not Required).','err'); return; }
+  if(!nr){
+    if(!by){ toast('Pick who is assigning (Assigned By).','err'); return; }
+    if(!(Number(tat)>0)){ toast('Enter time for '+st+'.','err'); return; }
+  }
   api('Api_assignCreate',[{orderId:STATE.assignOrder,stage:st,worker:worker,assignedBy:by,tat:tat,tatUnit:unit}],{btn:'ab-'+st,loadingLabel:'…',silent:true}).then(function(r){
     if(!r||!r.ok){ toast((r&&r.msg)||'Unable to assign.','err'); return; }
-    toast(st+' assigned ✓','ok'); closeModal('mAssign');
+    toast(st+(nr?' marked Not Required ✓':' assigned ✓'),'ok'); closeModal('mAssign');
     loadAssign(true); refreshMeta();
   });
 }
