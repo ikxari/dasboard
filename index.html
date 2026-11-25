@@ -308,8 +308,9 @@ textarea{resize:vertical;min-height:64px}
       <p class="hint">Jump straight into the work.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn primary" onclick="go('new')">＋ Create New Order</button>
-        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Order</button>
+        <button class="btn ghost" onclick="go('pending');openPendingForm()">＋ Add Pending Enquiry</button>
         <button class="btn ghost" onclick="go('orders')">View Active Orders</button>
+        <button class="btn ghost" onclick="showCompleted()">✓ Completed Orders</button>
       </div>
     </div>
   </section>
@@ -761,6 +762,11 @@ function setAssignBadge(n){
 }
 
 /* ------------------------- Assign Worker -------------------------------- */
+function showCompleted(){
+  go('assign');
+  var v=$('as-view'); if(v) v.value='done';
+  loadAssign(true);
+}
 function loadAssign(force){
   var view=$('as-view').value;
   if(view==='board'||view==='done'||view==='all'){
